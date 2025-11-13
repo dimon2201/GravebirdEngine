@@ -1,3 +1,5 @@
+// render_context.hpp
+
 #pragma once
 
 #include <vector>

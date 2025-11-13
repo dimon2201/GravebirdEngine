@@ -1,3 +1,5 @@
+// camera_manager.cpp
+
 #include "../../thirdparty/glm/glm/gtc/matrix_transform.hpp"
 #include "../../thirdparty/glm/glm/gtc/quaternion.hpp"
 #include "../../thirdparty/glm/glm/gtx/quaternion.hpp"
@@ -36,7 +38,7 @@ namespace realware
             gameObjectManager->DeleteGameObject(K_CAMERA_ID);
         }
 
-        void mCamera::Update(const types::boolean updateMouseLook, const types::boolean updateMovement)
+        void mCamera::Update()
         {
             const f32 deltaTime = _app->GetDeltaTime();
 
@@ -55,39 +57,34 @@ namespace realware
             _projection = glm::perspective(glm::radians(_fov), (float)_app->GetWindowSize().x / (float)_app->GetWindowSize().y, _zNear, _zFar);
             _viewProjection = _projection * _view;
 
-            if (updateMouseLook == K_TRUE)
+            double x = 0.0, y = 0.0;
+            glfwGetCursorPos((GLFWwindow*)_app->GetWindow(), &x, &y);
+
+            _prevCursorPosition = _cursorPosition;
+            _cursorPosition = glm::vec2(x, y);
+
+            glm::vec2 mouseDelta = _prevCursorPosition - _cursorPosition;
+            AddEuler(Category::CAMERA_ANGLE_PITCH, mouseDelta.y * _mouseSensitivity * deltaTime);
+            AddEuler(Category::CAMERA_ANGLE_YAW, mouseDelta.x * _mouseSensitivity * deltaTime);
+            
+            f32 forward = _app->GetKey('W') * _moveSpeed * deltaTime;
+            f32 backward = _app->GetKey('S') * _moveSpeed * deltaTime;
+            f32 left = _app->GetKey('A') * _moveSpeed * deltaTime;
+            f32 right = _app->GetKey('D') * _moveSpeed * deltaTime;
+            if (forward > 0.0f || backward > 0.0f || left > 0.0f || right > 0.0f)
             {
-                double x = 0.0, y = 0.0;
-                glfwGetCursorPos((GLFWwindow*)_app->GetWindow(), &x, &y);
+                Move(forward);
+                Move(-backward);
+                Strafe(-left);
+                Strafe(right);
 
-                _prevCursorPosition = _cursorPosition;
-                _cursorPosition = glm::vec2(x, y);
-
-                glm::vec2 mouseDelta = _prevCursorPosition - _cursorPosition;
-                AddEuler(Category::CAMERA_ANGLE_PITCH, mouseDelta.y * _mouseSensitivity * deltaTime);
-                AddEuler(Category::CAMERA_ANGLE_YAW, mouseDelta.x * _mouseSensitivity * deltaTime);
+                _isMoving = K_TRUE;
             }
-            if (updateMovement == K_TRUE)
+            else
             {
-                f32 forward = _app->GetKey('W') * _moveSpeed * deltaTime;
-                f32 backward = _app->GetKey('S') * _moveSpeed * deltaTime;
-                f32 left = _app->GetKey('A') * _moveSpeed * deltaTime;
-                f32 right = _app->GetKey('D') * _moveSpeed * deltaTime;
-                if (forward > 0.0f || backward > 0.0f || left > 0.0f || right > 0.0f)
-                {
-                    Move(forward);
-                    Move(-backward);
-                    Strafe(-left);
-                    Strafe(right);
-
-                    _isMoving = K_TRUE;
-                }
-                else
-                {
-                    _isMoving = K_FALSE;
-                }
+                _isMoving = K_FALSE;
             }
-
+            
             _cameraGameObject->SetViewProjectionMatrix(_viewProjection);
         }
 

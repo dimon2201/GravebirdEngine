@@ -1,3 +1,5 @@
+// category.hpp
+
 #pragma once
 
 namespace realware

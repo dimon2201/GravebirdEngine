@@ -1,13 +1,12 @@
 #include "window.hpp"
 #include "listview.hpp"
-#include "../../../engine/src/ecs.hpp"
 #include "../editor_types.hpp"
 #include "../../../engine/thirdparty/stb-master/stb_image.h"
 
 #pragma comment(lib, "Comctl32.lib")
 
-extern realware::core::cApplication* editorApp;
-extern realware::core::cScene* editorScene;
+//extern realware::core::cApplication* editorApp;
+//extern realware::core::cScene* editorScene;
 
 extern eSelectMode editorSelectMode;
 extern int editorSelectedAssetIndex;
@@ -19,13 +18,13 @@ extern realware::editor::cEditorListView* editorWindowAssetListView;
 extern eAssetSelectedType editorWindowAssetSelectedType;
 extern std::vector<std::vector<sAsset>> editorWindowAssetData;
 
-extern void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress);
-extern void EditorWindowAssetDeleteItem(
-    realware::core::cApplication* app,
-    realware::core::cScene* scene,
-    const eAssetSelectedType& type,
-    int assetIndex
-);
+//extern void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress);
+//extern void EditorWindowAssetDeleteItem(
+//    realware::core::cApplication* app,
+//    realware::core::cScene* scene,
+//    const eAssetSelectedType& type,
+//    int assetIndex
+//);
 extern void EditorWindowEntityUpdate(int assetIndex);
 extern void EditorWindowSoundUpdate(int assetIndex);
 extern void EditorWindowScriptUpdate(int assetIndex);
@@ -55,12 +54,12 @@ namespace realware
                     int index = editorWindowAssetListView->GetSelectedIndex();
                     if (index != -1)
                     {
-                        EditorWindowAssetDeleteItem(
-                            editorApp,
-                            editorScene,
-                            editorWindowAssetSelectedType,
-                            index
-                        );
+                        //EditorWindowAssetDeleteItem(
+                        //    editorApp,
+                        //    editorScene,
+                        //    editorWindowAssetSelectedType,
+                        //    index
+                        //);
 
                         editorWindowAssetData[editorWindowAssetSelectedType].erase(
                             editorWindowAssetData[editorWindowAssetSelectedType].begin() + index
@@ -89,21 +88,21 @@ namespace realware
                     if (editorWindowAssetSelectedType == eAssetSelectedType::ENTITY)
                     {
                         editorSelectedAssetIndex = index;
-                        editorWindowEntity->Show(core::K_TRUE);
+                        editorWindowEntity->Show(types::K_TRUE);
                         EditorWindowEntityUpdate(editorSelectedAssetIndex);
                     }
                     // Sound
                     else if (editorWindowAssetSelectedType == eAssetSelectedType::SOUND)
                     {
                         editorSelectedAssetIndex = index;
-                        editorWindowSound->Show(core::K_TRUE);
+                        editorWindowSound->Show(types::K_TRUE);
                         EditorWindowSoundUpdate(editorSelectedAssetIndex);
                     }
                     // Script
                     else if (editorWindowAssetSelectedType == eAssetSelectedType::SCRIPT)
                     {
                         editorSelectedAssetIndex = index;
-                        editorWindowScript->Show(core::K_TRUE);
+                        editorWindowScript->Show(types::K_TRUE);
                         EditorWindowScriptUpdate(editorSelectedAssetIndex);
                     }
                 }
@@ -111,7 +110,7 @@ namespace realware
             else if (wm == WM_RBUTTONDOWN)
             {
                 // Popup menu
-                EditorWindowAssetShowPopupmenu(realware::core::K_TRUE);
+                //EditorWindowAssetShowPopupmenu(realware::core::K_TRUE);
             }
 
             return DefSubclassProc(hwnd, wm, wp, lp);
@@ -151,7 +150,7 @@ namespace realware
                 return;
             }
 
-            core::u32* nullMem = new core::u32[32 * 32];
+            types::u32* nullMem = new types::u32[32 * 32];
             memset(nullMem, 0, 32 * 32 * 4);
             int width0 = 0, height0 = 0, channels0 = 0,
                 width1 = 0, height1 = 0, channels1 = 0,
@@ -160,34 +159,34 @@ namespace realware
             data0 = stbi_load("icons/icon0.png", &width0, &height0, &channels0, 4);
             data1 = stbi_load("icons/icon1.png", &width1, &height1, &channels1, 4);
             data2 = stbi_load("icons/icon2.png", &width2, &height2, &channels2, 4);
-            for (core::s32 i = 0; i < width0 * height0; i++)
+            for (types::s32 i = 0; i < width0 * height0; i++)
             {
-                core::u8 r = data0[i * 4];
-                core::u8 g = data0[(i * 4) + 1];
-                core::u8 b = data0[(i * 4) + 2];
-                core::u8 a = data0[(i * 4) + 3];
+                types::u8 r = data0[i * 4];
+                types::u8 g = data0[(i * 4) + 1];
+                types::u8 b = data0[(i * 4) + 2];
+                types::u8 a = data0[(i * 4) + 3];
                 data0[(i * 4)] = b;
                 data0[(i * 4) + 1] = g;
                 data0[(i * 4) + 2] = r;
                 data0[(i * 4) + 3] = a;
             }
-            for (core::s32 i = 0; i < width1 * height1; i++)
+            for (types::s32 i = 0; i < width1 * height1; i++)
             {
-                core::u8 r = data1[i * 4];
-                core::u8 g = data1[(i * 4) + 1];
-                core::u8 b = data1[(i * 4) + 2];
-                core::u8 a = data1[(i * 4) + 3];
+                types::u8 r = data1[i * 4];
+                types::u8 g = data1[(i * 4) + 1];
+                types::u8 b = data1[(i * 4) + 2];
+                types::u8 a = data1[(i * 4) + 3];
                 data1[(i * 4)] = b;
                 data1[(i * 4) + 1] = g;
                 data1[(i * 4) + 2] = r;
                 data1[(i * 4) + 3] = a;
             }
-            for (core::s32 i = 0; i < width2 * height2; i++)
+            for (types::s32 i = 0; i < width2 * height2; i++)
             {
-                core::u8 r = data2[i * 4];
-                core::u8 g = data2[(i * 4) + 1];
-                core::u8 b = data2[(i * 4) + 2];
-                core::u8 a = data2[(i * 4) + 3];
+                types::u8 r = data2[i * 4];
+                types::u8 g = data2[(i * 4) + 1];
+                types::u8 b = data2[(i * 4) + 2];
+                types::u8 a = data2[(i * 4) + 3];
                 data2[(i * 4)] = b;
                 data2[(i * 4) + 1] = g;
                 data2[(i * 4) + 2] = r;
@@ -210,7 +209,7 @@ namespace realware
         {
         }
 
-        void cEditorListView::AddColumn(core::s32 index, const std::string& name, core::usize width)
+        void cEditorListView::AddColumn(types::s32 index, const std::string& name, types::usize width)
         {
             LVCOLUMN col = {};
             col.pszText = LPSTR(name.data());
@@ -220,7 +219,7 @@ namespace realware
             ListView_SetColumnWidth(m_HWND, index, width);
         }
 
-        void cEditorListView::AddItem(core::s32 columnIndex, core::s32 index, const std::string& name)
+        void cEditorListView::AddItem(types::s32 columnIndex, types::s32 index, const std::string& name)
         {
             if (columnIndex == 0)
             {
@@ -267,7 +266,7 @@ namespace realware
             }
         }
 
-        void cEditorListView::RemoveItem(core::s32 columnIndex, core::s32 index)
+        void cEditorListView::RemoveItem(types::s32 columnIndex, types::s32 index)
         {
             ListView_DeleteItem(m_HWND, index);
         }
@@ -276,7 +275,7 @@ namespace realware
         {
             ListView_DeleteAllItems(m_HWND);
             
-            core::s32 index = 0;
+            types::s32 index = 0;
             for (auto asset : data)
             {
                 AddItem(0, index, asset.Name.data());

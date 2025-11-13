@@ -24,9 +24,9 @@ namespace realware
             );
             ~cEditorListView();
 
-            void AddColumn(core::s32 index, const std::string& name, core::usize width);
-            void AddItem(core::s32 columnIndex, core::s32 index, const std::string& name);
-            void RemoveItem(core::s32 columnIndex, core::s32 index);
+            void AddColumn(types::s32 index, const std::string& name, types::usize width);
+            void AddItem(types::s32 columnIndex, types::s32 index, const std::string& name);
+            void RemoveItem(types::s32 columnIndex, types::s32 index);
             void AddItemsFromData(const std::vector<sAsset>& data);
 
             inline HWND GetHWND() { return m_HWND; }

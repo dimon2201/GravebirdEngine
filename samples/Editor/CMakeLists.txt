@@ -1,20 +1,19 @@
 cmake_minimum_required(VERSION 3.25.1)
+
 project(RealWareEditor)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 
 link_libraries(RealWareEngine)
 
 add_executable(
     RealWareEditor
-    map_plugin_loader/map_plugin_loader.cpp
     winapi/window.cpp
     winapi/listview.cpp
     winapi/groupbox.cpp
     winapi/textbox.cpp
     winapi/label.cpp
     winapi/button.cpp
-    winapi/checkbox.cpp
     ray_hit.cpp
     main.cpp)
 

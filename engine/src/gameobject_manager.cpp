@@ -1,3 +1,5 @@
+// gameobject_manager.cpp
+
 #include "application.hpp"
 #include "gameobject_manager.hpp"
 #include "render_manager.hpp"

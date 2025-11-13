@@ -1,3 +1,5 @@
+// texture_manager.hpp
+
 #pragma once
 
 #include <string>

@@ -1,3 +1,5 @@
+// camera_manager.hpp
+
 #pragma once
 
 #include "../../thirdparty/glm/glm/glm.hpp"
@@ -23,7 +25,7 @@ namespace realware
 
             void CreateCamera();
             void DestroyCamera();
-            void Update(const types::boolean updateMouseLook, const types::boolean updateMovement);
+            void Update();
             void AddEuler(const game::Category& angle, const types::f32 value);
             void Move(const types::f32 value);
             void Strafe(const types::f32 value);

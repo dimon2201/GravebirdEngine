@@ -1,3 +1,5 @@
+// sound_manager.hpp
+
 #pragma once
 
 #include <vector>
@@ -59,8 +61,6 @@ namespace realware
             sSound* AddSound(const std::string& id, const std::string& filename, const game::Category& format);
             sSound* FindSound(const std::string& id);
             void DeleteSound(const std::string& id);
-            //void Play(core::entity object, core::cScene* scene);
-            //void Stop(core::entity object, core::cScene* scene);
 
         private:
             app::cApplication* _app = nullptr;

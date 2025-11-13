@@ -1,3 +1,5 @@
+// render_manager.cpp
+
 #include <GL/glew.h>
 #include <iostream>
 #include <assimp/Importer.hpp>
@@ -113,6 +115,8 @@ namespace realware
             _lightBuffer->Slot = 2;
             _opaqueTextureAtlasTexturesBuffer = _context->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, sBuffer::eType::LARGE, nullptr);
             _opaqueTextureAtlasTexturesBuffer->Slot = 3;
+            _transparentTextureAtlasTexturesBuffer = _context->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, sBuffer::eType::LARGE, nullptr);
+            _transparentTextureAtlasTexturesBuffer->Slot = 3;
             _vertices = memoryPool->Allocate(desc->VertexBufferSize);
             _verticesByteSize = 0;
             _indices = memoryPool->Allocate(desc->IndexBufferSize);
@@ -133,6 +137,8 @@ namespace realware
             _lightsByteSize = 0;
             _opaqueTextureAtlasTextures = memoryPool->Allocate(_maxTextureAtlasTexturesBufferByteSize);
             _opaqueTextureAtlasTexturesByteSize = 0;
+            _transparentTextureAtlasTextures = memoryPool->Allocate(_maxTextureAtlasTexturesBufferByteSize);
+            _transparentTextureAtlasTexturesByteSize = 0;
             std::unordered_map<render::sMaterial*, s32>* pMaterialsMap = (std::unordered_map<render::sMaterial*, s32>*)_app->GetMemoryPool()->Allocate(sizeof(std::unordered_map<render::sMaterial*, s32>));
             _materialsMap = new (pMaterialsMap) std::unordered_map<render::sMaterial*, s32>();
 
@@ -158,8 +164,8 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.ShaderBase = nullptr;
                 renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_OPAQUE;
-                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
-                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
@@ -180,8 +186,8 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
                 renderPassDesc.ShaderBase = nullptr;
                 renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TRANSPARENT;
-                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
-                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _transparentRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
@@ -200,8 +206,8 @@ namespace realware
                 renderPassDesc.InputBuffers.emplace_back(mRender::GetTextMaterialBuffer());
                 renderPassDesc.ShaderBase = nullptr;
                 renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TEXT;
-                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
-                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
@@ -217,8 +223,8 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("RevealageTexture");
                 renderPassDesc.ShaderBase = nullptr;
                 renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_TRANSPARENT_COMPOSITE;
-                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
-                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = _opaqueRenderTarget;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
@@ -235,8 +241,8 @@ namespace realware
                 renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
                 renderPassDesc.ShaderBase = nullptr;
                 renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_QUAD;
-                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_vertex.shader";
-                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/main_fragment.shader";
+                renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+                renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
                 renderPassDesc.RenderTarget = nullptr;
                 renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
                 renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
@@ -380,12 +386,12 @@ namespace realware
             _context->ClearFramebufferColor(0, clearColor);
             _context->ClearFramebufferDepth(clearDepth);
 			
-			_context->BindRenderPass(_text);
-			_context->ClearFramebufferColor(0, clearColor);
-
             _context->BindRenderPass(_transparent);
             _context->ClearFramebufferColor(0, glm::vec4(0.0f));
             _context->ClearFramebufferColor(1, glm::vec4(1.0f));
+
+			_context->BindRenderPass(_text);
+			_context->ClearFramebufferColor(0, clearColor);
         }
 
         void mRender::UpdateLights()
@@ -427,8 +433,12 @@ namespace realware
                 transform.Transform();
 
                 s32 materialIndex = -1;
-
                 sMaterial* material = it.GetMaterial();
+                sVertexBufferGeometry* geometry = it.GetGeometry();
+
+                if (geometry == nullptr)
+                    continue;
+
                 if (material != nullptr)
                 {
                     auto it = _materialsMap->find(material);
@@ -487,7 +497,7 @@ namespace realware
             _context->WriteBuffer(_opaqueTextureAtlasTexturesBuffer, 0, _opaqueTextureAtlasTexturesByteSize, _opaqueTextureAtlasTextures);
         }
 
-        void mRender::WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects)
+        void mRender::WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass)
         {
             _transparentInstanceCount = 0;
             _transparentInstancesByteSize = 0;
@@ -501,6 +511,10 @@ namespace realware
 
                 s32 materialIndex = -1;
                 sMaterial* material = it.GetMaterial();
+                sVertexBufferGeometry* geometry = it.GetGeometry();
+
+                if (geometry == nullptr)
+                    continue;
 
                 if (material != nullptr)
                 {
@@ -539,8 +553,25 @@ namespace realware
                 _transparentInstanceCount += 1;
             }
 
+            std::vector<sTextureAtlasTexture*>& renderPassTextureAtlasTextures = renderPass->Desc.InputTextureAtlasTextures;
+            for (auto& textureAtlasTexture : renderPassTextureAtlasTextures)
+            {
+                sTextureAtlasTextureGPU tatGPU;
+                tatGPU.TextureInfo = glm::vec4(
+                    textureAtlasTexture->Offset.x,
+                    textureAtlasTexture->Offset.y,
+                    textureAtlasTexture->Size.x,
+                    textureAtlasTexture->Size.y
+                );
+                tatGPU.TextureLayerInfo = textureAtlasTexture->Offset.z;
+
+                memcpy((void*)((usize)_transparentTextureAtlasTextures + (usize)_transparentTextureAtlasTexturesByteSize), &tatGPU, sizeof(sTextureAtlasTextureGPU));
+                _transparentTextureAtlasTexturesByteSize += sizeof(sTextureAtlasTextureGPU);
+            }
+
             _context->WriteBuffer(_transparentInstanceBuffer, 0, _transparentInstancesByteSize, _transparentInstances);
             _context->WriteBuffer(_transparentMaterialBuffer, 0, _transparentMaterialsByteSize, _transparentMaterials);
+            _context->WriteBuffer(_transparentTextureAtlasTexturesBuffer, 0, _transparentTextureAtlasTexturesByteSize, _transparentTextureAtlasTextures);
         }
 
         void mRender::DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sRenderPass* const renderPass)
@@ -586,6 +617,34 @@ namespace realware
             );
 
             _context->UnbindRenderPass(_opaque);
+        }
+
+        void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sRenderPass* const renderPass)
+        {
+            if (renderPass == nullptr)
+            {
+                _context->BindRenderPass(_transparent);
+                _context->SetShaderUniform(_transparent->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            }
+            else
+            {
+                _context->BindRenderPass(renderPass);
+                _context->SetShaderUniform(renderPass->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            }
+
+            _context->Draw(
+                geometry->IndexCount,
+                geometry->OffsetVertex,
+                geometry->OffsetIndex,
+                _transparentInstanceCount
+            );
+
+            if (renderPass == nullptr)
+                _context->UnbindRenderPass(_transparent);
+            else
+                _context->UnbindRenderPass(renderPass);
+
+            CompositeTransparent();
         }
 
         void mRender::DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const cGameObject* const cameraObject, sShader* const singleShader)

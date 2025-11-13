@@ -31,5 +31,5 @@ add_custom_command(
     -E
     copy_directory
     "${CMAKE_SOURCE_DIR}/exe_files"
-    "${CMAKE_CURRENT_BINARY_DIR}/Debug"
+    "${CMAKE_CURRENT_BINARY_DIR}"
 )

@@ -7,8 +7,6 @@
 #include "../../engine/thirdparty/glm/glm/glm.hpp"
 #include "../../engine/thirdparty/glm/glm/gtc/matrix_transform.hpp"
 #include "../../engine/src/application.hpp"
-#include "../../engine/src/ecs.hpp"
-#include "../../engine/src/user_input_manager.hpp"
 #include "../../engine/src/camera_manager.hpp"
 #include "../../engine/src/texture_manager.hpp"
 #include "../../engine/src/filesystem_manager.hpp"
@@ -18,54 +16,45 @@
 #include "../../engine/src/sound_context.hpp"
 #include "../../engine/src/sound_manager.hpp"
 #include "../../engine/src/font_manager.hpp"
-#include "../../engine/src/widget_manager.hpp"
 #include "../../engine/src/types.hpp"
-#include "map_plugin_loader/map_plugin_loader.hpp"
 #include "winapi/window.hpp"
 #include "winapi/listview.hpp"
 #include "winapi/groupbox.hpp"
 #include "winapi/textbox.hpp"
 #include "winapi/label.hpp"
 #include "winapi/button.hpp"
-#include "winapi/checkbox.hpp"
 #include "ray_hit.hpp"
 #include "editor_types.hpp"
 
 using namespace realware::core;
+using namespace realware::app;
 using namespace realware::render;
 using namespace realware::font;
 using namespace realware::sound;
 using namespace realware::physics;
 using namespace realware::editor;
-using namespace realware::map;
+using namespace realware::game;
 
-mRender* renderManager = new mRender();
-mTexture* textureManager = new mTexture();
-mSound* soundManager = new mSound();
-mCamera* cameraManager = new mCamera();
-mFileSystem* fileSystemManager = new mFileSystem();
-mUserInput* userInputManager = new mUserInput();
-mFont* fontManager = new mFont();
-mPhysics* physicsManager = new mPhysics();
+mRender* renderManager;
+mTexture* textureManager;
+mSound* soundManager;
+mCamera* cameraManager;
+//mFileSystem* fileSystemManager;
+mFont* fontManager;
+mPhysics* physicsManager;
 cApplication* editorApp = nullptr;
-cScene* editorScene = nullptr;
-entity editorCamera = 0;
-entity editorPhysicsScene = 0;
 
-realware::core::u64 editorUniqueID = 0;
+//realware::core::u64 editorUniqueID = 0;
 std::vector<sVertexBufferGeometry*> editorGeometriesToDraw;
 eSelectMode editorSelectMode = eSelectMode::CREATE;
-entity editorSelectedEntity = 0;
-entity editorCopyEntity = 0;
+//entity editorSelectedEntity = 0;
+//entity editorCopyEntity = 0;
 int editorSelectedAssetIndex = -1;
 int editorUsedAssetIndex = -1;
 glm::vec3 editorPosition = glm::vec3(0.0f), editorRotation = glm::vec3(0.0f), editorScale = glm::vec3(0.0f);
 sTextboxLabel editorPositionX; sTextboxLabel editorPositionY; sTextboxLabel editorPositionZ;
 sTextboxLabel editorRotationX; sTextboxLabel editorRotationY; sTextboxLabel editorRotationZ;
 sTextboxLabel editorScaleX; sTextboxLabel editorScaleY; sTextboxLabel editorScaleZ;
-cEditorCheckbox* editorIsVisible = nullptr;
-cEditorCheckbox* editorIsLight = nullptr;
-cEditorCheckbox* editorIsScripted = nullptr;
 sTextboxLabel editorLightScale;
 sTextboxLabel editorLightColor;
 sTextboxLabel editorLightAttenuation;
@@ -97,110 +86,80 @@ cEditorButton* editorWindowScriptCloseButton = nullptr;
 eAssetSelectedType editorWindowAssetSelectedType = eAssetSelectedType::ENTITY;
 std::vector<std::vector<sAsset>> editorWindowAssetData((int)eAssetSelectedType::_COUNT);
 
-void EditorUpdateTextboxTransform(sCTransform* transform);
-void EditorUpdateTextboxLight(sCLight* light);
-void EditorUpdateEntityFields(cScene* scene);
-void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress);
+void EditorUpdateTextboxTransform();//(sCTransform* transform);
+void EditorUpdateTextboxLight();//(sCLight* light);
+void EditorUpdateEntityFields();//(cScene* scene);
+void EditorWindowAssetShowPopupmenu();//(realware::core::boolean rmbPress);
 void EditorWindowAssetDeleteItem(
     cApplication* app,
-    cScene* scene,
+    //cScene* scene,
     const eAssetSelectedType& type,
     int assetIndex
 );
 void EditorAssetLoadData(eAssetSelectedType type, sAsset& asset);
 void EditorWindowEntityUpdate(int assetIndex);
-void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex);
+void EditorWindowEntitySave();//(cApplication* app, cScene* scene, int assetIndex);
 void EditorWindowSoundUpdate(int assetIndex);
-void EditorWindowSoundSave(cApplication* app, cScene* scene, int assetIndex);
+void EditorWindowSoundSave();//(cApplication* app, cScene* scene, int assetIndex);
 void EditorWindowScriptUpdate(int assetIndex);
-void EditorWindowScriptSave(cApplication* app, cScene* scene, int assetIndex);
+void EditorWindowScriptSave();//(cApplication* app, cScene* scene, int assetIndex);
 void EditorWindowRenderEntityLogic(
-    cApplication* app,
-    cScene* scene,
-    entity camera,
-    realware::core::boolean lmbPress,
-    realware::core::boolean rmbPress
+    cApplication* app
+    //cScene* scene,
+    //entity camera,
+    //realware::core::boolean lmbPress,
+    //realware::core::boolean rmbPress
 );
-void EditorWindowObjectLogic(cApplication* app, cScene* scene);
+void EditorWindowObjectLogic();//;(cApplication* app, cScene* scene);
 void EditorWindowAssetLogic();
-void EditorNewMap(cApplication* app, cScene* scene);
-void EditorOpenMap(cApplication* app, cScene* scene, const std::string& filename);
-void EditorSaveMap(cApplication* app, cScene* scene, const std::string& filename);
-void EditorNewPlugin(cApplication* app, cScene* scene);
-void EditorOpenPlugin(cApplication* app, cScene* scene, const std::string& filename);
-void EditorSavePlugin(cApplication* app, cScene* scene, const std::string& filename);
+void EditorNewMap();//(cApplication* app, cScene* scene);
+void EditorOpenMap();//(cApplication* app, cScene* scene, const std::string& filename);
+void EditorSaveMap();//(cApplication* app, cScene* scene, const std::string& filename);
+void EditorNewPlugin();//(cApplication* app, cScene* scene);
+void EditorOpenPlugin();//(cApplication* app, cScene* scene, const std::string& filename);
+void EditorSavePlugin();//(cApplication* app, cScene* scene, const std::string& filename);
 std::string EditorGetExeFolder();
 
 class MyApp : public cApplication
 {
 
 public:
-    MyApp(const sApplicationDescriptor& desc) : cApplication(desc) {}
+    MyApp(const sApplicationDescriptor& desc) : cApplication((sApplicationDescriptor*)&desc) {}
     ~MyApp() {}
 
-    virtual void Init() override final
+    virtual void Start() override final
     {
         editorApp = this;
 
         // Initialize managers
-        textureManager->Init(m_renderContext, 2048, 2048, 12);
-        soundManager->Init(new cOpenALSoundContext());
-        renderManager->Init(
-            m_renderContext,
-            4 * 1024 * 1024,
-            4 * 1024 * 1024,
-            65536,
-            65536,
-            65536,
-            glm::vec2(m_desc.WindowDesc.Width, m_desc.WindowDesc.Height)
-        );
-        cameraManager->Init();
-        userInputManager->Init();
-        physicsManager->Init();
+        textureManager = new mTexture(this, _renderContext);
+        soundManager = new mSound(this, _soundContext);
+        renderManager = new mRender(this, _renderContext);
+        cameraManager = new mCamera(this);
+        physicsManager = new mPhysics(this);
+
+        _camera->CreateCamera();
+        _camera->SetMoveSpeed(5.0f);
 
         // Triangle primitive
-        auto plane = renderManager->CreateModel("data/models/plane.dae");
-        m_geomPlane = renderManager->AddGeometry(
-            plane->Format,
-            plane->VerticesByteSize,
-            plane->Vertices,
-            plane->IndicesByteSize,
-            plane->Indices
-        );
+        //auto plane = renderManager->CreateModel("data/models/plane.dae");
+        //m_geomPlane = renderManager->CreateGeometry(
+        //    plane->Format,
+        //    plane->VerticesByteSize,
+        //    plane->Vertices,
+        //    plane->IndicesByteSize,
+        //    plane->Indices
+        //);
 
-        auto dirtTexture = textureManager->CreateTexture("data/textures/dirt.png", "DirtTexture");
-        m_taburetTexture = textureManager->CreateTexture("data/textures/taburet2.png", "TaburetTexture");
-
-        // Scene
-        editorScene = new cScene(4 * 1024 * 1024);
-
-        // Physics scene
-        editorPhysicsScene = editorScene->CreateEntity("PhysicsSceneEntity");
-        physicsManager->AddScene({ editorPhysicsScene, editorScene });
-        
-        // Camera entity
-        editorCamera = editorScene->CreateEntity("CameraEntity");
-        sCCamera* cameraCamera = editorScene->Add<sCCamera>(editorCamera);
-        cameraCamera->FOV = 65.0f;
-        cameraCamera->ZNear = 0.01f;
-        cameraCamera->ZFar = 100.0f;
-        sCTransform* cameraTransform = editorScene->Add<sCTransform>(editorCamera);
-        cameraTransform->Position = glm::vec3(0.0f, 5.0f, 0.0f);
-
-        sCPhysicsCharacterController* controller = physicsManager->AddCharacterController(
-            { editorPhysicsScene, editorScene },
-            { editorCamera, editorScene },
-            mPhysics::eShapeDescriptor::CAPSULE,
-            glm::vec4(1.0f, 2.0f, 0.0f, 0.0f)
-        );
-        controller->IsGravityEnabled = K_FALSE;
+        auto dirtTexture = textureManager->AddTexture("data/textures/dirt.png", "DirtTexture");
+        //m_taburetTexture = textureManager->AddTexture("data/textures/taburet2.png", "TaburetTexture");
 
         // Editor windows
         // Main window
-        float offset = userInputManager->GetMonitorSize().x * 0.0025f;
+        float offset = this->GetWindowSize().x * 0.0025f;
         glm::vec2 mainWindowSize = glm::vec2(
-                (userInputManager->GetMonitorSize().x / 2.0f) - (userInputManager->GetMonitorSize().x * 0.025f) - (userInputManager->GetMonitorSize().x * 0.0125f),
-                (userInputManager->GetMonitorSize().y * 0.142f)
+                (this->GetWindowSize().x / 2.0f) - (this->GetWindowSize().x * 0.025f) - (this->GetWindowSize().x * 0.0125f),
+                (this->GetWindowSize().y * 0.142f)
         );
         editorWindowMain = new cEditorWindow(
             nullptr,
@@ -224,14 +183,14 @@ public:
 
         // Asset window
         glm::vec2 assetWindowSize = glm::vec2(
-            (userInputManager->GetMonitorSize().x / 2.0f) - (userInputManager->GetMonitorSize().x * 0.025f) - (userInputManager->GetMonitorSize().x * 0.0125f),
-            userInputManager->GetMonitorSize().y - (userInputManager->GetMonitorSize().y * 0.2f)
+            (this->GetWindowSize().x / 2.0f) - (this->GetWindowSize().x * 0.025f) - (this->GetWindowSize().x * 0.0125f),
+            this->GetWindowSize().y - (this->GetWindowSize().y * 0.2f)
         );
         editorWindowAsset = new cEditorWindow(
             nullptr,
             "AssetWindow",
             "Assets",
-            glm::vec2(0.0f, (userInputManager->GetMonitorSize().y * 0.1f) + (userInputManager->GetMonitorSize().y * 0.05f)),
+            glm::vec2(0.0f, (this->GetWindowSize().y * 0.1f) + (this->GetWindowSize().y * 0.05f)),
             assetWindowSize
         );
         RemoveWindowSysmenu(editorWindowAsset->GetHWND());
@@ -267,7 +226,7 @@ public:
             glm::vec2(offset * 2.0f, offset * 13.0f), glm::vec2(offset * 15.0f, offset * 6.0f)
         );
         editorWindowAssetSearch.Textbox = new cEditorTextbox(editorWindowAsset->GetHWND(), "",
-            glm::vec2(offset * 19.0f, offset * 13.0f), glm::vec2(offset * 55.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 19.0f, offset * 13.0f), glm::vec2(offset * 55.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
 
         // Entity window
@@ -278,7 +237,7 @@ public:
             glm::vec2(0.0f),
             glm::vec2(offset * 120.0f, offset * 80.0f)
         );
-        editorWindowEntity->Show(K_FALSE);
+        editorWindowEntity->Show(types::K_FALSE);
         RemoveWindowSysmenu(editorWindowEntity->GetHWND());
 
         editorWindowEntityOKButton = new cEditorButton(
@@ -297,25 +256,25 @@ public:
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityName.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), types::K_FALSE, types::K_FALSE
         );
         editorWindowEntityTexture.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Texture",
             glm::vec2(offset * 3.0f, offset * 14.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityTexture.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), types::K_FALSE, types::K_FALSE
         );
         editorWindowEntityGeometry.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Geometry",
             glm::vec2(offset * 3.0f, offset * 23.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityGeometry.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 23.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 25.0f, offset * 23.0f), glm::vec2(offset * 85.0f, offset * 7.0f), types::K_FALSE, types::K_FALSE
         );
         editorWindowEntityDiffuseColor.Label = new cEditorLabel(editorWindowEntity->GetHWND(), "Color",
             glm::vec2(offset * 3.0f, offset * 32.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowEntityDiffuseColor.Textbox = new cEditorTextbox(editorWindowEntity->GetHWND(), "255;255;255;255",
-            glm::vec2(offset * 25.0f, offset * 32.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 25.0f, offset * 32.0f), glm::vec2(offset * 85.0f, offset * 7.0f), types::K_FALSE, types::K_FALSE
         );
 
         // Sound window
@@ -326,7 +285,7 @@ public:
             glm::vec2(0.0f),
             glm::vec2(offset * 120.0f, offset * 50.0f)
         );
-        editorWindowSound->Show(K_FALSE);
+        editorWindowSound->Show(types::K_FALSE);
         RemoveWindowSysmenu(editorWindowSound->GetHWND());
 
         editorWindowSoundOKButton = new cEditorButton(
@@ -345,13 +304,13 @@ public:
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowSoundName.Textbox = new cEditorTextbox(editorWindowSound->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), types::K_FALSE, types::K_FALSE
         );
         editorWindowSoundFile.Label = new cEditorLabel(editorWindowSound->GetHWND(), "File",
             glm::vec2(offset * 3.0f, offset * 14.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowSoundFile.Textbox = new cEditorTextbox(editorWindowSound->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 25.0f, offset * 14.0f), glm::vec2(offset * 85.0f, offset * 7.0f), types::K_FALSE, types::K_FALSE
         );
 
         // Script window
@@ -362,7 +321,7 @@ public:
             glm::vec2(0.0f),
             glm::vec2(offset * 120.0f, offset * 140.0f)
         );
-        editorWindowScript->Show(K_FALSE);
+        editorWindowScript->Show(types::K_FALSE);
         RemoveWindowSysmenu(editorWindowScript->GetHWND());
 
         editorWindowScriptOKButton = new cEditorButton(
@@ -381,28 +340,28 @@ public:
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowScriptName.Textbox = new cEditorTextbox(editorWindowScript->GetHWND(), "",
-            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 25.0f, offset * 5.0f), glm::vec2(offset * 85.0f, offset * 7.0f), types::K_FALSE, types::K_FALSE
         );
         editorWindowScriptCode.Label = new cEditorLabel(editorWindowScript->GetHWND(), "Code",
             glm::vec2(offset * 3.0f, offset * 14.0f), glm::vec2(offset * 20.0f, offset * 7.0f)
         );
         editorWindowScriptCode.Textbox = new cEditorTextbox(editorWindowScript->GetHWND(), "",
-            glm::vec2(offset * 3.0f, offset * 22.0f), glm::vec2(offset * 110.0f, offset * 90.0f), K_FALSE, K_TRUE
+            glm::vec2(offset * 3.0f, offset * 22.0f), glm::vec2(offset * 110.0f, offset * 90.0f), types::K_FALSE, types::K_TRUE
         );
 
         // Render window
-        userInputManager->SetWindowPosition(glm::vec2(assetWindowSize.x + (userInputManager->GetMonitorSize().x * 0.006f), userInputManager->GetMonitorSize().y * 0.041f));
-        RemoveWindowSysmenu(userInputManager->GetWindowHWND());
+        //this->SetWindowPosition(glm::vec2(assetWindowSize.x + (userInputManager->GetMonitorSize().x * 0.006f), userInputManager->GetMonitorSize().y * 0.041f));
+        RemoveWindowSysmenu(this->GetWindowHWND());
 
         // Object window
         glm::vec2 objectWindowSize = glm::vec2(
-            userInputManager->GetMonitorSize().x / 1.86f, userInputManager->GetMonitorSize().y / 3.91f
+            this->GetWindowSize().x / 1.86f, this->GetWindowSize().y / 3.91f
         );
         auto objectWindow = new cEditorWindow(
             nullptr,
             "ObjectWindow",
             "Object",
-            glm::vec2(assetWindowSize.x, (userInputManager->GetMonitorSize().y * 0.016f) + (userInputManager->GetMonitorSize().y * 0.091f) + (userInputManager->GetMonitorSize().y / 1.7f)),
+            glm::vec2(assetWindowSize.x, (this->GetWindowSize().y * 0.016f) + (this->GetWindowSize().y * 0.091f) + (this->GetWindowSize().y / 1.7f)),
             objectWindowSize
         );
         RemoveWindowSysmenu(objectWindow->GetHWND());
@@ -436,192 +395,162 @@ public:
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionX.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorPositionY.Label = new cEditorLabel(objectPositionGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionY.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorPositionZ.Label = new cEditorLabel(objectPositionGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorPositionZ.Textbox = new cEditorTextbox(objectPositionGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorRotationX.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "X",
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationX.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorRotationY.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationY.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorRotationZ.Label = new cEditorLabel(objectRotationGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorRotationZ.Textbox = new cEditorTextbox(objectRotationGroupbox->GetHWND(), "0",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorScaleX.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "X",
             glm::vec2(offset * 3.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleX.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 8.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorScaleY.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "Y",
             glm::vec2(offset * 26.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleY.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 31.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
         editorScaleZ.Label = new cEditorLabel(objectScaleGroupbox->GetHWND(), "Z",
             glm::vec2(offset * 49.0f, offset * 5.0f), glm::vec2(offset * 3.0f, offset * 5.0f)
         );
         editorScaleZ.Textbox = new cEditorTextbox(objectScaleGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 54.0f, offset * 5.0f), glm::vec2(offset * 18.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
 
-        editorIsVisible = new cEditorCheckbox(
-            objectComponentsGroupbox->GetHWND(),
-            "Is visible",
-            glm::vec2(offset * 2.0f, offset * 7.0f),
-            glm::vec2(offset * 25.0f, offset * 5.0f),
-            true
-        );
-
-        editorIsLight = new cEditorCheckbox(
-            objectComponentsGroupbox->GetHWND(),
-            "Is light",
-            glm::vec2(offset * 2.0f, offset * 14.0f),
-            glm::vec2(offset * 25.0f, offset * 5.0f),
-            false
-        );
         editorLightScale.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Scale",
             glm::vec2(offset * 29.0f, offset * 14.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
         );
         editorLightScale.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "1",
-            glm::vec2(offset * 46.0f, offset * 14.0f), glm::vec2(offset * 8.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 46.0f, offset * 14.0f), glm::vec2(offset * 8.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
-        editorLightScale.Textbox->SetReadonly(K_TRUE);
+        editorLightScale.Textbox->SetReadonly(types::K_TRUE);
         editorLightColor.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Color",
             glm::vec2(offset * 56.0f, offset * 14.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
         );
         editorLightColor.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "255;255;255;255",
-            glm::vec2(offset * 73.0f, offset * 14.0f), glm::vec2(offset * 40.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 73.0f, offset * 14.0f), glm::vec2(offset * 40.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
-        editorLightColor.Textbox->SetReadonly(K_TRUE);
+        editorLightColor.Textbox->SetReadonly(types::K_TRUE);
         editorLightAttenuation.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Attenuation",
             glm::vec2(offset * 29.0f, offset * 21.0f), glm::vec2(offset * 25.0f, offset * 5.0f)
         );
         editorLightAttenuation.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "1.0;1.0;1.0",
-            glm::vec2(offset * 56.0f, offset * 21.0f), glm::vec2(offset * 35.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 56.0f, offset * 21.0f), glm::vec2(offset * 35.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
-        editorLightAttenuation.Textbox->SetReadonly(K_TRUE);
+        editorLightAttenuation.Textbox->SetReadonly(types::K_TRUE);
 
-        editorIsScripted = new cEditorCheckbox(
-            objectComponentsGroupbox->GetHWND(),
-            "Is scripted",
-            glm::vec2(offset * 2.0f, offset * 28.0f),
-            glm::vec2(offset * 26.0f, offset * 5.0f),
-            false
-        );
         editorScript.Label = new cEditorLabel(objectComponentsGroupbox->GetHWND(), "Name",
             glm::vec2(offset * 29.0f, offset * 28.0f), glm::vec2(offset * 15.0f, offset * 5.0f)
         );
         editorScript.Textbox = new cEditorTextbox(objectComponentsGroupbox->GetHWND(), "",
-            glm::vec2(offset * 46.0f, offset * 28.0f), glm::vec2(offset * 40.0f, offset * 6.0f), K_FALSE, K_FALSE
+            glm::vec2(offset * 46.0f, offset * 28.0f), glm::vec2(offset * 40.0f, offset * 6.0f), types::K_FALSE, types::K_FALSE
         );
-
-        userInputManager->FocusWindow();
 
         ShowWindow(GetConsoleWindow(), SW_HIDE);
     }
 
-    virtual void Update() override final
+    virtual void FrameUpdate() override final
     {
         static float deltaTime = 0.0f;
         static float lastTime = clock();
 
-        userInputManager->PollEvents();
-        userInputManager->Update();
-
         // Left mouse button press
-        realware::core::boolean lmbPress = K_FALSE;
-        static realware::core::boolean lmbPressGlobal = K_FALSE;
-        if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT)
-            == mUserInput::eButtonState::PRESSED && lmbPressGlobal == K_FALSE) {
-            lmbPress = lmbPressGlobal = K_TRUE;
-        } else if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_LEFT)
-            == mUserInput::eButtonState::RELEASED) {
-            lmbPressGlobal = K_FALSE;
+        types::boolean lmbPress = types::K_FALSE;
+        static types::boolean lmbPressGlobal = types::K_FALSE;
+        if (this->GetMouseKey((int)cApplication::eMouseButton::LEFT) == 1 && lmbPressGlobal == types::K_FALSE) {
+            lmbPress = lmbPressGlobal = types::K_TRUE;
+        } else if (this->GetMouseKey((int)cApplication::eMouseButton::LEFT) == 0) {
+            lmbPressGlobal = types::K_FALSE;
         }
 
         // Right mouse button press
-        realware::core::boolean rmbPress = K_FALSE;
-        static realware::core::boolean rmbPressGlobal = K_FALSE;
-        if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_RIGHT)
-            == mUserInput::eButtonState::PRESSED && rmbPressGlobal == K_FALSE) {
-            rmbPress = rmbPressGlobal = K_TRUE;
-        } else if (userInputManager->GetMouseKey(GLFW_MOUSE_BUTTON_RIGHT)
-            == mUserInput::eButtonState::RELEASED) {
-            rmbPressGlobal = K_FALSE;
+        types::boolean rmbPress = types::K_FALSE;
+        static types::boolean rmbPressGlobal = types::K_FALSE;
+        if (this->GetMouseKey((int)cApplication::eMouseButton::LEFT) == 1 && rmbPressGlobal == types::K_FALSE) {
+            rmbPress = rmbPressGlobal = types::K_TRUE;
+        } else if (this->GetMouseKey((int)cApplication::eMouseButton::LEFT) == 0) {
+            rmbPressGlobal = types::K_FALSE;
         }
         
         EditorWindowAssetLogic();
-        EditorWindowObjectLogic(this, editorScene);
-        EditorWindowRenderEntityLogic(this, editorScene, editorCamera, lmbPress, rmbPress);
-        EditorUpdateEntityFields(editorScene);
+        //EditorWindowObjectLogic(this, editorScene);
+        //EditorWindowRenderEntityLogic(this, editorScene, editorCamera, lmbPress, rmbPress);
+        //EditorUpdateEntityFields(editorScene);
 
-        physicsManager->Update();
+        //physicsManager->Update();
 
-        cameraManager->Update(editorCamera, editorScene, K_FALSE, K_TRUE);
-        if (userInputManager->GetKey(GLFW_KEY_LEFT_ALT) == K_TRUE) {
-            cameraManager->Update(editorCamera, editorScene, K_TRUE, K_FALSE);
-        }
+        //cameraManager->Update(editorCamera, editorScene, K_FALSE, K_TRUE);
+        //if (userInputManager->GetKey(GLFW_KEY_LEFT_ALT) == K_TRUE) {
+        //    cameraManager->Update(editorCamera, editorScene, K_TRUE, K_FALSE);
+        //}
 
         // Draw
-        renderManager->SetCamera(editorCamera);
-        renderManager->ClearRenderPasses(glm::vec4(1.0f), 1.0f);
-        for (auto vbGeometry : editorGeometriesToDraw) {
-            renderManager->DrawGeometryOpaque(this, vbGeometry, editorScene);
-        }
-        renderManager->CompositeFinal();
+        //renderManager->SetCamera(editorCamera);
+        //renderManager->ClearRenderPasses(glm::vec4(1.0f), 1.0f);
+        //for (auto vbGeometry : editorGeometriesToDraw) {
+        //    renderManager->DrawGeometryOpaque(this, vbGeometry, editorScene);
+        //}
+        //renderManager->CompositeFinal();
 
-        userInputManager->SwapBuffers();
+        //userInputManager->SwapBuffers();
 
-        clock_t t = clock();
+        //clock_t t = clock();
 
-        deltaTime = t - lastTime;
-        lastTime += deltaTime;
+        //deltaTime = t - lastTime;
+        //lastTime += deltaTime;
     }
 
-    virtual void Free() override final
+    virtual void Finish() override final
     {
-        fontManager->Free();
+        //fontManager->Free();
     }
 
 private:
     sVertexBufferGeometry* m_geomPlane;
     sVertexBufferGeometry* m_geomTaburet;
-    sArea* m_taburetTexture;
+    //sArea* m_taburetTexture;
 
 };
 
 int main()
 {
-    glm::vec2 monitorSize = userInputManager->GetMonitorSize();
-
     sApplicationDescriptor appDesc;
     appDesc.WindowDesc.Title = "Render";
-    appDesc.WindowDesc.Width = monitorSize.x / 1.9f;
-    appDesc.WindowDesc.Height = monitorSize.y / 1.58f;
-    appDesc.WindowDesc.IsFullscreen = K_FALSE;
+    appDesc.WindowDesc.Width = 640;
+    appDesc.WindowDesc.Height = 480;
+    appDesc.WindowDesc.IsFullscreen = types::K_FALSE;
+    appDesc.MemoryPoolByteSize = 256 * 1024 * 1024;
+    appDesc.MaxGameObjectCount = 50 * 50 * 50;
+    appDesc.MaxRenderOpaqueInstanceCount = 50 * 50 * 50;
 
     MyApp app = MyApp(appDesc);
     app.Run();
@@ -629,8 +558,9 @@ int main()
     return 0;
 }
 
-void EditorUpdateTextboxTransform(sCTransform* transform)
+void EditorUpdateTextboxTransform()//(sCTransform* transform)
 {
+    /*
     // Position
     std::string posXStr = std::to_string(transform->Position.x); posXStr.resize(5);
     editorPositionX.Textbox->SetText(posXStr);
@@ -657,10 +587,12 @@ void EditorUpdateTextboxTransform(sCTransform* transform)
     std::string sclZStr = std::to_string(transform->Scale.z); sclZStr.resize(5);
     editorScaleZ.Textbox->SetText(sclZStr);
     editorScale = glm::vec3(std::stof(sclXStr), std::stof(sclYStr), std::stof(sclZStr));
+    */
 }
 
-void EditorUpdateTextboxLight(sCLight* light)
+void EditorUpdateTextboxLight()//(sCLight* light)
 {
+    /*
     // Scale
     std::string scaleStr = std::to_string(light->Scale); scaleStr.resize(3);
     editorLightScale.Textbox->SetText(scaleStr);
@@ -684,11 +616,12 @@ void EditorUpdateTextboxLight(sCLight* light)
         attenuationZ;
     attenuationStr.resize(11);
     editorLightAttenuation.Textbox->SetText(attenuationStr);
+    */
 }
 
-void EditorUpdateEntityFields(cScene* scene)
+void EditorUpdateEntityFields()//(cScene* scene)
 {
-    if (editorSelectedEntity == 0) return;
+    /*if (editorSelectedEntity == 0) return;
 
     // Position
     std::string str1 = editorPositionX.Textbox->GetText(6);
@@ -828,11 +761,12 @@ void EditorUpdateEntityFields(cScene* scene)
 
         renderManager->UpdateLights(editorApp, editorScene);
     }
+    */
 }
 
-void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress)
+void EditorWindowAssetShowPopupmenu()//(realware::core::boolean rmbPress)
 {
-    if (rmbPress == realware::core::K_FALSE) {
+    /*if (rmbPress == realware::core::K_FALSE) {
         return;
     }
 
@@ -856,17 +790,17 @@ void EditorWindowAssetShowPopupmenu(realware::core::boolean rmbPress)
         nullptr
     );
 
-    DestroyMenu(hPopupMenu);
+    DestroyMenu(hPopupMenu);*/
 }
 
 void EditorWindowAssetDeleteItem(
     cApplication* app,
-    cScene* scene,
+    //cScene* scene,
     const eAssetSelectedType& type,
     int assetIndex
 )
 {
-    sAsset& asset = editorWindowAssetData[(int)type][assetIndex];
+    /*sAsset& asset = editorWindowAssetData[(int)type][assetIndex];
     if (type == eAssetSelectedType::ENTITY)
     {
         std::vector<entity> owners;
@@ -920,12 +854,12 @@ void EditorWindowAssetDeleteItem(
             scene->Remove<sCGeometryInfo>(owner);
             scene->RemoveEntity(scene->GetEntityName(owner));
         }
-    }
+    }*/
 }
 
 void EditorAssetLoadData(eAssetSelectedType type, sAsset& asset)
 {
-    if (type == eAssetSelectedType::ENTITY)
+    /*if (type == eAssetSelectedType::ENTITY)
     {
         if (asset.Components[0] == nullptr)
         {
@@ -989,22 +923,22 @@ void EditorAssetLoadData(eAssetSelectedType type, sAsset& asset)
                 MessageBox(0, "Couldn't load sound", "Error", MB_ICONERROR);
             }
         }
-    }
+    }*/
 }
 
 void EditorWindowEntityUpdate(int assetIndex)
 {
-    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    /*sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
     std::string caption = "Entity : " + asset.Name;
     SetWindowText(editorWindowEntity->GetHWND(), caption.data());
     editorWindowEntityName.Textbox->SetText(asset.Name);
     editorWindowEntityTexture.Textbox->SetText(asset.Filenames[0]);
-    editorWindowEntityGeometry.Textbox->SetText(asset.Filenames[1]);
+    editorWindowEntityGeometry.Textbox->SetText(asset.Filenames[1]);*/
 }
 
-void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
+void EditorWindowEntitySave()//(cApplication* app, cScene* scene, int assetIndex)
 {
-    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    /*sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
     asset.Name = editorWindowEntityName.Textbox->GetText(100);
     asset.Filenames[0] = editorWindowEntityTexture.Textbox->GetText(100);
     asset.Filenames[1] = editorWindowEntityGeometry.Textbox->GetText(100);
@@ -1023,7 +957,7 @@ void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
     );
 
     EditorAssetLoadData(editorWindowAssetSelectedType, asset);
-    
+
     // Update material for every entity
     if (asset.Components[0] != nullptr)
     {
@@ -1048,7 +982,7 @@ void EditorWindowEntitySave(cApplication* app, cScene* scene, int assetIndex)
 
     std::string caption = "Entity : " + asset.Name;
     SetWindowText(editorWindowEntity->GetHWND(), caption.data());
-    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
+    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());*/
 }
 
 void EditorWindowSoundUpdate(int assetIndex)
@@ -1060,9 +994,9 @@ void EditorWindowSoundUpdate(int assetIndex)
     editorWindowSoundFile.Textbox->SetText(asset.Filenames[0]);
 }
 
-void EditorWindowSoundSave(cApplication* app, cScene* scene, int assetIndex)
+void EditorWindowSoundSave()//(cApplication* app, cScene* scene, int assetIndex)
 {
-    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    /*sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
     asset.Name = editorWindowSoundName.Textbox->GetText(100);
     asset.Filenames[0] = editorWindowSoundFile.Textbox->GetText(100);
     
@@ -1080,7 +1014,7 @@ void EditorWindowSoundSave(cApplication* app, cScene* scene, int assetIndex)
 
     std::string caption = "Sound : " + asset.Name;
     SetWindowText(editorWindowSound->GetHWND(), caption.data());
-    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
+    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());*/
 }
 
 void EditorWindowScriptUpdate(int assetIndex)
@@ -1092,27 +1026,27 @@ void EditorWindowScriptUpdate(int assetIndex)
     editorWindowScriptCode.Textbox->SetText(asset.Code);
 }
 
-void EditorWindowScriptSave(cApplication* app, cScene* scene, int assetIndex)
+void EditorWindowScriptSave()//(cApplication* app, cScene* scene, int assetIndex)
 {
-    sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
+    /*sAsset& asset = editorWindowAssetData[(int)editorWindowAssetSelectedType][assetIndex];
     asset.Name = editorWindowScriptName.Textbox->GetText(100);
     asset.Code = editorWindowScriptCode.Textbox->GetText(100);
 
     std::string caption = "Script : " + asset.Name;
     SetWindowText(editorWindowScript->GetHWND(), caption.data());
-    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());
+    ListView_SetItemText(editorWindowAssetListView->GetHWND(), assetIndex, 0, asset.Name.data());*/
 }
 
 void EditorWindowRenderEntityLogic(
-    cApplication* app,
-    cScene* scene,
-    entity camera,
-    realware::core::boolean lmbPress,
-    realware::core::boolean rmbPress
+    cApplication* app
+    //cScene* scene,
+    //entity camera,
+    //realware::core::boolean lmbPress,
+    //realware::core::boolean rmbPress
 )
 {
     // Create/transform entity and change selection mode
-    switch (editorSelectMode)
+    /*switch (editorSelectMode)
     {
         case eSelectMode::NONE:
         {
@@ -1384,12 +1318,12 @@ void EditorWindowRenderEntityLogic(
         scene->RemoveEntity(scene->GetEntityName(editorSelectedEntity));
 
         editorSelectedEntity = 0;
-    }
+    }*/
 }
 
-void EditorWindowObjectLogic(cApplication* app, cScene* scene)
+void EditorWindowObjectLogic()//(cApplication* app, cScene* scene)
 {
-    if (editorSelectedEntity <= 0) return;
+    /*if (editorSelectedEntity <= 0) return;
     
     // Change 'Is visible' checkbox
     if (editorIsVisible->GetCheck())
@@ -1417,13 +1351,13 @@ void EditorWindowObjectLogic(cApplication* app, cScene* scene)
         editorLightScale.Textbox->SetReadonly(K_FALSE);
         editorLightColor.Textbox->SetReadonly(K_FALSE);
         editorLightAttenuation.Textbox->SetReadonly(K_FALSE);
-    }
+    }*/
 }
 
 void EditorWindowAssetLogic()
 {
     // Do search
-    std::string text = editorWindowAssetSearch.Textbox->GetText(100);
+    /*std::string text = editorWindowAssetSearch.Textbox->GetText(100);
 
     if (text == "") return;
 
@@ -1434,12 +1368,12 @@ void EditorWindowAssetLogic()
         {
             editorWindowAssetListView->SetSelected(i);
         }
-    }
+    }*/
 }
 
-void EditorNewMap(cApplication* app, cScene* scene)
+void EditorNewMap()//(cApplication* app, cScene* scene)
 {
-    if (MessageBox(0, "Current map will be completely deleted. Are you sure?", "Warning", MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
+    /*if (MessageBox(0, "Current map will be completely deleted. Are you sure?", "Warning", MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
     {
         scene->ForEachEntity(
             app,
@@ -1456,24 +1390,24 @@ void EditorNewMap(cApplication* app, cScene* scene)
         );
         scene->RemoveEntities({ editorCamera, editorPhysicsScene });
         editorSelectedEntity = 0;
-    }
+    }*/
 }
 
-void EditorOpenMap(cApplication* app, cScene* scene, const std::string& filename)
+void EditorOpenMap()//(cApplication* app, cScene* scene, const std::string& filename)
 {
-    cMapPluginLoader loader;
-    loader.LoadMap(filename, app, scene);
+    //cMapPluginLoader loader;
+    //loader.LoadMap(filename, app, scene);
 }
 
-void EditorSaveMap(cApplication* app, cScene* scene, const std::string& filename)
+void EditorSaveMap()//(cApplication* app, cScene* scene, const std::string& filename)
 {
-    cMapPluginLoader loader;
-    loader.SaveMap(filename, app, scene, 65536, { editorCamera, editorPhysicsScene });
+    //cMapPluginLoader loader;
+    //loader.SaveMap(filename, app, scene, 65536, { editorCamera, editorPhysicsScene });
 }
 
-void EditorNewPlugin(cApplication* app, cScene* scene)
+void EditorNewPlugin()//(cApplication* app, cScene* scene)
 {
-    if (MessageBox(0, "Current plugin will be completely deleted. Are you sure?", "Warning", MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
+    /*if (MessageBox(0, "Current plugin will be completely deleted. Are you sure?", "Warning", MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
     {
         for (realware::core::s32 i = 0; i < eAssetSelectedType::_COUNT; i++)
         {
@@ -1487,19 +1421,19 @@ void EditorNewPlugin(cApplication* app, cScene* scene)
         }
         ListView_DeleteAllItems(editorWindowAssetListView->GetHWND());
         editorSelectedEntity = 0;
-    }
+    }*/
 }
 
-void EditorOpenPlugin(cApplication* app, cScene* scene, const std::string& filename)
+void EditorOpenPlugin()//(cApplication* app, cScene* scene, const std::string& filename)
 {
-    cMapPluginLoader loader;
-    loader.LoadPlugin(filename, app, scene);
+    //cMapPluginLoader loader;
+    //loader.LoadPlugin(filename, app, scene);
 }
 
-void EditorSavePlugin(cApplication* app, cScene* scene, const std::string& filename)
+void EditorSavePlugin()//(cApplication* app, cScene* scene, const std::string& filename)
 {
-    cMapPluginLoader loader;
-    loader.SavePlugin(filename, app, scene, 65536);
+    //cMapPluginLoader loader;
+    //loader.SavePlugin(filename, app, scene, 65536);
 }
 
 std::string EditorGetExeFolder()
@@ -1507,7 +1441,7 @@ std::string EditorGetExeFolder()
     char path[MAX_PATH] = {};
     GetModuleFileNameA(NULL, &path[0], MAX_PATH);
 
-    realware::core::s32 i;
+    types::s32 i;
     for (i = MAX_PATH - 1; i > 0; i--)
     {
         if (path[i] == '/' || path[i] == '\\') break;

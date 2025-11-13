@@ -1,4 +1,4 @@
-#include <iostream>
+/*#include <iostream>
 #include "ray_hit.hpp"
 #include "../../engine/src/render_manager.hpp"
 
@@ -163,4 +163,4 @@ namespace realware
             return true;
         }
     }
-}
+}*/

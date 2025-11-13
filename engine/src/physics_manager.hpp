@@ -1,3 +1,5 @@
+// physics_manager.hpp
+
 #pragma once
 
 #include <iostream>
@@ -99,7 +101,6 @@ namespace realware
 
         struct sSubstance : public utils::sIdVecObject
         {
-        public:
             sSubstance() = default;
             explicit sSubstance(const physx::PxMaterial* const substance) : Substance((physx::PxMaterial*)substance) {}
             ~sSubstance() = default;
@@ -109,7 +110,6 @@ namespace realware
 
         struct sController : public utils::sIdVecObject
         {
-        public:
             sController() = default;
             explicit sController(const physx::PxController* const controller, const types::f32 eyeHeight) : Controller((physx::PxController*)controller), EyeHeight(eyeHeight) {}
             ~sController() = default;
@@ -120,7 +120,6 @@ namespace realware
 
         struct sActor : public utils::sIdVecObject
         {
-        public:
             sActor() = default;
             explicit sActor(const game::cGameObject* const gameObject, const physx::PxActor* const actor, const game::Category& actorType) : GameObject((game::cGameObject*)gameObject), Actor((physx::PxActor*)actor), Type(actorType) {}
             ~sActor() = default;
@@ -153,25 +152,6 @@ namespace realware
             glm::vec3 GetControllerPosition(const sController* const controller);
 
             void Simulate();
-
-            /*sCPhysicsScene* AddScene(const sEntityScenePair& scene);
-            sCPhysicsActor* AddActor(
-                const sEntityScenePair& scene,
-                const sEntityScenePair& actor,
-                const mPhysics::eActorDescriptor& actorDesc,
-                const mPhysics::eShapeDescriptor& shapeDesc,
-                const glm::vec4& extents,
-                const sVertexBufferGeometry* const geometry
-            );
-            sCPhysicsCharacterController* AddCharacterController(
-                const sEntityScenePair& scene,
-                const sEntityScenePair& controller,
-                const mPhysics::eShapeDescriptor& shapeDesc,
-                const glm::vec4& extents
-            );
-            
-            void SetForce(const core::sEntityScenePair& actor, const glm::vec3& force);
-            void SetCharacterControllerMovement(const core::sEntityScenePair& controller, const glm::vec3& direction);*/
 
         private:
             app::cApplication* _app = nullptr;

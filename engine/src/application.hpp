@@ -1,3 +1,5 @@
+// application.hpp
+
 #pragma once
 
 #include <GLFW/glfw3.h>
@@ -90,6 +92,13 @@ namespace realware
         class cApplication
         {
         public:
+            enum class eMouseButton
+            {
+                LEFT,
+                RIGHT,
+                MIDDLE
+            };
+
             explicit cApplication(const sApplicationDescriptor* const desc);
             ~cApplication();
 
@@ -100,7 +109,6 @@ namespace realware
             void Run();
 
             inline types::boolean GetRunState() const { return glfwWindowShouldClose((GLFWwindow*)_window); }
-
             inline render::iRenderContext* GetRenderContext() const { return _renderContext; }
             inline sound::iSoundContext* GetSoundContext() const { return _soundContext; }
             inline game::mCamera* GetCameraManager() const { return _camera; }
@@ -112,15 +120,13 @@ namespace realware
             inline physics::mPhysics* GetPhysicsManager() const { return _physics; }
             inline game::mGameObject* GetGameObjectManager() const { return _gameObject; }
             inline utils::cMemoryPool* GetMemoryPool() const { return _memoryPool; }
-
             inline void* GetWindow() const { return _window; }
             inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
             inline const std::string& GetWindowTitle() const { return _desc.WindowDesc.Title; }
             inline HWND GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
             inline types::boolean GetKey(int key) const { return _keys[key]; }
-
+            inline types::boolean GetMouseKey(int key) const { return _mouseKeys[key]; }
             types::f32 GetDeltaTime() const { return _deltaTime; };
-
             sApplicationDescriptor* GetDesc() { return &_desc; }
 
             friend void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -139,11 +145,12 @@ namespace realware
             void DestroyAppManagers();
             void DestroyMemoryPool();
 
-            inline glm::vec2 cApplication::GetMonitorSize() const { return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)); }
+            inline glm::vec2 GetMonitorSize() const { return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)); }
+            inline types::boolean GetWindowFocus() { return _isFocused; }
 
             inline void SetKey(const int key, const types::boolean value) { _keys[key] = value; }
+            inline void SetMouseKey(const int key, const types::boolean value) { _mouseKeys[key] = value; }
             inline void SetWindowFocus(const types::boolean value) { _isFocused = value; }
-            inline types::boolean GetWindowFocus() { return _isFocused; }
             inline void SetCursorPosition(const glm::vec2& cursorPosition) { _cursorPosition = cursorPosition; }
 
             static constexpr types::usize K_MAX_KEY_COUNT = 256;
@@ -164,6 +171,7 @@ namespace realware
             game::mGameObject* _gameObject = nullptr;
             utils::cMemoryPool* _memoryPool = nullptr;
             types::s32 _keys[K_MAX_KEY_COUNT] = {};
+            types::s32 _mouseKeys[3] = {};
             types::f32 _deltaTime = 0.0;
             std::chrono::steady_clock::time_point _timepointLast;
             types::boolean _isFocused = types::K_FALSE;

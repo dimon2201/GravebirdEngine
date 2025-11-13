@@ -1,3 +1,5 @@
+// sound_context_al.cpp
+
 #include <iostream>
 #include <cstdio>
 #include <string>
@@ -25,10 +27,7 @@ namespace realware
             FILE* fp = nullptr;
             errno_t err = fopen_s(&fp, &filename.c_str()[0], "rb");
             if (err != 0)
-            {
                 Print("Error: can't open WAV file at '" + filename + "'!");
-                MessageBox(0, "Error opening WAV file", 0, MB_ICONERROR);
-            }
 
             // Chunk
             fread(&wav->Type[0], sizeof(char), 4, fp);

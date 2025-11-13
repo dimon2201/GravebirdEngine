@@ -1,3 +1,5 @@
+// application.cpp
+
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include "application.hpp"
@@ -74,6 +76,12 @@ namespace realware
 
         void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
         {
+            cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
+
+            if (action == GLFW_RELEASE)
+                app->SetMouseKey(button, 0);
+            else if (action == GLFW_PRESS)
+                app->SetMouseKey(button, 1);
         }
 
         cApplication::cApplication(const sApplicationDescriptor* const desc) : _desc(*desc)
@@ -105,7 +113,10 @@ namespace realware
                 _deltaTime = elapsed.count();
                 _timepointLast = currentTime;
 
+                _physics->Simulate();
+                _camera->Update();
                 FrameUpdate();
+                _render->CompositeFinal();
 
                 glfwSwapBuffers((GLFWwindow*)_window);
                 glfwPollEvents();

@@ -3,14 +3,13 @@
 #include "listview.hpp"
 #include "button.hpp"
 #include "../editor_types.hpp"
-#include "../../../engine/src/ecs.hpp"
 
 using namespace realware::editor;
 
-extern realware::core::cApplication* editorApp;
-extern realware::core::cScene* editorScene;
+//extern realware::core::cApplication* editorApp;
+//extern realware::core::cScene* editorScene;
 
-extern std::vector<realware::render::sVertexBufferGeometry*> editorGeometriesToDraw;
+//extern std::vector<realware::render::sVertexBufferGeometry*> editorGeometriesToDraw;
 extern int editorSelectedAssetIndex;
 extern cEditorWindow* editorWindowMain;
 extern cEditorWindow* editorWindowAsset;
@@ -30,7 +29,7 @@ extern cEditorButton* editorWindowScriptCloseButton;
 extern eAssetSelectedType editorWindowAssetSelectedType;
 extern std::vector<std::vector<sAsset>> editorWindowAssetData;
 
-extern void EditorWindowEntitySave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
+/*extern void EditorWindowEntitySave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
 extern void EditorWindowSoundSave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
 extern void EditorWindowScriptSave(realware::core::cApplication* app, realware::core::cScene* scene, int assetIndex);
 extern void EditorNewPlugin(realware::core::cApplication* app, realware::core::cScene* scene);
@@ -38,7 +37,7 @@ extern void EditorOpenPlugin(realware::core::cApplication* app, realware::core::
 extern void EditorSavePlugin(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
 extern void EditorNewMap(realware::core::cApplication* app, realware::core::cScene* scene);
 extern void EditorOpenMap(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
-extern void EditorSaveMap(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);
+extern void EditorSaveMap(realware::core::cApplication* app, realware::core::cScene* scene, const std::string& filename);*/
 
 namespace realware
 {
@@ -51,7 +50,7 @@ namespace realware
                 // New plugin menu option
                 if (LOWORD(wp) == 1)
                 {
-                    EditorNewPlugin(editorApp, editorScene);
+                    //EditorNewPlugin(editorApp, editorScene);
                 }
                 // Open plugin menu option
                 else if (LOWORD(wp) == 2)
@@ -64,8 +63,8 @@ namespace realware
                     ofn.lpstrFile = filename;
                     ofn.nMaxFile = MAX_PATH;
                     ofn.Flags = OFN_OVERWRITEPROMPT;
-                    if (GetOpenFileName(&ofn) && ofn.lpstrFile != nullptr)
-                        EditorOpenPlugin(editorApp, editorScene, std::string(ofn.lpstrFile));
+                    //if (GetOpenFileName(&ofn) && ofn.lpstrFile != nullptr)
+                    //    EditorOpenPlugin(editorApp, editorScene, std::string(ofn.lpstrFile));
                 }
                 // Save plugin menu option
                 else if (LOWORD(wp) == 3)
@@ -78,13 +77,13 @@ namespace realware
                     ofn.lpstrFile = filename;
                     ofn.nMaxFile = MAX_PATH;
                     ofn.Flags = OFN_OVERWRITEPROMPT;
-                    if (GetSaveFileName(&ofn) && ofn.lpstrFile != nullptr)
-                        EditorSavePlugin(editorApp, editorScene, std::string(ofn.lpstrFile));
+                    //if (GetSaveFileName(&ofn) && ofn.lpstrFile != nullptr)
+                    //    EditorSavePlugin(editorApp, editorScene, std::string(ofn.lpstrFile));
                 }
                 // New map menu option
                 else if (LOWORD(wp) == 4)
                 {
-                    EditorNewMap(editorApp, editorScene);
+                    //EditorNewMap(editorApp, editorScene);
                 }
                 // Open map menu option
                 else if (LOWORD(wp) == 5)
@@ -97,8 +96,8 @@ namespace realware
                     ofn.lpstrFile = filename;
                     ofn.nMaxFile = MAX_PATH;
                     ofn.Flags = OFN_OVERWRITEPROMPT;
-                    if (GetOpenFileName(&ofn) && ofn.lpstrFile != nullptr)
-                        EditorOpenMap(editorApp, editorScene, std::string(ofn.lpstrFile));
+                    //if (GetOpenFileName(&ofn) && ofn.lpstrFile != nullptr)
+                    //    EditorOpenMap(editorApp, editorScene, std::string(ofn.lpstrFile));
                 }
                 // Save map menu option
                 else if (LOWORD(wp) == 6)
@@ -111,8 +110,8 @@ namespace realware
                     ofn.lpstrFile = filename;
                     ofn.nMaxFile = MAX_PATH;
                     ofn.Flags = OFN_OVERWRITEPROMPT;
-                    if (GetSaveFileName(&ofn) && ofn.lpstrFile != nullptr)
-                        EditorSaveMap(editorApp, editorScene, std::string(ofn.lpstrFile));
+                    //if (GetSaveFileName(&ofn) && ofn.lpstrFile != nullptr)
+                    //    EditorSaveMap(editorApp, editorScene, std::string(ofn.lpstrFile));
                 }
                 // Exit option
                 else if (LOWORD(wp) == 7)
@@ -152,39 +151,39 @@ namespace realware
                 // Entities window OK button
                 else if ((HWND)lp == editorWindowEntityOKButton->GetHWND())
                 {
-                    editorWindowEntity->Show(core::K_FALSE);
-                    EditorWindowEntitySave(editorApp, editorScene, editorSelectedAssetIndex);
+                    //editorWindowEntity->Show(core::K_FALSE);
+                    //EditorWindowEntitySave(editorApp, editorScene, editorSelectedAssetIndex);
                 }
                 // Entities window Cancel button
                 else if ((HWND)lp == editorWindowEntityCloseButton->GetHWND())
                 {
-                    editorWindowEntity->Show(core::K_FALSE);
+                    //editorWindowEntity->Show(core::K_FALSE);
                 }
                 // Sound window OK button
                 else if (editorWindowSoundOKButton != nullptr &&
                     (HWND)lp == editorWindowSoundOKButton->GetHWND())
                 {
-                    editorWindowSound->Show(core::K_FALSE);
-                    EditorWindowSoundSave(editorApp, editorScene, editorSelectedAssetIndex);
+                    //editorWindowSound->Show(core::K_FALSE);
+                    //EditorWindowSoundSave(editorApp, editorScene, editorSelectedAssetIndex);
                 }
                 // Sound window Cancel button
                 else if (editorWindowSoundCloseButton != nullptr &&
                     (HWND)lp == editorWindowSoundCloseButton->GetHWND())
                 {
-                    editorWindowSound->Show(core::K_FALSE);
+                    //editorWindowSound->Show(core::K_FALSE);
                 }
                 // Script window OK button
                 else if (editorWindowScriptOKButton != nullptr &&
                     (HWND)lp == editorWindowScriptOKButton->GetHWND())
                 {
-                    editorWindowScript->Show(core::K_FALSE);
-                    EditorWindowScriptSave(editorApp, editorScene, editorSelectedAssetIndex);
+                    //editorWindowScript->Show(core::K_FALSE);
+                    //EditorWindowScriptSave(editorApp, editorScene, editorSelectedAssetIndex);
                 }
                 // Script window Cancel button
                 else if (editorWindowScriptCloseButton != nullptr &&
                     (HWND)lp == editorWindowScriptCloseButton->GetHWND())
                 {
-                    editorWindowScript->Show(core::K_FALSE);
+                    //editorWindowScript->Show(core::K_FALSE);
                 }
 
                 return 0;
@@ -266,7 +265,7 @@ namespace realware
             return menus;
         }
 
-        void cEditorWindow::AddSubmenu(HMENU& parent, core::u32 id, const std::string& name)
+        void cEditorWindow::AddSubmenu(HMENU& parent, types::u32 id, const std::string& name)
         {
             AppendMenuA(parent, MF_STRING, id, name.data());
         }

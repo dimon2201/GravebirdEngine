@@ -43,6 +43,7 @@ public:
         mTexture* texture = GetTextureManager();
         iRenderContext* renderContext = GetRenderContext();
         sRenderPass* opaqueRenderPass = render->GetOpaqueRenderPass();
+        sRenderPass* transparentRenderPass = render->GetTransparentRenderPass();
         const glm::vec2 windowSize = GetWindowSize();
 
         u8 customRenderPassTexture1Data[4 * 2 * 2] = {
@@ -103,8 +104,8 @@ public:
         std::string vertexFunc = "";
         std::string fragmentFunc = "";
         render->LoadShaderFiles(
-            "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_vertex.shader",
-            "C:/DDD/RealWare/build_vs/samples/Sample01/Debug/data/shaders/custom_fragment.shader",
+            "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/custom_vertex.shader",
+            "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/custom_fragment.shader",
             vertexFunc,
             fragmentFunc
         );
@@ -113,20 +114,20 @@ public:
         renderPassDesc.InputVertexFormat = Category::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
         renderPassDesc.InputBuffers.emplace_back(render->GetVertexBuffer());
         renderPassDesc.InputBuffers.emplace_back(render->GetIndexBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueInstanceBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueMaterialBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetTransparentInstanceBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetTransparentMaterialBuffer());
         renderPassDesc.InputBuffers.emplace_back(render->GetLightBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueTextureAtlasTexturesBuffer());
+        renderPassDesc.InputBuffers.emplace_back(render->GetTransparentTextureAtlasTexturesBuffer());
         renderPassDesc.InputTextures.emplace_back(GetTextureManager()->GetAtlas());
         renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
         renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture1);
         renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture2);
         renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyRedTexture");
         renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyWhiteTexture");
-        renderPassDesc.ShaderBase = opaqueRenderPass->Desc.Shader;
+        renderPassDesc.ShaderBase = transparentRenderPass->Desc.Shader;
         renderPassDesc.ShaderVertexFunc = vertexFunc;
         renderPassDesc.ShaderFragmentFunc = fragmentFunc;
-        renderPassDesc.RenderTarget = opaqueRenderPass->Desc.RenderTarget;
+        renderPassDesc.RenderTarget = transparentRenderPass->Desc.RenderTarget;
         renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize.x, windowSize.y);
         renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
         renderPassDesc.DepthMode.UseDepthWrite = K_TRUE;
@@ -203,7 +204,7 @@ public:
         sSubstance* pxSubstance = _physics->AddSubstance("PXSubstance1");
 
         // Game objects
-        const usize N = 30;
+        const usize N = 1;
         for (usize z = 0; z < N; z++)
         {
             for (usize y = 0; y < N; y++)
@@ -254,7 +255,7 @@ public:
                 _transparentGameObjects->push_back(gameObject);
         }
         const auto& transparentGameObjectsRef = *_transparentGameObjects;
-        _render->WriteObjectsToTransparentBuffers(transparentGameObjectsRef);
+        _render->WriteObjectsToTransparentBuffers(transparentGameObjectsRef, _customRenderPass);
 
         _textGameObjects = new std::vector<cGameObject>();
         _textGameObjects->push_back(*textObject);
@@ -265,24 +266,15 @@ public:
         // Custom render pass
         _customRenderPass->Desc.Viewport = glm::vec4(0.0f, 0.0f, GetWindowSize().x, GetWindowSize().y);
 
-        // Physics
-        _physics->Simulate();
-
-        // Camera
-        _camera->Update(K_TRUE, K_TRUE);
-
         // Rendering
-        _renderContext->ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-        _renderContext->ClearDepth(1.0f);
-
         cGameObject* cameraObject = _cameraGameObject;
         _render->ClearRenderPasses(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
         _render->DrawGeometryTransparent(
             _cubeGeometry,
-            cameraObject
+            *_transparentGameObjects,
+            _cameraGameObject,
+            _customRenderPass
         );
-        _render->CompositeTransparent();
-        _render->CompositeFinal();
     }
 
     virtual void Finish() override final
@@ -310,7 +302,6 @@ int main()
     appDesc->WindowDesc.Height = 480;
     appDesc->WindowDesc.IsFullscreen = K_FALSE;
     appDesc->MemoryPoolByteSize = 64 * 1024 * 1024;
-
     appDesc->MaxGameObjectCount = 50 * 50 * 50;
     appDesc->MaxRenderOpaqueInstanceCount = 50 * 50 * 50;
 

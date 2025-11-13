@@ -1,3 +1,5 @@
+// render_manager.hpp
+
 #pragma once
 
 #include <vector>
@@ -162,16 +164,16 @@ namespace realware
             void DestroyGeometry(sVertexBufferGeometry* geometry);
             
             void ClearGeometryBuffer();
-
             void ClearRenderPass(const sRenderPass* const renderPass, const types::boolean clearColor, const types::usize bufferIndex, const glm::vec4& color, const types::boolean clearDepth, const types::f32 depth);
             void ClearRenderPasses(const glm::vec4& clearColor, const types::f32 clearDepth);
             
             void UpdateLights();
 
             void WriteObjectsToOpaqueBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass);
-            void WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects);
+            void WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass);
             void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sRenderPass* const renderPass);
             void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
+            void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sRenderPass* const renderPass);
             void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
             void DrawTexts(const std::vector<game::cGameObject>& objects);
             
@@ -196,6 +198,7 @@ namespace realware
             inline sBuffer* GetTextMaterialBuffer() const { return _textMaterialBuffer; }
             inline sBuffer* GetLightBuffer() const { return _lightBuffer; }
             inline sBuffer* GetOpaqueTextureAtlasTexturesBuffer() const { return _opaqueTextureAtlasTexturesBuffer; }
+            inline sBuffer* GetTransparentTextureAtlasTexturesBuffer() const { return _transparentTextureAtlasTexturesBuffer; }
             inline sRenderPass* GetOpaqueRenderPass() const { return _opaque; }
             inline sRenderPass* GetTransparentRenderPass() const { return _transparent; }
             inline sRenderPass* GetTextRenderPass() const { return _text; }

@@ -1,6 +1,4 @@
-#pragma once
-
-#include "../../engine/src/ecs.hpp"
+/*#pragma once
 
 namespace realware
 {
@@ -37,4 +35,4 @@ namespace realware
 
         };
     }
-}
+}*/
