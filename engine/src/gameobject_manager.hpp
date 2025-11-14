@@ -48,6 +48,7 @@ namespace realware
         class cGameObject : public utils::sIdVecObject
         {
         public:
+            cGameObject() = default;
             explicit cGameObject(const utils::cMemoryPool* const memoryPool);
             ~cGameObject() = default;
             

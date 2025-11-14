@@ -41,92 +41,59 @@ namespace realware
 		private:
 			app::cApplication* _app = nullptr;
 			types::usize _maxObjectCount = 0;
+			types::usize _objectCount = 0;
 			std::vector<T> _objects = {};
 		};
 
 		template<typename T>
 		cIdVec<T>::cIdVec(const app::cApplication* const app, const types::usize maxObjectCount) : _app((app::cApplication*)app), _maxObjectCount(maxObjectCount)
 		{
-			_objects.reserve(maxObjectCount);
+			_objects.resize(maxObjectCount);
 		}
 
 		template<typename T>
 		template<typename... Args>
 		T* cIdVec<T>::Add(const std::string& id, Args&&... args)
 		{
-			const types::usize objectCount = _objects.size();
-
-			for (types::usize i = 0; i < objectCount; i++)
-			{
-				if (_objects[i].IsDeleted == K_TRUE)
-				{
-					_objects[i] = T(std::forward<Args>(args)...);
-					_objects[i].ID = id;
-					_objects[i].App = _app;
-					_objects[i].IsDeleted = K_FALSE;
-
-					return &_objects[i];
-				}
-			}
-
-			if (objectCount > _maxObjectCount)
+			if (_objectCount > _maxObjectCount)
 			{
 				log::Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
-			}
-			else
-			{
-				_objects.emplace_back(std::forward<Args>(args)...);
 
-				T& object = _objects.back();
-				object.ID = id;
-				object.App = _app;
-				object.IsDeleted = K_FALSE;
-
-				return &object;
+				return nullptr;
 			}
 
-			return nullptr;
+			types::usize index = _objectCount;
+			_objects[index] = T(std::forward<Args>(args)...);
+			_objects[index].ID = id;
+			_objects[index].App = _app;
+			_objectCount += 1;
+
+			return &_objects[index];
 		}
 
 		template<typename T>
 		T* cIdVec<T>::Add(const T& object)
 		{
-			const types::usize objectCount = _objects.size();
-
-			for (types::usize i = 0; i < objectCount; i++)
-			{
-				if (_objects[i].IsDeleted == K_TRUE)
-				{
-					_objects[i] = object;
-
-					return &_objects[i];
-				}
-			}
-
-			if (objectCount > _maxObjectCount)
+			if (_objectCount > _maxObjectCount)
 			{
 				log::Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
-			}
-			else
-			{
-				_objects.emplace_back(object);
 
-				T& object = _objects.back();
-
-				return &object;
+				return nullptr;
 			}
 
-			return nullptr;
+			types::usize index = _objectCount;
+			_objects[index] = object;
+			_objectCount += 1;
+
+			return &_objects[index];
 		}
 
 		template<typename T>
 		T* cIdVec<T>::Find(const std::string& id)
 		{
-			const types::usize objectCount = _objects.size();
-
-			for (types::usize i = 0; i < objectCount; i++)
+			for (types::usize i = 0; i < _objectCount; i++)
 			{
-				if (_objects[i].IsDeleted == K_FALSE && _objects[i].ID == id)
+				if (_objects[i].ID == id)
 					return &_objects[i];
 			}
 
@@ -136,9 +103,15 @@ namespace realware
 		template<typename T>
 		void cIdVec<T>::Delete(const std::string& id)
 		{
-			T* object = Find(id);
-			if (object != nullptr)
-				object->IsDeleted = K_TRUE;
+			for (types::usize i = 0; i < _objectCount; i++)
+			{
+				if (_objects[i].ID == id)
+				{
+					const T& last = _objects[_objectCount - 1];
+					_objects[i] = last;
+					_objectCount -= 1;
+				}
+			}
 		}
 	}
 }

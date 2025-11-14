@@ -42,6 +42,7 @@ namespace realware
 
         struct sSound : public utils::sIdVecObject
         {
+            sSound() = default;
             explicit sSound(const app::cApplication* const app, const types::u32 source, const types::u32 buffer);
             ~sSound();
 

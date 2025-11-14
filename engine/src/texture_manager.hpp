@@ -22,6 +22,7 @@ namespace realware
 
         struct sTextureAtlasTexture : public utils::sIdVecObject
         {
+            sTextureAtlasTexture() = default;
             sTextureAtlasTexture(const types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size);
             ~sTextureAtlasTexture() = default;
 

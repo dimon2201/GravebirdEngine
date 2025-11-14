@@ -124,9 +124,10 @@ public:
         renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture2);
         renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyRedTexture");
         renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyWhiteTexture");
-        renderPassDesc.ShaderBase = opaqueRenderPass->Desc.Shader;
-        renderPassDesc.ShaderVertexFunc = vertexFunc;
-        renderPassDesc.ShaderFragmentFunc = fragmentFunc;
+        renderPassDesc.ShaderBase = nullptr;
+        renderPassDesc.ShaderRenderPath = Category::RENDER_PATH_OPAQUE;
+        renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+        renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
         renderPassDesc.RenderTarget = opaqueRenderPass->Desc.RenderTarget;
         renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize.x, windowSize.y);
         renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
@@ -204,7 +205,7 @@ public:
         sSubstance* pxSubstance = _physics->CreateSubstance("PXSubstance1");
 
         // Game objects
-        const usize N = 1;
+        const usize N = 50;
         for (usize z = 0; z < N; z++)
         {
             for (usize y = 0; y < N; y++)
