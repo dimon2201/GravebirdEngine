@@ -103,7 +103,7 @@ namespace realware
             ~cApplication();
 
             virtual void Start() = 0;
-            virtual void FrameUpdate() = 0;
+            virtual void Update() = 0;
             virtual void Finish() = 0;
 
             void Run();

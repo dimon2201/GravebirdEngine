@@ -221,11 +221,12 @@ namespace realware
 
         void mPhysics::Simulate()
         {
-            const auto& actors = _actors.GetObjects();
-            const usize actorCount = actors.size();
+            auto& actorsArray = _actors.GetObjects();
 
-            for (auto& pair : actors)
+            for (usize i = 0; i < _actors.GetObjectCount(); i++)
             {
+                auto& pair = actorsArray[i];
+
                 if (pair.Type != Category::PHYSICS_ACTOR_DYNAMIC)
                     continue;
 
@@ -248,12 +249,11 @@ namespace realware
                 }
             }
 
-            const auto& scenes = _scenes.GetObjects();
-            const usize sceneCount = scenes.size();
+            auto& scenesArray = _scenes.GetObjects();
 
-            for (usize i = 0; i < sceneCount; i++)
+            for (usize i = 0; i < _scenes.GetObjectCount(); i++)
             {
-                PxScene* const scene = scenes[i].Scene;
+                PxScene* const scene = scenesArray[i].Scene;
                 scene->simulate(1.0f / 60.0f);
                 scene->fetchResults(true);
             }

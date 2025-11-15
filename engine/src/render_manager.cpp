@@ -419,7 +419,7 @@ namespace realware
             _context->WriteBuffer(_lightBuffer, 0, _lightsByteSize, _lights);*/
         }
 
-        void mRender::WriteObjectsToOpaqueBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass)
+        void mRender::WriteObjectsToOpaqueBuffers(cIdVec<cGameObject>& objects, sRenderPass* const renderPass)
         {
             _opaqueInstanceCount = 0;
             _opaqueInstancesByteSize = 0;
@@ -427,14 +427,18 @@ namespace realware
             _opaqueTextureAtlasTexturesByteSize = 0;
             _materialsMap->clear();
 
-            for (auto& it : objects)
+            auto& objectsArray = objects.GetObjects();
+
+            for (usize i = 0; i < objects.GetObjectCount(); i++)
             {
-                sTransform transform(&it);
+                const cGameObject& go = objectsArray[i];
+
+                sTransform transform(&go);
                 transform.Transform();
 
                 s32 materialIndex = -1;
-                sMaterial* material = it.GetMaterial();
-                sVertexBufferGeometry* geometry = it.GetGeometry();
+                sMaterial* material = go.GetMaterial();
+                sVertexBufferGeometry* geometry = go.GetGeometry();
 
                 if (geometry == nullptr)
                     continue;
@@ -497,21 +501,25 @@ namespace realware
             _context->WriteBuffer(_opaqueTextureAtlasTexturesBuffer, 0, _opaqueTextureAtlasTexturesByteSize, _opaqueTextureAtlasTextures);
         }
 
-        void mRender::WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass)
+        void mRender::WriteObjectsToTransparentBuffers(cIdVec<game::cGameObject>& objects, sRenderPass* const renderPass)
         {
             _transparentInstanceCount = 0;
             _transparentInstancesByteSize = 0;
             _transparentMaterialsByteSize = 0;
             _materialsMap->clear();
 
-            for (auto& it : objects)
+            auto& objectsArray = objects.GetObjects();
+
+            for (usize i = 0; i < objects.GetObjectCount(); i++)
             {
-                sTransform transform(&it);
+                const cGameObject& go = objectsArray[i];
+
+                sTransform transform(&go);
                 transform.Transform();
 
                 s32 materialIndex = -1;
-                sMaterial* material = it.GetMaterial();
-                sVertexBufferGeometry* geometry = it.GetGeometry();
+                sMaterial* material = go.GetMaterial();
+                sVertexBufferGeometry* geometry = go.GetGeometry();
 
                 if (geometry == nullptr)
                     continue;

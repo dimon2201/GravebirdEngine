@@ -248,21 +248,20 @@ public:
             pxSubstance
         );
 
-        auto gameObjects = _gameObject->GetObjects();
+        auto& gameObjects = _gameObject->GetObjects();
         _transparentGameObjects = new std::vector<cGameObject>();
         for (auto& gameObject : gameObjects.GetObjects())
         {
             if (gameObject.GetOpaque() == K_TRUE)
                 _transparentGameObjects->push_back(gameObject);
         }
-        const auto& transparentGameObjectsRef = *_transparentGameObjects;
-        _render->WriteObjectsToOpaqueBuffers(transparentGameObjectsRef, _customRenderPass);
+        _render->WriteObjectsToOpaqueBuffers(_gameObject->GetObjects(), _customRenderPass);
 
         _textGameObjects = new std::vector<cGameObject>();
         _textGameObjects->push_back(*textObject);
     }
 
-    virtual void FrameUpdate() override final
+    virtual void Update() override final
     {
         // Custom render pass
         _customRenderPass->Desc.Viewport = glm::vec4(0.0f, 0.0f, GetWindowSize().x, GetWindowSize().y);
@@ -301,9 +300,9 @@ int main()
     appDesc->WindowDesc.Width = 640;
     appDesc->WindowDesc.Height = 480;
     appDesc->WindowDesc.IsFullscreen = K_FALSE;
-    appDesc->MemoryPoolByteSize = 64 * 1024 * 1024;
-    appDesc->MaxGameObjectCount = 50 * 50 * 50;
-    appDesc->MaxRenderOpaqueInstanceCount = 50 * 50 * 50;
+    appDesc->MemoryPoolByteSize = 128 * 1024 * 1024;
+    appDesc->MaxGameObjectCount = 100 * 50 * 50;
+    appDesc->MaxRenderOpaqueInstanceCount = 100 * 50 * 50;
 
     MyApp* app = new MyApp(appDesc);
     app->Run();

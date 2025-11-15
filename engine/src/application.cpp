@@ -115,7 +115,7 @@ namespace realware
 
                 _physics->Simulate();
                 _camera->Update();
-                FrameUpdate();
+                Update();
                 _render->CompositeFinal();
 
                 glfwSwapBuffers((GLFWwindow*)_window);

@@ -169,8 +169,8 @@ namespace realware
             
             void UpdateLights();
 
-            void WriteObjectsToOpaqueBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass);
-            void WriteObjectsToTransparentBuffers(const std::vector<game::cGameObject>& objects, sRenderPass* const renderPass);
+            void WriteObjectsToOpaqueBuffers(utils::cIdVec<game::cGameObject>& objects, sRenderPass* const renderPass);
+            void WriteObjectsToTransparentBuffers(utils::cIdVec<game::cGameObject>& objects, sRenderPass* const renderPass);
             void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const game::cGameObject* const cameraObject, sRenderPass* const renderPass);
             void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const game::cGameObject* const cameraObject, sShader* const singleShader = nullptr);
             void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<game::cGameObject>& objects, const game::cGameObject* const cameraObject, sRenderPass* const renderPass);

@@ -36,7 +36,8 @@ namespace realware
 			void Delete(const std::string& id);
 
 			inline std::vector<T>& GetObjects() { return _objects; }
-			inline types::usize GetObjectCount() { return _maxObjectCount; }
+			inline types::usize GetObjectCount() { return _objectCount; }
+			inline types::usize GetMaxObjectCount() { return _maxObjectCount; }
 
 		private:
 			app::cApplication* _app = nullptr;
