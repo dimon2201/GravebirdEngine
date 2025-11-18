@@ -17,6 +17,7 @@
 #include "../../engine/src/physics_manager.hpp"
 #include "../../engine/src/gameobject_manager.hpp"
 #include "../../engine/src/event_manager.hpp"
+#include "../../engine/src/thread_pool.hpp"
 #include "../../engine/src/memory_pool.hpp"
 
 using namespace realware::app;
@@ -235,20 +236,9 @@ public:
         textObject->SetMaterial(material1);
         textObject->SetText(text);
         
-        cEvent e = cEvent(eEventType::KEY_PRESS, [](sEventData* const data) { std::cout << "Key press!" << std::endl; });
-        GetEventManager()->Subscribe(
-            textObject,
-            e
-        );
-        GetEventManager()->Send(
-            eEventType::KEY_PRESS
-        );
-        GetEventManager()->Unsubscribe(
-            textObject,
-            e
-        );
-        GetEventManager()->Send(
-            eEventType::KEY_PRESS
+        cTask task(nullptr, [](cBuffer* const data) {std::cout << "Success!" << std::endl;});
+        GetThreadManager()->Submit(
+            task
         );
 
         // Create camera
