@@ -9,23 +9,20 @@
 
 namespace realware
 {
-	namespace app
-	{
-		class cApplication;
-	}
+	class cApplication;
 
 	class cIdVecObject : public cObject
 	{
 	public:
-		explicit cIdVecObject(const std::string& id, const app::cApplication* const app) : _id(id), _app((app::cApplication*)app) {}
+		explicit cIdVecObject(const std::string& id, const cApplication* const app) : _id(id), _app((cApplication*)app) {}
 		~cIdVecObject() = default;
 
 		inline const std::string& GetID() const { return _id; }
-		inline const app::cApplication* GetApplication() const { return _app; }
+		inline const cApplication* GetApplication() const { return _app; }
 
 	protected:
 		std::string _id = "";
-		app::cApplication* _app = nullptr;
+		cApplication* _app = nullptr;
 
 	private:
 		types::boolean _isDeleted = types::K_FALSE;
@@ -35,7 +32,7 @@ namespace realware
 	class cIdVec
 	{
 	public:
-		explicit cIdVec(const app::cApplication* const app, const types::usize maxObjectCount);
+		explicit cIdVec(const cApplication* const app, const types::usize maxObjectCount);
 		~cIdVec();
 
 		template<typename... Args>
@@ -49,14 +46,14 @@ namespace realware
 		inline types::usize GetMaxObjectCount() { return _maxObjectCount; }
 
 	private:
-		app::cApplication* _app = nullptr;
+		cApplication* _app = nullptr;
 		types::usize _objectCount = 0;
 		types::usize _maxObjectCount = 0;
 		T* _objects = nullptr;
 	};
 
 	template<typename T>
-	cIdVec<T>::cIdVec(const app::cApplication* const app, const types::usize maxObjectCount) : _app((app::cApplication*)app), _maxObjectCount(maxObjectCount)
+	cIdVec<T>::cIdVec(const cApplication* const app, const types::usize maxObjectCount) : _app((cApplication*)app), _maxObjectCount(maxObjectCount)
 	{
 		_objects = (T*)std::malloc(sizeof(T) * _maxObjectCount);
 	}
@@ -73,7 +70,7 @@ namespace realware
 	{
 		if (_objectCount >= _maxObjectCount)
 		{
-			log::Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
+			Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
 
 			return nullptr;
 		}
@@ -90,7 +87,7 @@ namespace realware
 	{
 		if (_objectCount >= _maxObjectCount)
 		{
-			log::Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
+			Print("Error: object count limit '" + std::to_string(_maxObjectCount) + "' exceeded!");
 
 			return nullptr;
 		}

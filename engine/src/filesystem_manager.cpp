@@ -12,45 +12,39 @@ using namespace types;
 
 namespace realware
 {
-    using namespace app;
-    using namespace utils;
-
-    namespace fs
+    mFileSystem::mFileSystem(const cApplication* const app) : _app((cApplication*)app)
     {
-        mFileSystem::mFileSystem(const app::cApplication* const app) : _app((app::cApplication*)app)
-        {
-        }
+    }
 
-        sFile* mFileSystem::CreateDataFile(const std::string& filepath, types::boolean isString)
-        {
-            std::ifstream inputFile(filepath, std::ios::binary);
+    sFile* mFileSystem::CreateDataFile(const std::string& filepath, types::boolean isString)
+    {
+        std::ifstream inputFile(filepath, std::ios::binary);
             
-            inputFile.seekg(0, std::ios::end);
-            const usize byteSize = inputFile.tellg();
-            inputFile.seekg(0, std::ios::beg);
-            const usize databyteSize = byteSize + (isString == K_TRUE ? 1 : 0);
+        inputFile.seekg(0, std::ios::end);
+        const usize byteSize = inputFile.tellg();
+        inputFile.seekg(0, std::ios::beg);
+        const usize databyteSize = byteSize + (isString == K_TRUE ? 1 : 0);
             
-            u8* const data = (u8* const)_app->GetMemoryPool()->Allocate(databyteSize);
-            memset(data, 0, databyteSize);
-            inputFile.read((char*)&data[0], byteSize);
+        u8* const data = (u8* const)_app->GetMemoryPool()->Allocate(databyteSize);
+        memset(data, 0, databyteSize);
+        inputFile.read((char*)&data[0], byteSize);
 
-            sFile* pFile = (sFile*)_app->GetMemoryPool()->Allocate(sizeof(sFile));
-            sFile* file = new (pFile) sFile;
+        sFile* pFile = (sFile*)_app->GetMemoryPool()->Allocate(sizeof(sFile));
+        sFile* file = new (pFile) sFile;
 
-            file->Data = data;
-            file->DataByteSize = databyteSize;
+        file->Data = data;
+        file->DataByteSize = databyteSize;
 
-            return file;
-        }
+        return file;
+    }
 
-        void mFileSystem::DestroyDataFile(sFile* file)
-        {
-            void* fileData = file->Data;
+    void mFileSystem::DestroyDataFile(sFile* file)
+    {
+        void* fileData = file->Data;
 
-            if (fileData == nullptr || file->DataByteSize == 0)
-                return;
+        if (fileData == nullptr || file->DataByteSize == 0)
+            return;
 
-            _app->GetMemoryPool()->Free(fileData);
-        }
+        _app->GetMemoryPool()->Free(fileData);
     }
 }

@@ -7,17 +7,14 @@
 
 namespace realware
 {
-    namespace utils
+    class cBuffer : public cObject
     {
-        class cBuffer : public cObject
-        {
-        public:
-            explicit cBuffer() = default;
-            ~cBuffer() = default;
+    public:
+        explicit cBuffer() = default;
+        ~cBuffer() = default;
 
-        private:
-            types::usize _byteSize = 0;
-            void* _data = nullptr;
-        };
-    }
+    private:
+        types::usize _byteSize = 0;
+        void* _data = nullptr;
+    };
 }

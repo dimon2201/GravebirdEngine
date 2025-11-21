@@ -26,162 +26,148 @@ namespace physx
 
 namespace realware
 {
-    namespace app
+    class cApplication;
+    class cGameObject;
+    struct sVertexBufferGeometry;
+    struct sTransform;
+
+    class cPhysicsAllocator : public physx::PxAllocatorCallback
     {
-        class cApplication;
-    }
+        virtual void* allocate(size_t size, const char* typeName, const char* filename, int line) override final
+        {
+            return malloc(size);
+        }
 
-    namespace render
+        virtual void deallocate(void* ptr) override final
+        {
+            free(ptr);
+        }
+    };
+
+    class cPhysicsError : public physx::PxErrorCallback
     {
-        struct sVertexBufferGeometry;
-        struct sTransform;
-    }
+        virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override final
+        {
+            Print(message);
+        }
+    };
 
-    namespace game
+    class cPhysicsCPUDispatcher : public physx::PxCpuDispatcher
     {
-        class cGameObject;
-    }
+        virtual void submitTask(physx::PxBaseTask& task) override final
+        {
+            task.run();
+            task.release();
+        }
 
-    namespace physics
+        virtual uint32_t getWorkerCount() const override final
+        {
+            return 0;
+        }
+    };
+
+    class cPhysicsSimulationEvent : public physx::PxSimulationEventCallback
     {
-        class cAllocator : public physx::PxAllocatorCallback
-        {
-            virtual void* allocate(size_t size, const char* typeName, const char* filename, int line) override final
-            {
-                return malloc(size);
-            }
+		virtual void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override final {}
+		virtual void onWake(physx::PxActor** actors, physx::PxU32 count) override final {}
+		virtual void onSleep(physx::PxActor** actors, physx::PxU32 count) override final {}
+		virtual void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) override final {}
+		virtual void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override final {}
+		virtual void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override final {}
+    };
 
-            virtual void deallocate(void* ptr) override final
-            {
-                free(ptr);
-            }
-        };
+    class cPhysicsSimulationScene : public cIdVecObject
+    {
+    public:
+        explicit cPhysicsSimulationScene(const std::string& id, const cApplication* const app, const physx::PxScene* const scene, const physx::PxControllerManager* const controllerManager) : cIdVecObject(id, app), _scene((physx::PxScene*)scene), _controllerManager((physx::PxControllerManager*)controllerManager) {}
+        ~cPhysicsSimulationScene() = default;
 
-        class cError : public physx::PxErrorCallback
-        {
-            virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override final
-            {
-                log::Print(message);
-            }
-        };
+        inline physx::PxScene* GetScene() const { return _scene; }
+        inline physx::PxControllerManager* GetControllerManager() const { return _controllerManager; }
 
-        class cCPUDispatcher : public physx::PxCpuDispatcher
-        {
-            virtual void submitTask(physx::PxBaseTask& task) override final
-            {
-                task.run();
-                task.release();
-            }
+    private:
+        physx::PxScene* _scene = nullptr;
+        physx::PxControllerManager* _controllerManager = nullptr;
+    };
 
-            virtual uint32_t getWorkerCount() const override final
-            {
-                return 0;
-            }
-        };
+    class cPhysicsSubstance : public cIdVecObject
+    {
+    public:
+        explicit cPhysicsSubstance(const std::string& id, const cApplication* const app, const physx::PxMaterial* const substance) : cIdVecObject(id, app), _substance((physx::PxMaterial*)substance) {}
+        ~cPhysicsSubstance() = default;
 
-        class cSimulationEvent : public physx::PxSimulationEventCallback
-        {
-			virtual void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override final {}
-			virtual void onWake(physx::PxActor** actors, physx::PxU32 count) override final {}
-			virtual void onSleep(physx::PxActor** actors, physx::PxU32 count) override final {}
-			virtual void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) override final {}
-			virtual void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override final {}
-			virtual void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override final {}
-        };
+        inline physx::PxMaterial* GetSubstance() const { return _substance; }
 
-        class cSimulationScene : public cIdVecObject
-        {
-        public:
-            explicit cSimulationScene(const std::string& id, const app::cApplication* const app, const physx::PxScene* const scene, const physx::PxControllerManager* const controllerManager) : cIdVecObject(id, app), _scene((physx::PxScene*)scene), _controllerManager((physx::PxControllerManager*)controllerManager) {}
-            ~cSimulationScene() = default;
+    private:
+        physx::PxMaterial* _substance = nullptr;
+    };
 
-            inline physx::PxScene* GetScene() const { return _scene; }
-            inline physx::PxControllerManager* GetControllerManager() const { return _controllerManager; }
+    class cPhysicsController : public cIdVecObject
+    {
+    public:
+        explicit cPhysicsController(const std::string& id, const cApplication* const app, const physx::PxController* const controller, const types::f32 eyeHeight) : cIdVecObject(id, app), _controller((physx::PxController*)controller), _eyeHeight(eyeHeight) {}
+        ~cPhysicsController() = default;
 
-        private:
-            physx::PxScene* _scene = nullptr;
-            physx::PxControllerManager* _controllerManager = nullptr;
-        };
+        inline physx::PxController* GetController() const { return _controller; }
+        inline types::f32 GetEyeHeight() const { return _eyeHeight; }
 
-        class cSubstance : public cIdVecObject
-        {
-        public:
-            explicit cSubstance(const std::string& id, const app::cApplication* const app, const physx::PxMaterial* const substance) : cIdVecObject(id, app), _substance((physx::PxMaterial*)substance) {}
-            ~cSubstance() = default;
+    private:
+        physx::PxController* _controller = nullptr;
+        types::f32 _eyeHeight = 0.0f;
+    };
 
-            inline physx::PxMaterial* GetSubstance() const { return _substance; }
+    class cPhysicsActor : public cIdVecObject
+    {
+    public:
+        explicit cPhysicsActor(const std::string& id, const cApplication* const app, const cGameObject* const gameObject, const physx::PxActor* const actor, const eCategory& actorType) : cIdVecObject(id, app), _gameObject((cGameObject*)gameObject), _actor((physx::PxActor*)actor), _type(actorType) {}
+        ~cPhysicsActor() = default;
 
-        private:
-            physx::PxMaterial* _substance = nullptr;
-        };
+        inline cGameObject* GetGameObject() const { return _gameObject; }
+        inline physx::PxActor* GetActor() const { return _actor; }
+        inline eCategory GetType() const { return _type; }
 
-        class cController : public cIdVecObject
-        {
-        public:
-            explicit cController(const std::string& id, const app::cApplication* const app, const physx::PxController* const controller, const types::f32 eyeHeight) : cIdVecObject(id, app), _controller((physx::PxController*)controller), _eyeHeight(eyeHeight) {}
-            ~cController() = default;
+    private:
+        cGameObject* _gameObject = nullptr;
+        physx::PxActor* _actor = nullptr;
+        eCategory _type = eCategory::PHYSICS_ACTOR_DYNAMIC;
+    };
 
-            inline physx::PxController* GetController() const { return _controller; }
-            inline types::f32 GetEyeHeight() const { return _eyeHeight; }
+    class mPhysics
+    {
+    public:
+        explicit mPhysics(const cApplication* const app);
+        ~mPhysics();
 
-        private:
-            physx::PxController* _controller = nullptr;
-            types::f32 _eyeHeight = 0.0f;
-        };
+        cPhysicsSimulationScene* CreateScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
+        cPhysicsSubstance* CreateSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
+        cPhysicsActor* CreateActor(const std::string& id, const eCategory& staticOrDynamic, const eCategory& shapeType, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance, const types::f32 mass, const sTransform* const transform, const cGameObject* const gameObject);
+        cPhysicsController* CreateController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const sTransform* const transform, const glm::vec3& up, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance);
+        cPhysicsSimulationScene* FindScene(const std::string&);
+        cPhysicsSubstance* FindSubstance(const std::string&);
+        cPhysicsActor* FindActor(const std::string&);
+        cPhysicsController* FindController(const std::string&);
+        void DestroyScene(const std::string& id);
+        void DestroySubstance(const std::string& id);
+        void DestroyActor(const std::string& id);
+        void DestroyController(const std::string& id);
 
-        class cActor : public cIdVecObject
-        {
-        public:
-            explicit cActor(const std::string& id, const app::cApplication* const app, const game::cGameObject* const gameObject, const physx::PxActor* const actor, const game::Category& actorType) : cIdVecObject(id, app), _gameObject((game::cGameObject*)gameObject), _actor((physx::PxActor*)actor), _type(actorType) {}
-            ~cActor() = default;
+        void MoveController(const cPhysicsController* const controller, const glm::vec3& position, const types::f32 minStep = 0.001f);
+        glm::vec3 GetControllerPosition(const cPhysicsController* const controller);
 
-            inline game::cGameObject* GetGameObject() const { return _gameObject; }
-            inline physx::PxActor* GetActor() const { return _actor; }
-            inline game::Category GetType() const { return _type; }
+        void Simulate();
 
-        private:
-            game::cGameObject* _gameObject = nullptr;
-            physx::PxActor* _actor = nullptr;
-            game::Category _type = game::Category::PHYSICS_ACTOR_DYNAMIC;
-        };
-
-        class mPhysics
-        {
-        public:
-            explicit mPhysics(const app::cApplication* const app);
-            ~mPhysics();
-
-            cSimulationScene* CreateScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
-            cSubstance* CreateSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
-            cActor* CreateActor(const std::string& id, const game::Category& staticOrDynamic, const game::Category& shapeType, const cSimulationScene* const scene, const cSubstance* const substance, const types::f32 mass, const render::sTransform* const transform, const game::cGameObject* const gameObject);
-            cController* CreateController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const render::sTransform* const transform, const glm::vec3& up, const cSimulationScene* const scene, const cSubstance* const substance);
-            cSimulationScene* FindScene(const std::string&);
-            cSubstance* FindSubstance(const std::string&);
-            cActor* FindActor(const std::string&);
-            cController* FindController(const std::string&);
-            void DestroyScene(const std::string& id);
-            void DestroySubstance(const std::string& id);
-            void DestroyActor(const std::string& id);
-            void DestroyController(const std::string& id);
-
-            void MoveController(const cController* const controller, const glm::vec3& position, const types::f32 minStep = 0.001f);
-            glm::vec3 GetControllerPosition(const cController* const controller);
-
-            void Simulate();
-
-        private:
-            app::cApplication* _app = nullptr;
-            cAllocator* _allocator = nullptr;
-            cError* _error = nullptr;
-            cCPUDispatcher* _cpuDispatcher = nullptr;
-            cSimulationEvent* _simulationEvent = nullptr;
-            physx::PxFoundation* _foundation = nullptr;
-            physx::PxPhysics* _physics = nullptr;
-            std::mutex _mutex;
-            cIdVec<cSimulationScene> _scenes;
-            cIdVec<cSubstance> _substances;
-            cIdVec<cActor> _actors;
-            cIdVec<cController> _controllers;
-        };
-    }
+    private:
+        cApplication* _app = nullptr;
+        cPhysicsAllocator* _allocator = nullptr;
+        cPhysicsError* _error = nullptr;
+        cPhysicsCPUDispatcher* _cpuDispatcher = nullptr;
+        cPhysicsSimulationEvent* _simulationEvent = nullptr;
+        physx::PxFoundation* _foundation = nullptr;
+        physx::PxPhysics* _physics = nullptr;
+        std::mutex _mutex;
+        cIdVec<cPhysicsSimulationScene> _scenes;
+        cIdVec<cPhysicsSubstance> _substances;
+        cIdVec<cPhysicsActor> _actors;
+        cIdVec<cPhysicsController> _controllers;
+    };
 }

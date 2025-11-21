@@ -7,83 +7,79 @@
 #include "thread_manager.hpp"
 #include "buffer.hpp"
 
+using namespace types;
+
 namespace realware
 {
-    using namespace app;
-    using namespace types;
-
-    namespace utils
+    cTask::cTask(const cBuffer* const data, TaskFunction&& function) : _data((cBuffer*)data), _function(std::make_shared<TaskFunction>(std::move(function)))
     {
-        cTask::cTask(const cBuffer* const data, TaskFunction&& function) : _data((cBuffer*)data), _function(std::make_shared<TaskFunction>(std::move(function)))
-        {
-        }
+    }
 
-        void cTask::Run()
-        {
-            _function->operator()(_data);
-        }
+    void cTask::Run()
+    {
+        _function->operator()(_data);
+    }
 
-        mThread::mThread(const cApplication* const app, const usize threadCount) : _app((cApplication*)app), _stop(K_FALSE)
+    mThread::mThread(const cApplication* const app, const usize threadCount) : _app((cApplication*)app), _stop(K_FALSE)
+    {
+        for (usize i = 0; i < threadCount; ++i)
         {
-            for (usize i = 0; i < threadCount; ++i)
-            {
-                _threads.emplace_back([this] {
-                    while (K_TRUE)
+            _threads.emplace_back([this] {
+                while (K_TRUE)
+                {
+                    if (_pause.load() == K_TRUE)
+                        continue;
+
+                    cTask task;
                     {
-                        if (_pause.load() == K_TRUE)
-                            continue;
-
-                        cTask task;
-                        {
-                            std::unique_lock<std::mutex> lock(_mtx);
-                            _cv.wait(lock, [this] {
-                                return !_tasks.empty() || _stop;
-                            });
-                            if (_stop && _tasks.empty())
-                                return;
-                            task = _tasks.front();
-                            _tasks.pop();
-                        }
-                        task.Run();
+                        std::unique_lock<std::mutex> lock(_mtx);
+                        _cv.wait(lock, [this] {
+                            return !_tasks.empty() || _stop;
+                        });
+                        if (_stop && _tasks.empty())
+                            return;
+                        task = _tasks.front();
+                        _tasks.pop();
                     }
-                });
-            }
+                    task.Run();
+                }
+            });
         }
+    }
 
-        mThread::~mThread()
-        {
-            Stop();
+    mThread::~mThread()
+    {
+        Stop();
 
-            _cv.notify_all();
+        _cv.notify_all();
 
-            for (auto& thread : _threads)
-                thread.join();
-        }
+        for (auto& thread : _threads)
+            thread.join();
+    }
 
-        void mThread::Pause()
-        {
-            _pause.store(K_TRUE);
-        }
+    void mThread::Pause()
+    {
+        _pause.store(K_TRUE);
+    }
 
-        void mThread::Resume()
-        {
-            _pause.store(K_FALSE);
-        }
+    void mThread::Resume()
+    {
+        _pause.store(K_FALSE);
+    }
 
-        void mThread::Submit(cTask& task)
-        {
-            {
-                std::unique_lock<std::mutex> lock(_mtx);
-                _tasks.emplace(task);
-            }
-
-            _cv.notify_one();
-        }
-
-        void mThread::Stop()
+    void mThread::Submit(cTask& task)
+    {
         {
             std::unique_lock<std::mutex> lock(_mtx);
-            _stop = K_TRUE;
+            _tasks.emplace(task);
         }
+
+        _cv.notify_one();
+    }
+
+    void mThread::Stop()
+    {
+        std::unique_lock<std::mutex> lock(_mtx);
+        _stop = K_TRUE;
     }
 }
