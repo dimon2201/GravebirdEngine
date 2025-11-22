@@ -47,8 +47,8 @@ namespace realware
         explicit mEvent(cApplication* app);
         ~mEvent() = default;
         
-        void Subscribe(const cGameObject* receiver, cEvent& event);
-        void Unsubscribe(const cGameObject* receiver, cEvent& event);
+        void Subscribe(cGameObject* receiver, cEvent& event);
+        void Unsubscribe(const cGameObject* receiver, const cEvent& event);
         void Send(eEvent type);
         void Send(eEvent type, cBuffer* data);
 

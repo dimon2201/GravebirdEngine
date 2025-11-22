@@ -24,9 +24,9 @@ namespace realware
     {
     }
 
-    void mEvent::Subscribe(const cGameObject* receiver, cEvent& event)
+    void mEvent::Subscribe(cGameObject* receiver, cEvent& event)
     {
-        event._receiver = (cGameObject*)receiver;
+        event._receiver = receiver;
 
         const eEvent eventType = event.GetEventType();
         const auto listener = _listeners.find(eventType);
@@ -35,14 +35,14 @@ namespace realware
         _listeners[eventType].push_back(event);
     }
 
-    void mEvent::Unsubscribe(const cGameObject* receiver, cEvent& event)
+    void mEvent::Unsubscribe(const cGameObject* receiver, const cEvent& event)
     {
         if (_listeners.find(event.GetEventType()) == _listeners.end())
             return;
 
         const eEvent eventType = event.GetEventType();
         auto& events = _listeners[eventType];
-        for (auto it = events.begin(); it != events.end();)
+        for (const auto it = events.begin(); it != events.end();)
         {
             if (it->GetReceiver() == receiver)
             {
