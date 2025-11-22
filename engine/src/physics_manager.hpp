@@ -79,7 +79,7 @@ namespace realware
     class cPhysicsSimulationScene : public cIdVecObject
     {
     public:
-        explicit cPhysicsSimulationScene(const std::string& id, const cApplication* const app, const physx::PxScene* const scene, const physx::PxControllerManager* const controllerManager) : cIdVecObject(id, app), _scene((physx::PxScene*)scene), _controllerManager((physx::PxControllerManager*)controllerManager) {}
+        explicit cPhysicsSimulationScene(const std::string& id, cApplication* app, physx::PxScene* scene, physx::PxControllerManager* controllerManager) : cIdVecObject(id, app), _scene(scene), _controllerManager(controllerManager) {}
         ~cPhysicsSimulationScene() = default;
 
         inline physx::PxScene* GetScene() const { return _scene; }
@@ -93,7 +93,7 @@ namespace realware
     class cPhysicsSubstance : public cIdVecObject
     {
     public:
-        explicit cPhysicsSubstance(const std::string& id, const cApplication* const app, const physx::PxMaterial* const substance) : cIdVecObject(id, app), _substance((physx::PxMaterial*)substance) {}
+        explicit cPhysicsSubstance(const std::string& id, cApplication* app, physx::PxMaterial* substance) : cIdVecObject(id, app), _substance(substance) {}
         ~cPhysicsSubstance() = default;
 
         inline physx::PxMaterial* GetSubstance() const { return _substance; }
@@ -105,7 +105,7 @@ namespace realware
     class cPhysicsController : public cIdVecObject
     {
     public:
-        explicit cPhysicsController(const std::string& id, const cApplication* const app, const physx::PxController* const controller, const types::f32 eyeHeight) : cIdVecObject(id, app), _controller((physx::PxController*)controller), _eyeHeight(eyeHeight) {}
+        explicit cPhysicsController(const std::string& id, cApplication* app, physx::PxController* controller, types::f32 eyeHeight) : cIdVecObject(id, app), _controller(controller), _eyeHeight(eyeHeight) {}
         ~cPhysicsController() = default;
 
         inline physx::PxController* GetController() const { return _controller; }
@@ -119,7 +119,7 @@ namespace realware
     class cPhysicsActor : public cIdVecObject
     {
     public:
-        explicit cPhysicsActor(const std::string& id, const cApplication* const app, const cGameObject* const gameObject, const physx::PxActor* const actor, const eCategory& actorType) : cIdVecObject(id, app), _gameObject((cGameObject*)gameObject), _actor((physx::PxActor*)actor), _type(actorType) {}
+        explicit cPhysicsActor(const std::string& id, cApplication* app, cGameObject* gameObject, physx::PxActor* actor, eCategory actorType) : cIdVecObject(id, app), _gameObject(gameObject), _actor(actor), _type(actorType) {}
         ~cPhysicsActor() = default;
 
         inline cGameObject* GetGameObject() const { return _gameObject; }
@@ -135,13 +135,13 @@ namespace realware
     class mPhysics
     {
     public:
-        explicit mPhysics(const cApplication* const app);
+        explicit mPhysics(cApplication* app);
         ~mPhysics();
 
         cPhysicsSimulationScene* CreateScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
         cPhysicsSubstance* CreateSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));
-        cPhysicsActor* CreateActor(const std::string& id, const eCategory& staticOrDynamic, const eCategory& shapeType, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance, const types::f32 mass, const sTransform* const transform, const cGameObject* const gameObject);
-        cPhysicsController* CreateController(const std::string& id, const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const sTransform* const transform, const glm::vec3& up, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance);
+        cPhysicsActor* CreateActor(const std::string& id, eCategory staticOrDynamic, eCategory shapeType, const cPhysicsSimulationScene* scene, const cPhysicsSubstance* substance, types::f32 mass, const sTransform* transform, cGameObject* gameObject);
+        cPhysicsController* CreateController(const std::string& id, types::f32 eyeHeight, types::f32 height, types::f32 radius, const sTransform* transform, const glm::vec3& up, const cPhysicsSimulationScene* scene, const cPhysicsSubstance* substance);
         cPhysicsSimulationScene* FindScene(const std::string&);
         cPhysicsSubstance* FindSubstance(const std::string&);
         cPhysicsActor* FindActor(const std::string&);
@@ -151,8 +151,8 @@ namespace realware
         void DestroyActor(const std::string& id);
         void DestroyController(const std::string& id);
 
-        void MoveController(const cPhysicsController* const controller, const glm::vec3& position, const types::f32 minStep = 0.001f);
-        glm::vec3 GetControllerPosition(const cPhysicsController* const controller);
+        void MoveController(const cPhysicsController* controller, const glm::vec3& position, types::f32 minStep = 0.001f);
+        glm::vec3 GetControllerPosition(const cPhysicsController* controller);
 
         void Simulate();
 

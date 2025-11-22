@@ -26,10 +26,10 @@ namespace realware
         friend class mEvent;
 
     public:
-        cEvent(const eEventType& type, const EventFunction& function);
+        cEvent(eEventType type, const EventFunction& function);
         ~cEvent() = default;
 
-        void Invoke(cBuffer* const data);
+        void Invoke(cBuffer* data);
         inline cGameObject* GetReceiver() const { return _receiver; }
         inline eEventType GetType() const { return _type; }
         inline EventFunction& GetFunction() const { return _function; }
@@ -43,13 +43,13 @@ namespace realware
     class mEvent
     {
     public:
-        explicit mEvent(const cApplication* const app);
+        explicit mEvent(cApplication* app);
         ~mEvent() = default;
             
         void Subscribe(const cGameObject* receiver, cEvent& event);
         void Unsubscribe(const cGameObject* receiver, cEvent& event);
-        void Send(const eEventType& type);
-        void Send(const eEventType& type, cBuffer* const data);
+        void Send(eEventType type);
+        void Send(eEventType type, cBuffer* data);
 
     private:
         cApplication* _app = nullptr;

@@ -11,7 +11,7 @@ using namespace types;
 
 namespace realware
 {
-    mFont::mFont(const cApplication* const app, const iRenderContext* const context) : _app((cApplication*)app), _context((iRenderContext*)context)
+    mFont::mFont(cApplication* app, iRenderContext* context) : _app(app), _context(context)
     {
         if (FT_Init_FreeType(&_lib))
         {
@@ -28,12 +28,12 @@ namespace realware
             FT_Done_FreeType(_lib);
     }
 
-    usize CalculateNewlineOffset(sFont* const font)
+    usize CalculateNewlineOffset(sFont* font)
     {
         return font->Font->size->metrics.height >> 6;
     }
 
-    usize CalculateSpaceOffset(sFont* const font)
+    usize CalculateSpaceOffset(sFont* font)
     {
         const FT_Face& ftFont = font->Font;
         const FT_UInt spaceIndex = FT_Get_Char_Index(ftFont, ' ');
@@ -43,7 +43,7 @@ namespace realware
             return 0;
     }
 
-    void FillAlphabetAndFindAtlasSize(cMemoryPool* const memoryPool, sFont* const font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
+    void FillAlphabetAndFindAtlasSize(cMemoryPool* memoryPool, sFont* font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
     {
         const FT_Face& ftFont = font->Font;
         usize maxGlyphHeight = 0;
@@ -96,7 +96,7 @@ namespace realware
             atlasHeight += maxGlyphHeight + 1;
     }
 
-    usize NextPowerOfTwo(const usize n)
+    usize NextPowerOfTwo(usize n)
     {
         if (n <= 0)
             return 1;
@@ -119,16 +119,16 @@ namespace realware
         atlasHeight = NextPowerOfTwo(atlasHeight);
     }
 
-    void FillAtlasWithGlyphs(cMemoryPool* const memoryPool, sFont* const font, usize& atlasWidth, usize& atlasHeight, iRenderContext* const context)
+    void FillAtlasWithGlyphs(cMemoryPool* memoryPool, sFont* font, usize& atlasWidth, usize& atlasHeight, iRenderContext* context)
     {
         usize maxGlyphHeight = 0;
 
-        void* const atlasPixels = memoryPool->Allocate(atlasWidth * atlasHeight);
+        void* atlasPixels = memoryPool->Allocate(atlasWidth * atlasHeight);
         memset(atlasPixels, 0, atlasWidth * atlasHeight);
 
         usize xOffset = 0;
         usize yOffset = 0;
-        u8* const pixelsU8 = (u8* const)atlasPixels;
+        u8* pixelsU8 = (u8*)atlasPixels;
 
         for (auto& glyph : font->Alphabet)
         {
@@ -172,9 +172,9 @@ namespace realware
         memoryPool->Free(atlasPixels);
     }
 
-    sFont* mFont::CreateFontTTF(const std::string& filename, const usize glyphSize)
+    sFont* mFont::CreateFontTTF(const std::string& filename, usize glyphSize)
     {
-        cMemoryPool* const memoryPool = _app->GetMemoryPool();
+        cMemoryPool* memoryPool = _app->GetMemoryPool();
         sFont* pFont = (sFont*)memoryPool->Allocate(sizeof(sFont));
         sFont* font = new (pFont) sFont;
 
@@ -221,7 +221,7 @@ namespace realware
         return font;
     }
 
-    sText* mFont::CreateText(const sFont* const font, const std::string& text)
+    sText* mFont::CreateText(const sFont* font, const std::string& text)
     {
         sText* pTextObject = (sText*)_app->GetMemoryPool()->Allocate(sizeof(sText));
         sText* textObject = new (pTextObject) sText;
@@ -232,12 +232,12 @@ namespace realware
         return textObject;
     }
 
-    void mFont::DestroyFontTTF(sFont* const font)
+    void mFont::DestroyFontTTF(sFont* font)
     {
         auto& alphabet = font->Alphabet;
-        auto atlas = font->Atlas;
+        sTexture* atlas = font->Atlas;
 
-        for (auto& glyph : alphabet)
+        for (const auto& glyph : alphabet)
             _app->GetMemoryPool()->Free(glyph.second.BitmapData);
 
         alphabet.clear();
@@ -250,13 +250,13 @@ namespace realware
         _app->GetMemoryPool()->Free(font);
     }
 
-    void mFont::DestroyText(sText* const text)
+    void mFont::DestroyText(sText* text)
     {
         text->~sText();
         _app->GetMemoryPool()->Free(text);
     }
 
-    f32 mFont::GetTextWidth(sFont* const font, const std::string& text) const
+    f32 mFont::GetTextWidth(sFont* font, const std::string& text) const
     {
         f32 textWidth = 0.0f;
         f32 maxTextWidth = 0.0f;

@@ -10,43 +10,13 @@ using namespace types;
 
 namespace realware
 {
-    cGameObject::cGameObject(const std::string& id, const cApplication* const app, const cMemoryPool* const memoryPool) : cIdVecObject(id, app)
+    cGameObject::cGameObject(const std::string& id, cApplication* app, cMemoryPool* memoryPool) : cIdVecObject(id, app)
     {
-        sTransform* pTransform = (sTransform*)(((cMemoryPool*)memoryPool)->Allocate(sizeof(sTransform)));
+        sTransform* pTransform = (sTransform*)(memoryPool->Allocate(sizeof(sTransform)));
         _transform = new (pTransform) sTransform();
     }
 
-    const glm::vec3& cGameObject::GetPosition() const
-    {
-        return _transform->Position;
-    }
-
-    const glm::vec3& cGameObject::GetRotation() const
-    {
-        return _transform->Rotation;
-    }
-
-    const glm::vec3& cGameObject::GetScale() const
-    {
-        return _transform->Scale;
-    }
-
-    void cGameObject::SetPosition(const glm::vec3& position)
-    {
-        _transform->Position = position;
-    }
-
-    void cGameObject::SetRotation(const glm::vec3& rotation)
-    {
-        _transform->Rotation = rotation;
-    }
-
-    void cGameObject::SetScale(const glm::vec3& scale)
-    {
-        _transform->Scale = scale;
-    }
-
-    void cGameObject::SetPhysicsActor(const eCategory& staticOrDynamic, const eCategory& shapeType, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance, const f32 mass)
+    void cGameObject::SetPhysicsActor(eCategory staticOrDynamic, eCategory shapeType, cPhysicsSimulationScene* scene, cPhysicsSubstance* substance, f32 mass)
     {
         mPhysics* physics = _app->GetPhysicsManager();
         _actor = physics->CreateActor(
@@ -61,7 +31,7 @@ namespace realware
         );
     }
 
-    void cGameObject::SetPhysicsController(const f32 eyeHeight, const f32 height, const f32 radius, const glm::vec3& up, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance)
+    void cGameObject::SetPhysicsController(f32 eyeHeight, f32 height, f32 radius, const glm::vec3& up, cPhysicsSimulationScene* scene, cPhysicsSubstance* substance)
     {
         mPhysics* physics = _app->GetPhysicsManager();
         _controller = physics->CreateController(
@@ -76,8 +46,7 @@ namespace realware
         );
     }
 
-    mGameObject::mGameObject(const cApplication* const app) :
-        _app((cApplication*)app), _maxGameObjectCount(((cApplication*)app)->GetDesc()->MaxGameObjectCount), _gameObjects((cApplication*)_app, _maxGameObjectCount)
+    mGameObject::mGameObject(cApplication* app) : _app(app), _maxGameObjectCount(app->GetDesc()->MaxGameObjectCount), _gameObjects(_app, _maxGameObjectCount)
     {
     }
 

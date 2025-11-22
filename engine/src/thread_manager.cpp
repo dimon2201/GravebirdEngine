@@ -11,16 +11,17 @@ using namespace types;
 
 namespace realware
 {
-    cTask::cTask(const cBuffer* const data, TaskFunction&& function) : _data((cBuffer*)data), _function(std::make_shared<TaskFunction>(std::move(function)))
+    cTask::cTask(cBuffer* data, TaskFunction&& function) : _data(data), _function(std::make_shared<TaskFunction>(std::move(function)))
     {
     }
 
     void cTask::Run()
     {
-        _function->operator()(_data);
+        if (_function)
+            _function->operator()(_data);
     }
 
-    mThread::mThread(const cApplication* const app, const usize threadCount) : _app((cApplication*)app), _stop(K_FALSE)
+    mThread::mThread(cApplication* app, usize threadCount) : _app(app), _stop(K_FALSE)
     {
         for (usize i = 0; i < threadCount; ++i)
         {

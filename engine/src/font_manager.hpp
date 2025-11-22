@@ -49,16 +49,16 @@ namespace realware
     class mFont
     {
     public:
-        mFont(const cApplication* const app, const iRenderContext* const context);
+        mFont(cApplication* app, iRenderContext* context);
         ~mFont();
 
-        sFont* CreateFontTTF(const std::string& filename, const types::usize glyphSize);
-        sText* CreateText(const sFont* const font, const std::string& text);
-        void DestroyFontTTF(sFont* const font);
-        void DestroyText(sText* const text);
+        sFont* CreateFontTTF(const std::string& filename, types::usize glyphSize);
+        sText* CreateText(const sFont* font, const std::string& text);
+        void DestroyFontTTF(sFont* font);
+        void DestroyText(sText* text);
             
-        types::f32 GetTextWidth(sFont* const font, const std::string& text) const;
-        types::f32 GetTextHeight(sFont* const font, const std::string& text) const;
+        types::f32 GetTextWidth(sFont* font, const std::string& text) const;
+        types::f32 GetTextHeight(sFont* font, const std::string& text) const;
         types::usize GetCharacterCount(const std::string& text) const;
         types::usize GetNewlineCount(const std::string& text) const;
 

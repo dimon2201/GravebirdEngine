@@ -12,13 +12,13 @@ using namespace types;
 
 namespace realware
 {
-    cTextureAtlasTexture::cTextureAtlasTexture(const std::string& id, const cApplication* const app, const types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size) : cIdVecObject(id, app), _isNormalized(isNormalized), _offset(offset), _size(size) {}
+    cTextureAtlasTexture::cTextureAtlasTexture(const std::string& id, cApplication* app, types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size) : cIdVecObject(id, app), _isNormalized(isNormalized), _offset(offset), _size(size) {}
 
-    mTexture::mTexture(const cApplication* const app, const iRenderContext* const context) : _app((cApplication*)app), _textures((cApplication*)app, ((cApplication*)app)->GetDesc()->MaxTextureCount)
+    mTexture::mTexture(cApplication* app, iRenderContext* context) : _app(app), _textures(app, app->GetDesc()->MaxTextureCount)
     {
         sApplicationDescriptor* desc = _app->GetDesc();
 
-        _context = (iRenderContext*)context;
+        _context = context;
         _atlas = _context->CreateTexture(
             desc->TextureAtlasWidth,
             desc->TextureAtlasHeight,
@@ -35,7 +35,7 @@ namespace realware
         _context->DestroyTexture(_atlas);
     }
 
-    cTextureAtlasTexture* mTexture::CreateTexture(const std::string& id, const glm::vec2& size, const usize channels, const u8* data)
+    cTextureAtlasTexture* mTexture::CreateTexture(const std::string& id, const glm::vec2& size, usize channels, const u8* data)
     {
         const usize width = size.x;
         const usize height = size.y;

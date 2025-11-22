@@ -17,10 +17,10 @@ namespace realware
     class mFileSystem
     {
     public:
-        explicit mFileSystem(const cApplication* const app);
+        explicit mFileSystem(cApplication* app);
         ~mFileSystem() = default;
 
-        sFile* CreateDataFile(const std::string& filepath, const types::boolean isString);
+        sFile* CreateDataFile(const std::string& filepath, types::boolean isString);
         void DestroyDataFile(sFile* buffer);
 
     private:

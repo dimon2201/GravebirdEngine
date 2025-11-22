@@ -21,7 +21,7 @@ namespace realware
     {
     public:
         cTask() = default;
-        explicit cTask(const cBuffer* const data, TaskFunction&& function);
+        explicit cTask(cBuffer* data, TaskFunction&& function);
         ~cTask() = default;
 
         void Run();
@@ -36,7 +36,7 @@ namespace realware
     class mThread
     {
     public:
-        explicit mThread(const cApplication* const app, const types::usize threadCount = std::thread::hardware_concurrency());
+        explicit mThread(cApplication* app, types::usize threadCount = std::thread::hardware_concurrency());
         ~mThread();
             
         void Submit(cTask& task);

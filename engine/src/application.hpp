@@ -78,7 +78,7 @@ namespace realware
             MIDDLE
         };
 
-        explicit cApplication(const sApplicationDescriptor* const desc);
+        explicit cApplication(const sApplicationDescriptor* desc);
         ~cApplication();
 
         virtual void Start() = 0;
@@ -104,7 +104,7 @@ namespace realware
         inline void* GetWindow() const { return _window; }
         inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
         inline const std::string& GetWindowTitle() const { return _desc.WindowDesc.Title; }
-        inline HWND GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
+        inline const HWND& GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
         inline types::boolean GetKey(int key) const { return _keys[key]; }
         inline types::boolean GetMouseKey(int key) const { return _mouseKeys[key]; }
         types::f32 GetDeltaTime() const { return _deltaTime; };
@@ -123,9 +123,9 @@ namespace realware
         inline glm::vec2 GetMonitorSize() const { return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)); }
         inline types::boolean GetWindowFocus() const { return _isFocused; }
 
-        inline void SetKey(const int key, const types::boolean value) { _keys[key] = value; }
-        inline void SetMouseKey(const int key, const types::boolean value) { _mouseKeys[key] = value; }
-        inline void SetWindowFocus(const types::boolean value) { _isFocused = value; }
+        inline void SetKey(const int key, types::boolean value) { _keys[key] = value; }
+        inline void SetMouseKey(const int key, types::boolean value) { _mouseKeys[key] = value; }
+        inline void SetWindowFocus(types::boolean value) { _isFocused = value; }
         inline void SetCursorPosition(const glm::vec2& cursorPosition) { _cursorPosition = cursorPosition; }
 
         static constexpr types::usize K_MAX_KEY_COUNT = 256;

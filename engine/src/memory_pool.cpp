@@ -9,7 +9,7 @@ using namespace types;
 
 namespace realware
 {
-    cMemoryPool::cMemoryPool(const usize byteSize, const usize allocs, const usize alignment)
+    cMemoryPool::cMemoryPool(usize byteSize, usize allocs, usize alignment)
     {
         if (alignment == 0)
             _memory = malloc(byteSize);
@@ -33,7 +33,7 @@ namespace realware
         _allocs.clear();
     }
 
-    void* cMemoryPool::Allocate(const usize size)
+    void* cMemoryPool::Allocate(usize size)
     {
 #ifdef DEBUG
         _bytesOccupied += size;

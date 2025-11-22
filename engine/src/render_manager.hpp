@@ -70,7 +70,7 @@ namespace realware
     struct sTransform
     {
         sTransform() = default;
-        sTransform(const cGameObject* const gameObject);
+        sTransform(const cGameObject* gameObject);
 
         void Transform();
 
@@ -84,8 +84,8 @@ namespace realware
     class cMaterial : public cIdVecObject
     {
     public:
-        explicit cMaterial(const std::string& id, const cApplication* const app, const cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const sShader* const customShader)
-            : cIdVecObject(id, app), _diffuseTexture((cTextureAtlasTexture*)diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor), _customShader((sShader*)customShader) {}
+        explicit cMaterial(const std::string& id, cApplication* app, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, sShader* customShader)
+            : cIdVecObject(id, app), _diffuseTexture(diffuseTexture), _diffuseColor(diffuseColor), _highlightColor(highlightColor), _customShader(customShader) {}
         ~cMaterial() = default;
 
         inline sShader* GetCustomShader() const { return _customShader; }
@@ -102,7 +102,7 @@ namespace realware
 
     struct sRenderInstance
     {
-        sRenderInstance(const types::s32 materialIndex, const sTransform& transform);
+        sRenderInstance(types::s32 materialIndex, const sTransform& transform);
 
         types::f32 Use2D = 0.0f;
         types::s32 MaterialIndex = -1;
@@ -119,7 +119,7 @@ namespace realware
     class cMaterialInstance
     {
     public:
-        cMaterialInstance(const types::s32 materialIndex, const cMaterial* const material);
+        cMaterialInstance(types::s32 materialIndex, const cMaterial* material);
 
     private:
         types::s32 _bufferIndex = -1;
@@ -134,7 +134,7 @@ namespace realware
 
     struct sLightInstance
     {
-        sLightInstance(const cGameObject* const object);
+        sLightInstance(const cGameObject* object);
 
         glm::vec4 Position = glm::vec4(0.0f);
         glm::vec4 Color = glm::vec4(0.0f);
@@ -145,34 +145,34 @@ namespace realware
     class mRender
     {
     public:
-        explicit mRender(const cApplication* const app, const iRenderContext* const context);
+        explicit mRender(cApplication* app, iRenderContext* context);
         ~mRender();
 
-        cMaterial* CreateMaterial(const std::string& id, const cTextureAtlasTexture* const diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, const eCategory& customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
+        cMaterial* CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
         cMaterial* FindMaterial(const std::string& id);
         void DestroyMaterial(const std::string& id);
         sVertexArray* CreateDefaultVertexArray();
-        sVertexBufferGeometry* CreateGeometry(const eCategory& format, const types::usize verticesByteSize, const void* const vertices, const types::usize indicesByteSize, const void* const indices);
+        sVertexBufferGeometry* CreateGeometry(eCategory format, types::usize verticesByteSize, const void* vertices, types::usize indicesByteSize, const void* indices);
         void DestroyGeometry(sVertexBufferGeometry* geometry);
             
         void ClearGeometryBuffer();
-        void ClearRenderPass(const sRenderPass* const renderPass, const types::boolean clearColor, const types::usize bufferIndex, const glm::vec4& color, const types::boolean clearDepth, const types::f32 depth);
-        void ClearRenderPasses(const glm::vec4& clearColor, const types::f32 clearDepth);
+        void ClearRenderPass(const sRenderPass* renderPass, types::boolean clearColor, types::usize bufferIndex, const glm::vec4& color, types::boolean clearDepth, types::f32 depth);
+        void ClearRenderPasses(const glm::vec4& clearColor, types::f32 clearDepth);
             
         void UpdateLights();
 
-        void WriteObjectsToOpaqueBuffers(cIdVec<cGameObject>& objects, sRenderPass* const renderPass);
-        void WriteObjectsToTransparentBuffers(cIdVec<cGameObject>& objects, sRenderPass* const renderPass);
-        void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const cGameObject* const cameraObject, sRenderPass* const renderPass);
-        void DrawGeometryOpaque(const sVertexBufferGeometry* const geometry, const cGameObject* const cameraObject, sShader* const singleShader = nullptr);
-        void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const std::vector<cGameObject>& objects, const cGameObject* const cameraObject, sRenderPass* const renderPass);
-        void DrawGeometryTransparent(const sVertexBufferGeometry* const geometry, const cGameObject* const cameraObject, sShader* const singleShader = nullptr);
+        void WriteObjectsToOpaqueBuffers(cIdVec<cGameObject>& objects, sRenderPass* renderPass);
+        void WriteObjectsToTransparentBuffers(cIdVec<cGameObject>& objects, sRenderPass* renderPass);
+        void DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, sRenderPass* renderPass);
+        void DrawGeometryOpaque(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, sShader* singleShader = nullptr);
+        void DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const std::vector<cGameObject>& objects, const cGameObject* cameraObject, sRenderPass* renderPass);
+        void DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, sShader* singleShader = nullptr);
         void DrawTexts(const std::vector<cGameObject>& objects);
             
         void CompositeTransparent();
         void CompositeFinal();
             
-        sPrimitive* CreatePrimitive(const eCategory& primitive);
+        sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
         void DestroyPrimitive(sPrimitive* primitiveObject);
             

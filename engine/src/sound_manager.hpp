@@ -37,7 +37,7 @@ namespace realware
     class cSound : public cIdVecObject
     {
     public:
-        explicit cSound(const std::string& id, const cApplication* const app, const types::u32 source, const types::u32 buffer);
+        explicit cSound(const std::string& id, cApplication* app, types::u32 source, types::u32 buffer);
         ~cSound();
 
         inline eCategory GetFormat() const { return _format; }
@@ -55,10 +55,10 @@ namespace realware
     class mSound
     {
     public:
-        mSound(const cApplication* const app, const iSoundContext* const context);
+        mSound(cApplication* app, iSoundContext* context);
         ~mSound() = default;
 
-        cSound* CreateSound(const std::string& id, const std::string& filename, const eCategory& format);
+        cSound* CreateSound(const std::string& id, const std::string& filename, eCategory format);
         cSound* FindSound(const std::string& id);
         void DestroySound(const std::string& id);
 

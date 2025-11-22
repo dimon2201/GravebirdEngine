@@ -14,13 +14,13 @@ using namespace types;
 
 namespace realware
 {
-    sWAVStructure* LoadWAVFile(cMemoryPool* const memoryPool, const std::string& filename)
+    sWAVStructure* LoadWAVFile(cMemoryPool* memoryPool, const std::string& filename)
     {
         sWAVStructure* pWav = (sWAVStructure*)memoryPool->Allocate(sizeof(sWAVStructure));
         sWAVStructure* wav = new (pWav) sWAVStructure();
 
         FILE* fp = nullptr;
-        errno_t err = fopen_s(&fp, &filename.c_str()[0], "rb");
+        const errno_t err = fopen_s(&fp, &filename.c_str()[0], "rb");
         if (err != 0)
             Print("Error: can't open WAV file at '" + filename + "'!");
 
@@ -53,14 +53,14 @@ namespace realware
         fread(&wav->Subchunk2Size, sizeof(int), 1, fp);
 
         // Data
-        int NumSamples = wav->Subchunk2Size / (wav->NumChannels * (wav->BitsPerSample / 8));
+        const int NumSamples = wav->Subchunk2Size / (wav->NumChannels * (wav->BitsPerSample / 8));
         wav->DataByteSize = NumSamples * (wav->BitsPerSample / 8) * wav->NumChannels;
         wav->Data = (unsigned short*)memoryPool->Allocate(wav->DataByteSize);
         if (wav->BitsPerSample == 16 && wav->NumChannels == 2)
         {
             for (int i = 0; i < NumSamples; i++)
             {
-                int idx = i * 2;
+                const int idx = i * 2;
                 fread(&wav->Data[idx], sizeof(short), 1, fp);
                 fread(&wav->Data[idx + 1], sizeof(short), 1, fp);
             }
@@ -70,9 +70,9 @@ namespace realware
         return wav;
     }
 
-    cOpenALSoundContext::cOpenALSoundContext(const cApplication* const app)
+    cOpenALSoundContext::cOpenALSoundContext(cApplication* app)
     {
-        _app = (cApplication*)app;
+        _app = app;
         _device = alcOpenDevice(nullptr);
         _context = alcCreateContext(_device, nullptr);
         alcMakeContextCurrent(_context);
@@ -85,11 +85,11 @@ namespace realware
         alcCloseDevice(_device);
     }
 
-    void cOpenALSoundContext::Create(const std::string& filename, const eCategory& format, const sWAVStructure** const file, types::u32& source, types::u32& buffer)
+    void cOpenALSoundContext::Create(const std::string& filename, eCategory format, const sWAVStructure** file, types::u32& source, types::u32& buffer)
     {
         if (format == eCategory::SOUND_FORMAT_WAV)
         {
-            sWAVStructure* wavFile = LoadWAVFile(_app->GetMemoryPool(), filename);
+            const sWAVStructure* wavFile = LoadWAVFile(_app->GetMemoryPool(), filename);
             *file = wavFile;
 
             alGenSources(1, (ALuint*)&source);
@@ -140,22 +140,22 @@ namespace realware
         _app->GetMemoryPool()->Free(sound);
     }
 
-    void cOpenALSoundContext::Play(const cSound* const sound)
+    void cOpenALSoundContext::Play(const cSound* sound)
     {
         alSourcePlay(sound->GetSource());
     }
 
-    void cOpenALSoundContext::Stop(const cSound* const sound)
+    void cOpenALSoundContext::Stop(const cSound* sound)
     {
         alSourceStop(sound->GetSource());
     }
 
-    void cOpenALSoundContext::SetPosition(const cSound* const sound, const glm::vec3& position)
+    void cOpenALSoundContext::SetPosition(const cSound* sound, const glm::vec3& position)
     {
         alSource3f(sound->GetSource(), AL_POSITION, position.x, position.y, position.z);
     }
 
-    void cOpenALSoundContext::SetVelocity(const cSound* const sound, const glm::vec3& velocity)
+    void cOpenALSoundContext::SetVelocity(const cSound* sound, const glm::vec3& velocity)
     {
         alSource3f(sound->GetSource(), AL_VELOCITY, velocity.x, velocity.y, velocity.z);
     }

@@ -29,19 +29,15 @@ namespace realware
         friend class mGameObject;
 
     public:
-        explicit cGameObject(const std::string& id, const cApplication* const app, const cMemoryPool* const memoryPool);
+        explicit cGameObject(const std::string& id, cApplication* app, cMemoryPool* memoryPool);
         ~cGameObject() = default;
-            
-        inline std::string GetID() const { return _id; }
+        
         inline types::boolean GetVisible() const { return _isVisible; }
         inline types::boolean GetOpaque() const { return _isOpaque; }
         inline sVertexBufferGeometry* GetGeometry() const { return _geometry; }
         inline types::boolean GetIs2D() const { return _is2D; }
-        const glm::vec3& GetPosition() const;
-        const glm::vec3& GetRotation() const;
-        const glm::vec3& GetScale() const;
-        inline glm::mat4 GetWorldMatrix() const { return _world; }
-        inline glm::mat4 GetViewProjectionMatrix() const { return _viewProjection; }
+        inline const glm::mat4& GetWorldMatrix() const { return _world; }
+        inline const glm::mat4& GetViewProjectionMatrix() const { return _viewProjection; }
         inline sTransform* GetTransform() const { return _transform; }
         inline cMaterial* GetMaterial() const { return _material; }
         inline sText* GetText() const { return _text; }
@@ -49,20 +45,17 @@ namespace realware
         inline cPhysicsActor* GetPhysicsActor() const { return _actor; }
         inline cPhysicsController* GetPhysicsController() const { return _controller; }
 
-        inline void SetVisible(const types::boolean isVisible) { _isVisible = isVisible; }
-        inline void SetOpaque(const types::boolean isOpaque) { _isOpaque = isOpaque; }
-        inline void SetGeometry(const sVertexBufferGeometry* const geometry) { _geometry = (sVertexBufferGeometry*)geometry; }
-        inline void SetIs2D(const types::boolean is2D) { _is2D = is2D; }
-        void SetPosition(const glm::vec3& position);
-        void SetRotation(const glm::vec3& rotation);
-        void SetScale(const glm::vec3& scale);
+        inline void SetVisible(types::boolean isVisible) { _isVisible = isVisible; }
+        inline void SetOpaque(types::boolean isOpaque) { _isOpaque = isOpaque; }
+        inline void SetGeometry(sVertexBufferGeometry* geometry) { _geometry = geometry; }
+        inline void SetIs2D(types::boolean is2D) { _is2D = is2D; }
         inline void SetWorldMatrix(const glm::mat4& world) { _world = world; }
         inline void SetViewProjectionMatrix(const glm::mat4& viewProjection) { _viewProjection = viewProjection; }
-        inline void SetMaterial(const cMaterial* const material) { _material = (cMaterial*)material; }
-        inline void SetText(const sText* const text) { _text = (sText*)text; }
-        inline void SetLight(const sLight* const light) { _light = (sLight*)light; }
-        void SetPhysicsActor(const eCategory& staticOrDynamic, const eCategory& shapeType, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance, const types::f32 mass);
-        void SetPhysicsController(const types::f32 eyeHeight, const types::f32 height, const types::f32 radius, const glm::vec3& up, const cPhysicsSimulationScene* const scene, const cPhysicsSubstance* const substance);
+        inline void SetMaterial(cMaterial* material) { _material = material; }
+        inline void SetText(sText* text) { _text = text; }
+        inline void SetLight(sLight* light) { _light = light; }
+        void SetPhysicsActor(eCategory staticOrDynamic, eCategory shapeType, cPhysicsSimulationScene* scene, cPhysicsSubstance* substance, types::f32 mass);
+        void SetPhysicsController(types::f32 eyeHeight, types::f32 height, types::f32 radius, const glm::vec3& up, cPhysicsSimulationScene* scene, cPhysicsSubstance* substance);
 
     private:
         types::boolean _isVisible = types::K_TRUE;
@@ -82,7 +75,7 @@ namespace realware
     class mGameObject
     {
     public:
-        explicit mGameObject(const cApplication* const app);
+        explicit mGameObject(cApplication* app);
         ~mGameObject() = default;
 
         cGameObject* CreateGameObject(const std::string& id);

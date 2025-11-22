@@ -14,24 +14,24 @@ namespace realware
     class mCamera
     {
     public:
-        explicit mCamera(const cApplication* const app);
+        explicit mCamera(cApplication* app);
         ~mCamera() = default;
 
         void CreateCamera();
         void DestroyCamera();
         void Update();
-        void AddEuler(const eCategory& angle, const types::f32 value);
-        void Move(const types::f32 value);
-        void Strafe(const types::f32 value);
-        void Lift(const types::f32 value);
+        void AddEuler(eCategory angle, types::f32 value);
+        void Move(types::f32 value);
+        void Strafe(types::f32 value);
+        void Lift(types::f32 value);
 
         inline cGameObject* GetCameraGameObject() const { return _cameraGameObject; }
-        inline glm::mat4 GetViewProjectionMatrix() const { return _viewProjection; }
+        inline const glm::mat4& GetViewProjectionMatrix() const { return _viewProjection; }
         inline types::f32 GetMouseSensitivity() const { return _mouseSensitivity; }
         inline types::f32 GetMoveSpeed() const { return _moveSpeed; }
 
-        inline void SetMouseSensitivity(const types::f32 value) { _mouseSensitivity = value; }
-        inline void SetMoveSpeed(const types::f32 value) { _moveSpeed = value; }
+        inline void SetMouseSensitivity(types::f32 value) { _mouseSensitivity = value; }
+        inline void SetMoveSpeed(types::f32 value) { _moveSpeed = value; }
 
     private:
         static constexpr const char* K_CAMERA_ID = "__Camera";

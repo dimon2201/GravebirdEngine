@@ -18,10 +18,10 @@ namespace realware
     class cMemoryPool
     {
     public:
-        explicit cMemoryPool(const types::usize byteSize, const types::usize allocs, const types::usize alignment);
+        explicit cMemoryPool(types::usize byteSize, types::usize allocs, types::usize alignment);
         ~cMemoryPool();
 
-        void* Allocate(const types::usize size);
+        void* Allocate(types::usize size);
         bool Free(void* address);
 
         inline types::usize GetAllocCount() const { return _allocs.size(); }

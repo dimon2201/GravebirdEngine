@@ -75,7 +75,7 @@ namespace realware
             app->SetMouseKey(button, 1);
     }
 
-    cApplication::cApplication(const sApplicationDescriptor* const desc) : _desc(*desc)
+    cApplication::cApplication(const sApplicationDescriptor* desc) : _desc(*desc)
     {
         CreateMemoryPool();
         CreateAppWindow();
@@ -99,7 +99,7 @@ namespace realware
 
         while (GetRunState() == K_FALSE)
         {
-            auto currentTime = std::chrono::high_resolution_clock::now();
+            const auto currentTime = std::chrono::high_resolution_clock::now();
             std::chrono::duration<f32> elapsed = currentTime - _timepointLast;
             _deltaTime = elapsed.count();
             _timepointLast = currentTime;
@@ -132,7 +132,7 @@ namespace realware
         {
             glfwWindowHint(GLFW_DECORATED, 0);
 
-            glm::vec2 monitorSize = GetMonitorSize();
+            const glm::vec2 monitorSize = GetMonitorSize();
             _desc.WindowDesc.Width = monitorSize.x;
             _desc.WindowDesc.Height = monitorSize.y;
             _window = glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title.c_str(), glfwGetPrimaryMonitor(), nullptr);

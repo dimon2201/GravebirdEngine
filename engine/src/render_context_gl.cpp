@@ -43,7 +43,7 @@ namespace realware
         return out;
     }
 
-    cOpenGLRenderContext::cOpenGLRenderContext(const cApplication* const app) : _app((cApplication*)app)
+    cOpenGLRenderContext::cOpenGLRenderContext(cApplication* app) : _app(app)
     {
         if (glewInit() != GLEW_OK)
         {
@@ -66,11 +66,10 @@ namespace realware
     {
     }
 
-    sBuffer* cOpenGLRenderContext::CreateBuffer(const usize byteSize, const sBuffer::eType& type, const void* const data)
+    sBuffer* cOpenGLRenderContext::CreateBuffer(usize byteSize, sBuffer::eType type, const void* data)
     {
         sBuffer* pBuffer = (sBuffer*)_app->GetMemoryPool()->Allocate(sizeof(sBuffer));
         sBuffer* buffer = new (pBuffer) sBuffer();
-
         buffer->ByteSize = byteSize;
         buffer->Type = type;
         buffer->Slot = 0;
@@ -105,7 +104,7 @@ namespace realware
         return buffer;
     }
 
-    void cOpenGLRenderContext::BindBuffer(const sBuffer* const buffer)
+    void cOpenGLRenderContext::BindBuffer(const sBuffer* buffer)
     {
         if (buffer->Type == sBuffer::eType::VERTEX)
             glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->Instance);
@@ -117,7 +116,7 @@ namespace realware
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
     }
 		
-	void cOpenGLRenderContext::BindBufferNotVAO(const sBuffer* const buffer)
+	void cOpenGLRenderContext::BindBufferNotVAO(const sBuffer* buffer)
     {
         if (buffer->Type == sBuffer::eType::UNIFORM)
             glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, (GLuint)buffer->Instance);
@@ -125,20 +124,19 @@ namespace realware
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
     }
 
-    void cOpenGLRenderContext::UnbindBuffer(const sBuffer* const buffer)
+    void cOpenGLRenderContext::UnbindBuffer(const sBuffer* buffer)
     {
-        if (buffer->Type == sBuffer::eType::VERTEX) {
+        if (buffer->Type == sBuffer::eType::VERTEX)
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-        } else if (buffer->Type == sBuffer::eType::INDEX) {
+        else if (buffer->Type == sBuffer::eType::INDEX)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        } else if (buffer->Type == sBuffer::eType::UNIFORM) {
+        else if (buffer->Type == sBuffer::eType::UNIFORM)
             glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, 0);
-        } else if (buffer->Type == sBuffer::eType::LARGE) {
+        else if (buffer->Type == sBuffer::eType::LARGE)
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, 0);
-        }
     }
 
-    void cOpenGLRenderContext::WriteBuffer(const sBuffer* const buffer, const usize offset, const usize byteSize, const void* const data)
+    void cOpenGLRenderContext::WriteBuffer(const sBuffer* buffer, usize offset, usize byteSize, const void* data)
     {
         if (buffer->Type == sBuffer::eType::VERTEX)
         {
@@ -196,7 +194,7 @@ namespace realware
         return vertexArray;
     }
 
-    void cOpenGLRenderContext::BindVertexArray(const sVertexArray* const vertexArray)
+    void cOpenGLRenderContext::BindVertexArray(const sVertexArray* vertexArray)
     {
         glBindVertexArray((GLuint)vertexArray->Instance);
     }
@@ -235,9 +233,9 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::BindShader(const sShader* const shader)
+    void cOpenGLRenderContext::BindShader(const sShader* shader)
     {
-        auto shaderID = (GLuint)shader->Instance;
+        const GLuint shaderID = (GLuint)shader->Instance;
         glUseProgram(shaderID);
     }
 
@@ -246,7 +244,7 @@ namespace realware
         glUseProgram(0);
     }
 
-    sShader* cOpenGLRenderContext::CreateShader(const eCategory& renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<sShader::sDefinePair>& definePairs)
+    sShader* cOpenGLRenderContext::CreateShader(eCategory renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<sShader::sDefinePair>& definePairs)
     {
         sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
         sShader* shader = new (pShader) sShader();
@@ -279,7 +277,7 @@ namespace realware
                 break;
         }
 
-        std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
+        const std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
 
         sFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
         shader->Vertex = CleanShaderSource(std::string((const char*)vertexShaderFile->Data));
@@ -294,11 +292,11 @@ namespace realware
         const char* vertex = shader->Vertex.c_str();
         const char* fragment = shader->Fragment.c_str();
 
-        GLint vertexByteSize = strlen(vertex);
-        GLint fragmentByteSize = strlen(fragment);
+        const GLint vertexByteSize = strlen(vertex);
+        const GLint fragmentByteSize = strlen(fragment);
         shader->Instance = glCreateProgram();
-        auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
         glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
         glCompileShader(vertexShader);
@@ -315,7 +313,7 @@ namespace realware
             Print("Error: invalid shader!");
 
         GLint logBufferByteSize = 0;
-        char logBuffer[1024] = {};
+        GLchar logBuffer[1024] = {};
         glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
         if (logBufferByteSize > 0)
         {
@@ -339,7 +337,7 @@ namespace realware
         return shader;
     }
 
-    sShader* cOpenGLRenderContext::CreateShader(const sShader* const baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<sShader::sDefinePair>& definePairs)
+    sShader* cOpenGLRenderContext::CreateShader(const sShader* baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<sShader::sDefinePair>& definePairs)
     {
         sShader* pShader = (sShader*)_app->GetMemoryPool()->Allocate(sizeof(sShader));
         sShader* shader = new (pShader) sShader();
@@ -352,17 +350,17 @@ namespace realware
         shader->Vertex = baseShader->Vertex;
         shader->Fragment = baseShader->Fragment;
 
-        size_t vertexFuncDefinitionPos = shader->Vertex.find(vertexFuncDefinition);
+        const usize vertexFuncDefinitionPos = shader->Vertex.find(vertexFuncDefinition);
         if (vertexFuncDefinitionPos != std::string::npos)
             shader->Vertex.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexFunc);
-        size_t vertexFuncPasstroughCallPos = shader->Vertex.find(vertexFuncPassthroughCall);
+        const usize vertexFuncPasstroughCallPos = shader->Vertex.find(vertexFuncPassthroughCall);
         if (vertexFuncPasstroughCallPos != std::string::npos)
             shader->Vertex.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
 
-        size_t fragmentFuncDefinitionPos = shader->Fragment.find(fragmentFuncDefinition);
+        const usize fragmentFuncDefinitionPos = shader->Fragment.find(fragmentFuncDefinition);
         if (fragmentFuncDefinitionPos != std::string::npos)
             shader->Fragment.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentFunc);
-        size_t fragmentFuncPassthroughPos = shader->Fragment.find(fragmentFuncPassthroughCall);
+        const usize fragmentFuncPassthroughPos = shader->Fragment.find(fragmentFuncPassthroughCall);
         if (fragmentFuncPassthroughPos != std::string::npos)
             shader->Fragment.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
 
@@ -371,10 +369,10 @@ namespace realware
 
         DefineInShader(shader, definePairs);
 
-        size_t vertexVersionPos = shader->Vertex.find("#version 430");
+        const usize vertexVersionPos = shader->Vertex.find("#version 430");
         if (vertexVersionPos != std::string::npos)
             shader->Vertex.replace(vertexVersionPos, std::string("#version 430").length(), "");
-        size_t fragmentVersionPos = shader->Fragment.find("#version 430");
+        const usize fragmentVersionPos = shader->Fragment.find("#version 430");
         if (fragmentVersionPos != std::string::npos)
             shader->Fragment.replace(fragmentVersionPos, std::string("#version 430").length(), "");
 
@@ -383,11 +381,11 @@ namespace realware
 
         const char* vertex = shader->Vertex.c_str();
         const char* fragment = shader->Fragment.c_str();
-        GLint vertexByteSize = strlen(vertex);
-        GLint fragmentByteSize = strlen(fragment);
+        const GLint vertexByteSize = strlen(vertex);
+        const GLint fragmentByteSize = strlen(fragment);
         shader->Instance = glCreateProgram();
-        auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
         glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
         glCompileShader(vertexShader);
@@ -404,7 +402,7 @@ namespace realware
             Print("Error: invalid shader!");
 
         GLint logBufferByteSize = 0;
-        char logBuffer[1024] = {};
+        GLchar logBuffer[1024] = {};
         glGetShaderInfoLog(vertexShader, 1024, &logBufferByteSize, &logBuffer[0]);
         if (logBufferByteSize > 0)
         {
@@ -425,7 +423,7 @@ namespace realware
         return shader;
     }
 
-    void cOpenGLRenderContext::DefineInShader(sShader* const shader, const std::vector<sShader::sDefinePair>& definePairs)
+    void cOpenGLRenderContext::DefineInShader(sShader* shader, const std::vector<sShader::sDefinePair>& definePairs)
     {
         if (!definePairs.empty())
         {
@@ -449,17 +447,17 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::SetShaderUniform(const sShader* const shader, const std::string& name, const glm::mat4& matrix)
+    void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const std::string& name, const glm::mat4& matrix)
     {
         glUniformMatrix4fv(glGetUniformLocation(shader->Instance, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
     }
 
-    void cOpenGLRenderContext::SetShaderUniform(const sShader* const shader, const std::string& name, const usize count, const f32* const values)
+    void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const std::string& name, usize count, const f32* values)
     {
         glUniform4fv(glGetUniformLocation(shader->Instance, name.c_str()), count, &values[0]);
     }
 
-    sTexture* cOpenGLRenderContext::CreateTexture(const usize width, const usize height, const usize depth, const sTexture::eType& type, const sTexture::eFormat& format, const void* const data)
+    sTexture* cOpenGLRenderContext::CreateTexture(usize width, usize height, usize depth, sTexture::eType type, sTexture::eFormat format, const void* data)
     {
         sTexture* pTexture = (sTexture*)_app->GetMemoryPool()->Allocate(sizeof(sTexture));
         sTexture* texture = new (pTexture) sTexture();
@@ -570,10 +568,11 @@ namespace realware
         return newTexture;
     }
 
-    void cOpenGLRenderContext::BindTexture(const sShader* const shader, const std::string& name, const sTexture* const texture, s32 slot)
+    void cOpenGLRenderContext::BindTexture(const sShader* shader, const std::string& name, const sTexture* texture, s32 slot)
     {
         if (slot == -1)
             slot = texture->Slot;
+
         if (texture->Type == sTexture::eType::TEXTURE_2D)
         {
             glUniform1i(glGetUniformLocation(shader->Instance, name.c_str()), slot);
@@ -590,17 +589,18 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::UnbindTexture(const sTexture* const texture)
+    void cOpenGLRenderContext::UnbindTexture(const sTexture* texture)
     {
         if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
-    void cOpenGLRenderContext::WriteTexture(sTexture* const texture, const glm::vec3& offset, const glm::vec2& size, const void* const data)
+    void cOpenGLRenderContext::WriteTexture(const sTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data)
     {
         GLenum formatGL = GL_RGBA8;
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
+
         if (texture->Format == sTexture::eFormat::R8)
         {
             formatGL = GL_R8;
@@ -663,6 +663,7 @@ namespace realware
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
         usize formatByteCount = 4;
+
         if (texture->Format == sTexture::eFormat::RGBA8)
         {
             channelsGL = GL_RGBA;
@@ -672,9 +673,9 @@ namespace realware
 
         if (texture->Type == sTexture::eType::TEXTURE_2D)
         {
-            cMemoryPool* const memoryPool = _app->GetMemoryPool();
+            cMemoryPool* memoryPool = _app->GetMemoryPool();
 
-            char* pixels = (char*)memoryPool->Allocate(texture->Width * texture->Height * 4);
+            unsigned char* pixels = (unsigned char*)memoryPool->Allocate(texture->Width * texture->Height * 4);
 
             glBindTexture(GL_TEXTURE_2D, texture->Instance);
             glGetTexImage(GL_TEXTURE_2D, 0, channelsGL, formatComponentGL, pixels);
@@ -686,7 +687,7 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::GenerateTextureMips(sTexture* const texture)
+    void cOpenGLRenderContext::GenerateTextureMips(const sTexture* texture)
     {
         if (texture->Type == sTexture::eType::TEXTURE_2D)
         {
@@ -718,13 +719,13 @@ namespace realware
         }
     }
 
-    sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, const sTexture* const depthAttachment)
+    sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, sTexture* depthAttachment)
     {
         sRenderTarget* pRenderTarget = (sRenderTarget*)_app->GetMemoryPool()->Allocate(sizeof(sRenderTarget));
         sRenderTarget* renderTarget = new (pRenderTarget) sRenderTarget();
 
         renderTarget->ColorAttachments = colorAttachments;
-        renderTarget->DepthAttachment = (sTexture*)depthAttachment;
+        renderTarget->DepthAttachment = depthAttachment;
 
         GLenum buffs[16] = {};
         glGenFramebuffers(1, (GLuint*)&renderTarget->Instance);
@@ -745,7 +746,7 @@ namespace realware
         return renderTarget;
     }
 
-    void cOpenGLRenderContext::ResizeRenderTargetColors(sRenderTarget* const renderTarget, const glm::vec2& size)
+    void cOpenGLRenderContext::ResizeRenderTargetColors(sRenderTarget* renderTarget, const glm::vec2& size)
     {
         std::vector<sTexture*> newColorAttachments;
         for (auto attachment : renderTarget->ColorAttachments)
@@ -768,7 +769,7 @@ namespace realware
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void cOpenGLRenderContext::ResizeRenderTargetDepth(sRenderTarget* const renderTarget, const glm::vec2& size)
+    void cOpenGLRenderContext::ResizeRenderTargetDepth(sRenderTarget* renderTarget, const glm::vec2& size)
     {
         sTexture attachmentCopy = *renderTarget->DepthAttachment;
         DestroyTexture(renderTarget->DepthAttachment);
@@ -782,7 +783,7 @@ namespace realware
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void cOpenGLRenderContext::UpdateRenderTargetBuffers(const sRenderTarget* const renderTarget)
+    void cOpenGLRenderContext::UpdateRenderTargetBuffers(sRenderTarget* renderTarget)
     {
         GLenum buffs[16] = {};
         glGenFramebuffers(1, (GLuint*)&renderTarget->Instance);
@@ -797,7 +798,7 @@ namespace realware
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void cOpenGLRenderContext::BindRenderTarget(const sRenderTarget* const renderTarget)
+    void cOpenGLRenderContext::BindRenderTarget(const sRenderTarget* renderTarget)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
     }
@@ -879,13 +880,13 @@ namespace realware
         return renderPass;
     }
 
-    void cOpenGLRenderContext::BindRenderPass(const sRenderPass* const renderPass, const sShader* const customShader)
+    void cOpenGLRenderContext::BindRenderPass(const sRenderPass* renderPass, sShader* customShader)
     {
         sShader* shader = nullptr;
         if (customShader == nullptr)
             shader = renderPass->Desc.Shader;
         else
-            shader = (sShader*)customShader;
+            shader = customShader;
 
         BindShader(shader);
         BindVertexArray(renderPass->Desc.VertexArray);
@@ -902,7 +903,7 @@ namespace realware
             BindTexture(shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i], i);
     }
 
-    void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* const renderPass)
+    void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* renderPass)
     {
         UnbindVertexArray();
         if (renderPass->Desc.RenderTarget != nullptr)
@@ -994,12 +995,12 @@ namespace realware
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    void cOpenGLRenderContext::ClearFramebufferColor(const usize bufferIndex, const glm::vec4& color)
+    void cOpenGLRenderContext::ClearFramebufferColor(usize bufferIndex, const glm::vec4& color)
     {
         glClearBufferfv(GL_COLOR, bufferIndex, &color.x);
     }
 
-    void cOpenGLRenderContext::ClearFramebufferDepth(const f32 depth)
+    void cOpenGLRenderContext::ClearFramebufferDepth(f32 depth)
     {
         glClearDepth(depth);
         glClear(GL_DEPTH_BUFFER_BIT);

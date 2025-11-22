@@ -14,11 +14,11 @@ namespace realware
 	class cIdVecObject : public cObject
 	{
 	public:
-		explicit cIdVecObject(const std::string& id, const cApplication* const app) : _id(id), _app((cApplication*)app) {}
+		explicit cIdVecObject(const std::string& id, cApplication* app) : _id(id), _app(app) {}
 		~cIdVecObject() = default;
 
 		inline const std::string& GetID() const { return _id; }
-		inline const cApplication* GetApplication() const { return _app; }
+		inline cApplication* GetApplication() const { return _app; }
 
 	protected:
 		std::string _id = "";

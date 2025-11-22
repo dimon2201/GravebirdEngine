@@ -17,7 +17,7 @@ namespace realware
     class cTextureAtlasTexture : public cIdVecObject
     {
     public:
-        cTextureAtlasTexture(const std::string& id, const cApplication* const app, const types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size);
+        cTextureAtlasTexture(const std::string& id, cApplication* app, types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size);
         ~cTextureAtlasTexture() = default;
 
         inline types::boolean IsNormalized() const { return _isNormalized; }
@@ -39,10 +39,10 @@ namespace realware
     class mTexture
     {
     public:
-        explicit mTexture(const cApplication* const app, const iRenderContext* const context);
+        explicit mTexture(cApplication* app, iRenderContext* context);
         ~mTexture();
 
-        cTextureAtlasTexture* CreateTexture(const std::string& id, const glm::vec2& size, const types::usize channels, const types::u8* data);
+        cTextureAtlasTexture* CreateTexture(const std::string& id, const glm::vec2& size, types::usize channels, const types::u8* data);
         cTextureAtlasTexture* CreateTexture(const std::string& id, const std::string& filename);
         cTextureAtlasTexture* FindTexture(const std::string& id);
         void DestroyTexture(const std::string& id);
