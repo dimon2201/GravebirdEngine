@@ -16,8 +16,8 @@ namespace realware
 
     struct sGPUResource
     {
-        types::u32 Instance = 0;
-        types::u32 ViewInstance = 0;
+        types::u32 _instance = 0;
+        types::u32 _viewInstance = 0;
     };
 
     struct sBuffer : public sGPUResource
@@ -31,9 +31,9 @@ namespace realware
             LARGE = 4
         };
 
-        eType Type = eType::NONE;
-        types::usize ByteSize = 0;
-        types::s32 Slot = -1;
+        eType _type = eType::NONE;
+        types::usize _byteSize = 0;
+        types::s32 _slot = -1;
     };
 
     struct sVertexArray : public sGPUResource
@@ -51,8 +51,8 @@ namespace realware
             types::usize Index = 0;
         };
 
-        std::string Vertex = "";
-        std::string Fragment = "";
+        std::string _vertex = "";
+        std::string _fragment = "";
     };
 
     struct sTexture : public sGPUResource
@@ -76,24 +76,24 @@ namespace realware
             RGBA8_MIPS = 7
         };
 
-        types::usize Width = 0;
-        types::usize Height = 0;
-        types::usize Depth = 0;
-        eType Type = eType::NONE;
-        eFormat Format = eFormat::NONE;
-        types::s32 Slot = -1;
+        types::usize _width = 0;
+        types::usize _height = 0;
+        types::usize _depth = 0;
+        eType _type = eType::NONE;
+        eFormat _format = eFormat::NONE;
+        types::s32 _slot = -1;
     };
 
     struct sRenderTarget : public sGPUResource
     {
-        std::vector<sTexture*> ColorAttachments = {};
-        sTexture* DepthAttachment = nullptr;
+        std::vector<sTexture*> _colorAttachments = {};
+        sTexture* _depthAttachment = nullptr;
     };
 
     struct sDepthMode
     {
-        types::boolean UseDepthTest = types::K_TRUE;
-        types::boolean UseDepthWrite = types::K_TRUE;
+        types::boolean _useDepthTest = types::K_TRUE;
+        types::boolean _useDepthWrite = types::K_TRUE;
     };
 
     struct sBlendMode
@@ -108,36 +108,36 @@ namespace realware
             INV_SRC_ALPHA = 5
         };
 
-        types::usize FactorCount = 0;
-        eFactor SrcFactors[8] = { eFactor::ZERO };
-        eFactor DstFactors[8] = { eFactor::ZERO };
+        types::usize _factorCount = 0;
+        eFactor _srcFactors[8] = { eFactor::ZERO };
+        eFactor _dstFactors[8] = { eFactor::ZERO };
     };
 
     struct sRenderPass
     {
         struct sDescriptor
         {
-            sVertexArray* VertexArray = nullptr;
-            eCategory InputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-            std::vector<sBuffer*> InputBuffers = {};
-            std::vector<sTexture*> InputTextures = {};
-            std::vector<std::string> InputTextureNames = {};
-            std::vector<cTextureAtlasTexture*> InputTextureAtlasTextures = {};
-            std::vector<std::string> InputTextureAtlasTextureNames = {};
-            sShader* Shader = nullptr;
-            sShader* ShaderBase = nullptr;
-            eCategory ShaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
-            std::string ShaderVertexPath = "";
-            std::string ShaderFragmentPath = "";
-            std::string ShaderVertexFunc = "";
-            std::string ShaderFragmentFunc = "";
-            sRenderTarget* RenderTarget = nullptr;
-            sDepthMode DepthMode = {};
-            sBlendMode BlendMode = {};
-            glm::vec4 Viewport = glm::vec4(0.0f);
+            sVertexArray* _vertexArray = nullptr;
+            eCategory _inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+            std::vector<sBuffer*> _inputBuffers = {};
+            std::vector<sTexture*> _inputTextures = {};
+            std::vector<std::string> _inputTextureNames = {};
+            std::vector<cTextureAtlasTexture*> _inputTextureAtlasTextures = {};
+            std::vector<std::string> _inputTextureAtlasTextureNames = {};
+            sShader* _shader = nullptr;
+            sShader* _shaderBase = nullptr;
+            eCategory _shaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
+            std::string _shaderVertexPath = "";
+            std::string _shaderFragmentPath = "";
+            std::string _shaderVertexFunc = "";
+            std::string _shaderFragmentFunc = "";
+            sRenderTarget* _renderTarget = nullptr;
+            sDepthMode _depthMode = {};
+            sBlendMode _blendMode = {};
+            glm::vec4 _viewport = glm::vec4(0.0f);
         };
 
-        sDescriptor Desc;
+        sDescriptor _desc;
     };
 
     class iRenderContext : public cObject

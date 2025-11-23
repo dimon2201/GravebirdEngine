@@ -47,7 +47,7 @@ namespace realware
         _direction = quatZ * quatY * quatX * glm::vec3(0.0f, 0.0f, -1.0f);
 
         sTransform* transform = _cameraGameObject->GetTransform();
-        _view = glm::lookAtRH(transform->Position, transform->Position + _direction, glm::vec3(0.0f, 1.0f, 0.0f));
+        _view = glm::lookAtRH(transform->_position, transform->_position + _direction, glm::vec3(0.0f, 1.0f, 0.0f));
         _projection = glm::perspective(glm::radians(_fov), _app->GetWindowSize().x / _app->GetWindowSize().y, _zNear, _zFar);
         _viewProjection = _projection * _view;
 
@@ -97,8 +97,8 @@ namespace realware
         mPhysics* physics = _app->GetPhysicsManager();
         const cPhysicsController* controller = _cameraGameObject->GetPhysicsController();
         const sTransform* transform = _cameraGameObject->GetTransform();
-        const glm::vec3 position = transform->Position;
-        const glm::vec3 newPosition = transform->Position + _direction * value;
+        const glm::vec3 position = transform->_position;
+        const glm::vec3 newPosition = transform->_position + _direction * value;
         
         physics->MoveController(
             controller,
@@ -106,7 +106,7 @@ namespace realware
         );
         const glm::vec3 cameraPosition = physics->GetControllerPosition(controller);
 
-        _cameraGameObject->GetTransform()->Position = cameraPosition;
+        _cameraGameObject->GetTransform()->_position = cameraPosition;
     }
 
     void mCamera::Strafe(f32 value)
@@ -115,8 +115,8 @@ namespace realware
         const cPhysicsController* controller = _cameraGameObject->GetPhysicsController();
         const sTransform* transform = _cameraGameObject->GetTransform();
         const glm::vec3 right = glm::cross(_direction, glm::vec3(0.0f, 1.0f, 0.0f));
-        const glm::vec3 position = transform->Position;
-        const glm::vec3 newPosition = transform->Position + right * value;
+        const glm::vec3 position = transform->_position;
+        const glm::vec3 newPosition = transform->_position + right * value;
 
         physics->MoveController(
             controller,
@@ -124,7 +124,7 @@ namespace realware
         );
         const glm::vec3 cameraPosition = physics->GetControllerPosition(controller);
 
-        _cameraGameObject->GetTransform()->Position = cameraPosition;
+        _cameraGameObject->GetTransform()->_position = cameraPosition;
     }
 
     void mCamera::Lift(f32 value)
@@ -132,8 +132,8 @@ namespace realware
         mPhysics* physics = _app->GetPhysicsManager();
         const cPhysicsController* controller = _cameraGameObject->GetPhysicsController();
         const sTransform* transform = _cameraGameObject->GetTransform();
-        const glm::vec3 position = transform->Position;
-        const glm::vec3 newPosition = transform->Position + glm::vec3(0.0f, 1.0f, 0.0f) * value;
+        const glm::vec3 position = transform->_position;
+        const glm::vec3 newPosition = transform->_position + glm::vec3(0.0f, 1.0f, 0.0f) * value;
 
         physics->MoveController(
             controller,
@@ -141,6 +141,6 @@ namespace realware
         );
         const glm::vec3 cameraPosition = physics->GetControllerPosition(controller);
 
-        _cameraGameObject->GetTransform()->Position = cameraPosition;
+        _cameraGameObject->GetTransform()->_position = cameraPosition;
     }
 }

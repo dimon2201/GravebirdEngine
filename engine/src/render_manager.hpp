@@ -27,31 +27,31 @@ namespace realware
 
     struct sVertex
     {
-        glm::vec3 Position = glm::vec3(0.0f);
-        glm::vec2 Texcoord = glm::vec2(0.0f);
-        glm::vec3 Normal = glm::vec3(0.0f);
+        glm::vec3 _position = glm::vec3(0.0f);
+        glm::vec2 _texcoord = glm::vec2(0.0f);
+        glm::vec3 _normal = glm::vec3(0.0f);
     };
 
     struct sVertexBufferGeometry
     {
-        types::usize VertexCount = 0;
-        types::usize IndexCount = 0;
-        void* VertexPtr = nullptr;
-        void* IndexPtr = nullptr;
-        types::usize OffsetVertex = 0;
-        types::usize OffsetIndex = 0;
-        eCategory Format = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+        types::usize _vertexCount = 0;
+        types::usize _indexCount = 0;
+        void* _vertexPtr = nullptr;
+        void* _indexPtr = nullptr;
+        types::usize _offsetVertex = 0;
+        types::usize _offsetIndex = 0;
+        eCategory _format = eCategory::VERTEX_BUFFER_FORMAT_NONE;
     };
 
     struct sPrimitive
     {
-        sVertex* Vertices = nullptr;
-        index* Indices = nullptr;
-        types::usize VertexCount = 0;
-        types::usize IndexCount = 0;
-        types::usize VerticesByteSize = 0;
-        types::usize IndicesByteSize = 0;
-        eCategory Format = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+        sVertex* _vertices = nullptr;
+        index* _indices = nullptr;
+        types::usize _vertexCount = 0;
+        types::usize _indexCount = 0;
+        types::usize _verticesByteSize = 0;
+        types::usize _indicesByteSize = 0;
+        eCategory _format = eCategory::VERTEX_BUFFER_FORMAT_NONE;
     };
 
     struct sModel : sPrimitive
@@ -60,12 +60,12 @@ namespace realware
 
     struct sLight
     {
-        glm::vec3 Color = glm::vec3(0.0f);
-        glm::vec3 Direction = glm::vec3(0.0f);
-        types::f32 Scale = 0.0f;
-        types::f32 AttenuationConstant = 0.0f;
-        types::f32 AttenuationLinear = 0.0f;
-        types::f32 AttenuationQuadratic = 0.0f;
+        glm::vec3 _color = glm::vec3(0.0f);
+        glm::vec3 _direction = glm::vec3(0.0f);
+        types::f32 _scale = 0.0f;
+        types::f32 _attenuationConstant = 0.0f;
+        types::f32 _attenuationLinear = 0.0f;
+        types::f32 _attenuationQuadratic = 0.0f;
     };
 
     struct sTransform
@@ -75,11 +75,11 @@ namespace realware
 
         void Transform();
 
-        types::boolean Use2D = types::K_FALSE;
-        glm::vec3 Position = glm::vec3(0.0f);
-        glm::vec3 Rotation = glm::vec3(0.0f);
-        glm::vec3 Scale = glm::vec3(1.0f);
-        glm::mat4 World = glm::mat4(1.0f);
+        types::boolean _use2D = types::K_FALSE;
+        glm::vec3 _position = glm::vec3(0.0f);
+        glm::vec3 _rotation = glm::vec3(0.0f);
+        glm::vec3 _scale = glm::vec3(1.0f);
+        glm::mat4 _world = glm::mat4(1.0f);
     };
 
     class cMaterial : public cIdVecObject
@@ -105,16 +105,16 @@ namespace realware
     {
         sRenderInstance(types::s32 materialIndex, const sTransform& transform);
 
-        types::f32 Use2D = 0.0f;
-        types::s32 MaterialIndex = -1;
+        types::f32 _use2D = 0.0f;
+        types::s32 _materialIndex = -1;
         types::dword _pad[2] = {};
-        glm::mat4 World = {};
+        glm::mat4 _world = {};
     };
 
     struct sTextInstance
     {
-        glm::vec4 Info = glm::vec4(0.0f);
-        glm::vec4 AtlasInfo = glm::vec4(0.0f);
+        glm::vec4 _info = glm::vec4(0.0f);
+        glm::vec4 _atlasInfo = glm::vec4(0.0f);
     };
 
     class cMaterialInstance
@@ -137,10 +137,10 @@ namespace realware
     {
         sLightInstance(const cGameObject* object);
 
-        glm::vec4 Position = glm::vec4(0.0f);
-        glm::vec4 Color = glm::vec4(0.0f);
-        glm::vec4 DirectionAndScale = glm::vec4(0.0f);
-        glm::vec4 Attenuation = glm::vec4(0.0f);
+        glm::vec4 _position = glm::vec4(0.0f);
+        glm::vec4 _color = glm::vec4(0.0f);
+        glm::vec4 _directionAndScale = glm::vec4(0.0f);
+        glm::vec4 _attenuation = glm::vec4(0.0f);
     };
 
     class mRender : public cObject

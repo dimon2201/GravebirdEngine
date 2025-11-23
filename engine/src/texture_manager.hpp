@@ -33,8 +33,8 @@ namespace realware
 
     struct sTextureAtlasTextureGPU
     {
-        glm::vec4 TextureInfo = glm::vec4(0.0f);
-        types::f32 TextureLayerInfo = 0.0f;
+        glm::vec4 _textureInfo = glm::vec4(0.0f);
+        types::f32 _textureLayerInfo = 0.0f;
     };
 
     class mTexture : public cObject

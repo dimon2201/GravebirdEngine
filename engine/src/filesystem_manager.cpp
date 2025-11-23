@@ -32,17 +32,17 @@ namespace realware
         sFile* pFile = (sFile*)_app->GetMemoryPool()->Allocate(sizeof(sFile));
         sFile* file = new (pFile) sFile;
 
-        file->Data = data;
-        file->DataByteSize = databyteSize;
+        file->_data = data;
+        file->_dataByteSize = databyteSize;
 
         return file;
     }
 
     void mFileSystem::DestroyDataFile(sFile* file)
     {
-        void* fileData = file->Data;
+        void* fileData = file->_data;
 
-        if (fileData == nullptr || file->DataByteSize == 0)
+        if (fileData == nullptr || file->_dataByteSize == 0)
             return;
 
         _app->GetMemoryPool()->Free(fileData);

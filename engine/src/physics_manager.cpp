@@ -37,10 +37,10 @@ namespace realware
         _error(new cPhysicsError()),
         _cpuDispatcher(new cPhysicsCPUDispatcher()),
         _simulationEvent(new cPhysicsSimulationEvent()),
-        _scenes(_app, _app->GetDesc()->MaxPhysicsSceneCount),
-        _substances(_app, _app->GetDesc()->MaxPhysicsSubstanceCount),
-        _actors(_app, _app->GetDesc()->MaxPhysicsActorCount),
-        _controllers(_app, _app->GetDesc()->MaxPhysicsControllerCount)
+        _scenes(_app, _app->GetDesc()->_maxPhysicsSceneCount),
+        _substances(_app, _app->GetDesc()->_maxPhysicsSubstanceCount),
+        _actors(_app, _app->GetDesc()->_maxPhysicsActorCount),
+        _controllers(_app, _app->GetDesc()->_maxPhysicsControllerCount)
     {
         _foundation = PxCreateFoundation(PX_PHYSICS_VERSION, *_allocator, *_error);
         if (_foundation == nullptr)
@@ -90,7 +90,7 @@ namespace realware
 
     cPhysicsController* mPhysics::CreateController(const std::string& id, f32 eyeHeight, f32 height, f32 radius, const sTransform* transform, const glm::vec3& up, const cPhysicsSimulationScene* scene, const cPhysicsSubstance* substance)
     {
-        const glm::vec3 position = transform->Position;
+        const glm::vec3 position = transform->_position;
 
         PxCapsuleControllerDesc desc;
         desc.setToDefault();
@@ -110,8 +110,8 @@ namespace realware
 
     cPhysicsActor* mPhysics::CreateActor(const std::string& id, eCategory staticOrDynamic, eCategory shapeType, const cPhysicsSimulationScene* scene, const cPhysicsSubstance* substance, f32 mass, const sTransform* transform, cGameObject* gameObject)
     {
-        const glm::vec3 position = transform->Position;
-        const glm::vec3 scale = transform->Scale;
+        const glm::vec3 position = transform->_position;
+        const glm::vec3 scale = transform->_scale;
 
         PxTransform pose(PxVec3(position.y, position.x, position.z));
             
@@ -238,8 +238,8 @@ namespace realware
 
             {
                 std::lock_guard<std::mutex> lock(_mutex);
-                transform->Position = glm::vec3(actorTransform.p.y, actorTransform.p.x, actorTransform.p.z);
-                transform->Rotation = glm::vec3(actorEuler.y, actorEuler.x, actorEuler.z);
+                transform->_position = glm::vec3(actorTransform.p.y, actorTransform.p.x, actorTransform.p.z);
+                transform->_rotation = glm::vec3(actorEuler.y, actorEuler.x, actorEuler.z);
             }
         }
 

@@ -26,26 +26,26 @@ namespace realware
     {
         const sTransform* transform = gameObject->GetTransform();
 
-        Use2D = gameObject->GetIs2D();
-        Position = transform->Position;
-        Rotation = transform->Rotation;
-        Scale = transform->Scale;
+        _use2D = gameObject->GetIs2D();
+        _position = transform->_position;
+        _rotation = transform->_rotation;
+        _scale = transform->_scale;
     }
 
     void sTransform::Transform()
     {
-        const glm::quat quatX = glm::angleAxis(Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        const glm::quat quatY = glm::angleAxis(Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        const glm::quat quatZ = glm::angleAxis(Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        const glm::quat quatX = glm::angleAxis(_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        const glm::quat quatY = glm::angleAxis(_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        const glm::quat quatZ = glm::angleAxis(_rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-        World = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), Scale);
+        _world = glm::translate(glm::mat4(1.0f), _position) * glm::toMat4(quatZ * quatY * quatX) * glm::scale(glm::mat4(1.0f), _scale);
     }
 
     sRenderInstance::sRenderInstance(s32 materialIndex, const sTransform& transform)
     {
-        Use2D = transform.Use2D;
-        MaterialIndex = materialIndex;
-        World = transform.World;
+        _use2D = transform._use2D;
+        _materialIndex = materialIndex;
+        _world = transform._world;
     }
 
     cMaterialInstance::cMaterialInstance(s32 materialIndex, const cMaterial* material)
@@ -69,54 +69,54 @@ namespace realware
     sLightInstance::sLightInstance(const cGameObject* object)
     {
         const sLight* light = object->GetLight();
-        Position = glm::vec4(object->GetTransform()->Position, 0.0f);
-        Color = glm::vec4(light->Color, 0.0f);
-        DirectionAndScale = glm::vec4(light->Direction, light->Scale);
-        Attenuation = glm::vec4(
-            light->AttenuationConstant,
-            light->AttenuationLinear,
-            light->AttenuationQuadratic,
+        _position = glm::vec4(object->GetTransform()->_position, 0.0f);
+        _color = glm::vec4(light->_color, 0.0f);
+        _directionAndScale = glm::vec4(light->_direction, light->_scale);
+        _attenuation = glm::vec4(
+            light->_attenuationConstant,
+            light->_attenuationLinear,
+            light->_attenuationQuadratic,
             0.0f
         );
     }
 
-    mRender::mRender(cApplication* app, iRenderContext* context) : _app(app), _context(context), _materialsCPU(app, app->GetDesc()->MaxMaterialCount)
+    mRender::mRender(cApplication* app, iRenderContext* context) : _app(app), _context(context), _materialsCPU(app, app->GetDesc()->_maxMaterialCount)
     {
         cMemoryPool* memoryPool = _app->GetMemoryPool();
 
         const sApplicationDescriptor* desc = _app->GetDesc();
         const glm::vec2 windowSize = _app->GetWindowSize();
 
-        _maxOpaqueInstanceBufferByteSize = desc->MaxRenderOpaqueInstanceCount * sizeof(sRenderInstance);
-        _maxTransparentInstanceBufferByteSize = desc->MaxRenderTransparentInstanceCount * sizeof(sRenderInstance);
-        _maxTextInstanceBufferByteSize = desc->MaxRenderTextInstanceCount * sizeof(sRenderInstance);
-        _maxMaterialBufferByteSize = desc->MaxMaterialCount * sizeof(cMaterialInstance);
-        _maxLightBufferByteSize = desc->MaxLightCount * sizeof(sLightInstance);
-        _maxTextureAtlasTexturesBufferByteSize = desc->MaxTextureAtlasTextureCount * sizeof(sTextureAtlasTextureGPU);
+        _maxOpaqueInstanceBufferByteSize = desc->_maxRenderOpaqueInstanceCount * sizeof(sRenderInstance);
+        _maxTransparentInstanceBufferByteSize = desc->_maxRenderTransparentInstanceCount * sizeof(sRenderInstance);
+        _maxTextInstanceBufferByteSize = desc->_maxRenderTextInstanceCount * sizeof(sRenderInstance);
+        _maxMaterialBufferByteSize = desc->_maxMaterialCount * sizeof(cMaterialInstance);
+        _maxLightBufferByteSize = desc->_maxLightCount * sizeof(sLightInstance);
+        _maxTextureAtlasTexturesBufferByteSize = desc->_maxTextureAtlasTextureCount * sizeof(sTextureAtlasTextureGPU);
 
-        _vertexBuffer = _context->CreateBuffer(desc->VertexBufferSize, sBuffer::eType::VERTEX, nullptr);
-        _indexBuffer = _context->CreateBuffer(desc->IndexBufferSize, sBuffer::eType::INDEX, nullptr);
+        _vertexBuffer = _context->CreateBuffer(desc->_vertexBufferSize, sBuffer::eType::VERTEX, nullptr);
+        _indexBuffer = _context->CreateBuffer(desc->_indexBufferSize, sBuffer::eType::INDEX, nullptr);
         _opaqueInstanceBuffer = _context->CreateBuffer(_maxOpaqueInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _opaqueInstanceBuffer->Slot = 0;
+        _opaqueInstanceBuffer->_slot = 0;
         _transparentInstanceBuffer = _context->CreateBuffer(_maxTransparentInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _transparentInstanceBuffer->Slot = 0;
+        _transparentInstanceBuffer->_slot = 0;
         _textInstanceBuffer = _context->CreateBuffer(_maxTextInstanceBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _textInstanceBuffer->Slot = 0;
+        _textInstanceBuffer->_slot = 0;
         _opaqueMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _opaqueMaterialBuffer->Slot = 1;
+        _opaqueMaterialBuffer->_slot = 1;
         _textMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _textMaterialBuffer->Slot = 1;
+        _textMaterialBuffer->_slot = 1;
         _transparentMaterialBuffer = _context->CreateBuffer(_maxMaterialBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _transparentMaterialBuffer->Slot = 1;
+        _transparentMaterialBuffer->_slot = 1;
         _lightBuffer = _context->CreateBuffer(_maxLightBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _lightBuffer->Slot = 2;
+        _lightBuffer->_slot = 2;
         _opaqueTextureAtlasTexturesBuffer = _context->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _opaqueTextureAtlasTexturesBuffer->Slot = 3;
+        _opaqueTextureAtlasTexturesBuffer->_slot = 3;
         _transparentTextureAtlasTexturesBuffer = _context->CreateBuffer(_maxTextureAtlasTexturesBufferByteSize, sBuffer::eType::LARGE, nullptr);
-        _transparentTextureAtlasTexturesBuffer->Slot = 3;
-        _vertices = memoryPool->Allocate(desc->VertexBufferSize);
+        _transparentTextureAtlasTexturesBuffer->_slot = 3;
+        _vertices = memoryPool->Allocate(desc->_vertexBufferSize);
         _verticesByteSize = 0;
-        _indices = memoryPool->Allocate(desc->IndexBufferSize);
+        _indices = memoryPool->Allocate(desc->_indexBufferSize);
         _indicesByteSize = 0;
         _opaqueInstances = memoryPool->Allocate(_maxOpaqueInstanceBufferByteSize);
         _opaqueInstancesByteSize = 0;
@@ -150,103 +150,103 @@ namespace realware
 
         {
             sRenderPass::sDescriptor renderPassDesc;
-            renderPassDesc.InputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueInstanceBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueMaterialBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetLightBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetOpaqueTextureAtlasTexturesBuffer());
-            renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
-            renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-            renderPassDesc.ShaderBase = nullptr;
-            renderPassDesc.ShaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
-            renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
-            renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
-            renderPassDesc.RenderTarget = _opaqueRenderTarget;
-            renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-            renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
-            renderPassDesc.DepthMode.UseDepthWrite = K_TRUE;
-            renderPassDesc.BlendMode.FactorCount = 1;
-            renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
-            renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ZERO;
+            renderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetVertexBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetIndexBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetOpaqueInstanceBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetOpaqueMaterialBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetLightBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetOpaqueTextureAtlasTexturesBuffer());
+            renderPassDesc._inputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
+            renderPassDesc._inputTextureNames.emplace_back("TextureAtlas");
+            renderPassDesc._shaderBase = nullptr;
+            renderPassDesc._shaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
+            renderPassDesc._shaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+            renderPassDesc._shaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
+            renderPassDesc._renderTarget = _opaqueRenderTarget;
+            renderPassDesc._viewport = glm::vec4(0.0f, 0.0f, windowSize);
+            renderPassDesc._depthMode._useDepthTest = K_TRUE;
+            renderPassDesc._depthMode._useDepthWrite = K_TRUE;
+            renderPassDesc._blendMode._factorCount = 1;
+            renderPassDesc._blendMode._srcFactors[0] = sBlendMode::eFactor::ONE;
+            renderPassDesc._blendMode._dstFactors[0] = sBlendMode::eFactor::ZERO;
             _opaque = _context->CreateRenderPass(renderPassDesc);
         }
         {
             sRenderPass::sDescriptor renderPassDesc;
-            renderPassDesc.InputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetVertexBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetIndexBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetTransparentInstanceBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetTransparentMaterialBuffer());
-            renderPassDesc.InputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
-            renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-            renderPassDesc.ShaderBase = nullptr;
-            renderPassDesc.ShaderRenderPath = eCategory::RENDER_PATH_TRANSPARENT;
-            renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
-            renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
-            renderPassDesc.RenderTarget = _transparentRenderTarget;
-            renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-            renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
-            renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
-            renderPassDesc.BlendMode.FactorCount = 2;
-            renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
-            renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ONE;
-            renderPassDesc.BlendMode.SrcFactors[1] = sBlendMode::eFactor::ZERO;
-            renderPassDesc.BlendMode.DstFactors[1] = sBlendMode::eFactor::INV_SRC_COLOR;
+            renderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetVertexBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetIndexBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetTransparentInstanceBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetTransparentMaterialBuffer());
+            renderPassDesc._inputTextures.emplace_back(_app->GetTextureManager()->GetAtlas());
+            renderPassDesc._inputTextureNames.emplace_back("TextureAtlas");
+            renderPassDesc._shaderBase = nullptr;
+            renderPassDesc._shaderRenderPath = eCategory::RENDER_PATH_TRANSPARENT;
+            renderPassDesc._shaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+            renderPassDesc._shaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
+            renderPassDesc._renderTarget = _transparentRenderTarget;
+            renderPassDesc._viewport = glm::vec4(0.0f, 0.0f, windowSize);
+            renderPassDesc._depthMode._useDepthTest = K_TRUE;
+            renderPassDesc._depthMode._useDepthWrite = K_FALSE;
+            renderPassDesc._blendMode._factorCount = 2;
+            renderPassDesc._blendMode._srcFactors[0] = sBlendMode::eFactor::ONE;
+            renderPassDesc._blendMode._dstFactors[0] = sBlendMode::eFactor::ONE;
+            renderPassDesc._blendMode._srcFactors[1] = sBlendMode::eFactor::ZERO;
+            renderPassDesc._blendMode._dstFactors[1] = sBlendMode::eFactor::INV_SRC_COLOR;
             _transparent = _context->CreateRenderPass(renderPassDesc);
         }
         {
             sRenderPass::sDescriptor renderPassDesc;
-            renderPassDesc.InputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetTextInstanceBuffer());
-            renderPassDesc.InputBuffers.emplace_back(mRender::GetTextMaterialBuffer());
-            renderPassDesc.ShaderBase = nullptr;
-            renderPassDesc.ShaderRenderPath = eCategory::RENDER_PATH_TEXT;
-            renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
-            renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
-            renderPassDesc.RenderTarget = _opaqueRenderTarget;
-            renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-            renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
-            renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
+            renderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetTextInstanceBuffer());
+            renderPassDesc._inputBuffers.emplace_back(mRender::GetTextMaterialBuffer());
+            renderPassDesc._shaderBase = nullptr;
+            renderPassDesc._shaderRenderPath = eCategory::RENDER_PATH_TEXT;
+            renderPassDesc._shaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+            renderPassDesc._shaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
+            renderPassDesc._renderTarget = _opaqueRenderTarget;
+            renderPassDesc._viewport = glm::vec4(0.0f, 0.0f, windowSize);
+            renderPassDesc._depthMode._useDepthTest = K_FALSE;
+            renderPassDesc._depthMode._useDepthWrite = K_FALSE;
             _text = _context->CreateRenderPass(renderPassDesc);
         }
         {
             sRenderPass::sDescriptor renderPassDesc;
-            renderPassDesc.InputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-            renderPassDesc.InputTextures.emplace_back(_transparentRenderTarget->ColorAttachments[0]);
-            renderPassDesc.InputTextureNames.emplace_back("AccumulationTexture");
-            renderPassDesc.InputTextures.emplace_back(_transparentRenderTarget->ColorAttachments[1]);
-            renderPassDesc.InputTextureNames.emplace_back("RevealageTexture");
-            renderPassDesc.ShaderBase = nullptr;
-            renderPassDesc.ShaderRenderPath = eCategory::RENDER_PATH_TRANSPARENT_COMPOSITE;
-            renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
-            renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
-            renderPassDesc.RenderTarget = _opaqueRenderTarget;
-            renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-            renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
-            renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
-            renderPassDesc.BlendMode.FactorCount = 1;
-            renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::SRC_ALPHA;
-            renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::INV_SRC_ALPHA;
+            renderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+            renderPassDesc._inputTextures.emplace_back(_transparentRenderTarget->_colorAttachments[0]);
+            renderPassDesc._inputTextureNames.emplace_back("AccumulationTexture");
+            renderPassDesc._inputTextures.emplace_back(_transparentRenderTarget->_colorAttachments[1]);
+            renderPassDesc._inputTextureNames.emplace_back("RevealageTexture");
+            renderPassDesc._shaderBase = nullptr;
+            renderPassDesc._shaderRenderPath = eCategory::RENDER_PATH_TRANSPARENT_COMPOSITE;
+            renderPassDesc._shaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+            renderPassDesc._shaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
+            renderPassDesc._renderTarget = _opaqueRenderTarget;
+            renderPassDesc._viewport = glm::vec4(0.0f, 0.0f, windowSize);
+            renderPassDesc._depthMode._useDepthTest = K_FALSE;
+            renderPassDesc._depthMode._useDepthWrite = K_FALSE;
+            renderPassDesc._blendMode._factorCount = 1;
+            renderPassDesc._blendMode._srcFactors[0] = sBlendMode::eFactor::SRC_ALPHA;
+            renderPassDesc._blendMode._dstFactors[0] = sBlendMode::eFactor::INV_SRC_ALPHA;
             _compositeTransparent = _context->CreateRenderPass(renderPassDesc);
         }
         {
             sRenderPass::sDescriptor renderPassDesc;
-            renderPassDesc.InputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
-            renderPassDesc.InputTextures.emplace_back(_opaqueRenderTarget->ColorAttachments[0]);
-            renderPassDesc.InputTextureNames.emplace_back("ColorTexture");
-            renderPassDesc.ShaderBase = nullptr;
-            renderPassDesc.ShaderRenderPath = eCategory::RENDER_PATH_QUAD;
-            renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
-            renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
-            renderPassDesc.RenderTarget = nullptr;
-            renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize);
-            renderPassDesc.DepthMode.UseDepthTest = K_FALSE;
-            renderPassDesc.DepthMode.UseDepthWrite = K_FALSE;
-            renderPassDesc.BlendMode.FactorCount = 1;
-            renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
-            renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ZERO;
+            renderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_NONE;
+            renderPassDesc._inputTextures.emplace_back(_opaqueRenderTarget->_colorAttachments[0]);
+            renderPassDesc._inputTextureNames.emplace_back("ColorTexture");
+            renderPassDesc._shaderBase = nullptr;
+            renderPassDesc._shaderRenderPath = eCategory::RENDER_PATH_QUAD;
+            renderPassDesc._shaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+            renderPassDesc._shaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
+            renderPassDesc._renderTarget = nullptr;
+            renderPassDesc._viewport = glm::vec4(0.0f, 0.0f, windowSize);
+            renderPassDesc._depthMode._useDepthTest = K_FALSE;
+            renderPassDesc._depthMode._useDepthWrite = K_FALSE;
+            renderPassDesc._blendMode._factorCount = 1;
+            renderPassDesc._blendMode._srcFactors[0] = sBlendMode::eFactor::ONE;
+            renderPassDesc._blendMode._dstFactors[0] = sBlendMode::eFactor::ZERO;
             _compositeFinal = _context->CreateRenderPass(renderPassDesc);
         }
     }
@@ -279,9 +279,9 @@ namespace realware
             LoadShaderFiles(customVertexFuncPath, customFragmentFuncPath, vertexFunc, fragmentFunc);
 
             if (customShaderRenderPath == eCategory::RENDER_PATH_OPAQUE)
-                customShader = _context->CreateShader(_opaque->Desc.Shader, vertexFunc, fragmentFunc);
+                customShader = _context->CreateShader(_opaque->_desc._shader, vertexFunc, fragmentFunc);
             else if (customShaderRenderPath == eCategory::RENDER_PATH_TRANSPARENT)
-                customShader = _context->CreateShader(_transparent->Desc.Shader, vertexFunc, fragmentFunc);
+                customShader = _context->CreateShader(_transparent->_desc._shader, vertexFunc, fragmentFunc);
         }
 
         return _materialsCPU.Add(id, diffuseTexture, diffuseColor, highlightColor, customShader);
@@ -340,13 +340,13 @@ namespace realware
                 return nullptr;
         }
 
-        geometry->VertexCount = vertexCount;
-        geometry->IndexCount = indicesByteSize / sizeof(u32);
-        geometry->VertexPtr = _vertices;
-        geometry->IndexPtr = _indices;
-        geometry->OffsetVertex = vertexOffset;
-        geometry->OffsetIndex = _indicesByteSize;
-        geometry->Format = format;
+        geometry->_vertexCount = vertexCount;
+        geometry->_indexCount = indicesByteSize / sizeof(u32);
+        geometry->_vertexPtr = _vertices;
+        geometry->_indexPtr = _indices;
+        geometry->_offsetVertex = vertexOffset;
+        geometry->_offsetIndex = _indicesByteSize;
+        geometry->_format = format;
 
         _verticesByteSize += verticesByteSize;
         _indicesByteSize += indicesByteSize;
@@ -467,17 +467,17 @@ namespace realware
             _opaqueInstanceCount += 1;
         }
 
-        const std::vector<cTextureAtlasTexture*>& renderPassTextureAtlasTextures = renderPass->Desc.InputTextureAtlasTextures;
+        const std::vector<cTextureAtlasTexture*>& renderPassTextureAtlasTextures = renderPass->_desc._inputTextureAtlasTextures;
         for (const auto textureAtlasTexture : renderPassTextureAtlasTextures)
         {
             sTextureAtlasTextureGPU tatGPU;
-            tatGPU.TextureInfo = glm::vec4(
+            tatGPU._textureInfo = glm::vec4(
                 textureAtlasTexture->GetOffset().x,
                 textureAtlasTexture->GetOffset().y,
                 textureAtlasTexture->GetSize().x,
                 textureAtlasTexture->GetSize().y
             );
-            tatGPU.TextureLayerInfo = textureAtlasTexture->GetOffset().z;
+            tatGPU._textureLayerInfo = textureAtlasTexture->GetOffset().z;
 
             memcpy((void*)((usize)_opaqueTextureAtlasTextures + _opaqueTextureAtlasTexturesByteSize), &tatGPU, sizeof(sTextureAtlasTextureGPU));
             _opaqueTextureAtlasTexturesByteSize += sizeof(sTextureAtlasTextureGPU);
@@ -539,17 +539,17 @@ namespace realware
             _transparentInstanceCount += 1;
         }
 
-        const std::vector<cTextureAtlasTexture*>& renderPassTextureAtlasTextures = renderPass->Desc.InputTextureAtlasTextures;
+        const std::vector<cTextureAtlasTexture*>& renderPassTextureAtlasTextures = renderPass->_desc._inputTextureAtlasTextures;
         for (const auto textureAtlasTexture : renderPassTextureAtlasTextures)
         {
             sTextureAtlasTextureGPU tatGPU;
-            tatGPU.TextureInfo = glm::vec4(
+            tatGPU._textureInfo = glm::vec4(
                 textureAtlasTexture->GetOffset().x,
                 textureAtlasTexture->GetOffset().y,
                 textureAtlasTexture->GetSize().x,
                 textureAtlasTexture->GetSize().y
             );
-            tatGPU.TextureLayerInfo = textureAtlasTexture->GetOffset().z;
+            tatGPU._textureLayerInfo = textureAtlasTexture->GetOffset().z;
 
             memcpy((void*)((usize)_transparentTextureAtlasTextures + (usize)_transparentTextureAtlasTexturesByteSize), &tatGPU, sizeof(sTextureAtlasTextureGPU));
             _transparentTextureAtlasTexturesByteSize += sizeof(sTextureAtlasTextureGPU);
@@ -565,18 +565,18 @@ namespace realware
         if (renderPass == nullptr)
         {
             _context->BindRenderPass(_opaque);
-            _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            _context->SetShaderUniform(_opaque->_desc._shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
         }
         else
         {
             _context->BindRenderPass(renderPass);
-            _context->SetShaderUniform(renderPass->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            _context->SetShaderUniform(renderPass->_desc._shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
         }
 
         _context->Draw(
-            geometry->IndexCount,
-            geometry->OffsetVertex,
-            geometry->OffsetIndex,
+            geometry->_indexCount,
+            geometry->_offsetVertex,
+            geometry->_offsetIndex,
             _opaqueInstanceCount
         );
 
@@ -591,14 +591,14 @@ namespace realware
         _context->BindRenderPass(_opaque, singleShader);
 
         if (singleShader == nullptr)
-            _context->SetShaderUniform(_opaque->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            _context->SetShaderUniform(_opaque->_desc._shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
         else
             _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
             
         _context->Draw(
-            geometry->IndexCount,
-            geometry->OffsetVertex,
-            geometry->OffsetIndex,
+            geometry->_indexCount,
+            geometry->_offsetVertex,
+            geometry->_offsetIndex,
             _opaqueInstanceCount
         );
 
@@ -610,18 +610,18 @@ namespace realware
         if (renderPass == nullptr)
         {
             _context->BindRenderPass(_transparent);
-            _context->SetShaderUniform(_transparent->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            _context->SetShaderUniform(_transparent->_desc._shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
         }
         else
         {
             _context->BindRenderPass(renderPass);
-            _context->SetShaderUniform(renderPass->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            _context->SetShaderUniform(renderPass->_desc._shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
         }
 
         _context->Draw(
-            geometry->IndexCount,
-            geometry->OffsetVertex,
-            geometry->OffsetIndex,
+            geometry->_indexCount,
+            geometry->_offsetVertex,
+            geometry->_offsetIndex,
             _transparentInstanceCount
         );
 
@@ -640,12 +640,12 @@ namespace realware
         if (singleShader != nullptr)
             _context->SetShaderUniform(singleShader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
         else
-            _context->SetShaderUniform(_transparent->Desc.Shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
+            _context->SetShaderUniform(_transparent->_desc._shader, "ViewProjection", cameraObject->GetViewProjectionMatrix());
 
         _context->Draw(
-            geometry->IndexCount,
-            geometry->OffsetVertex,
-            geometry->OffsetIndex,
+            geometry->_indexCount,
+            geometry->_offsetVertex,
+            geometry->_offsetIndex,
             _transparentInstanceCount
         );
 
@@ -660,10 +660,10 @@ namespace realware
                 continue;
 
             const sText* text = it.GetText();
-            const sFont* textFont = text->Font;
-            const std::string& textString = text->Text;
-            const auto& alphabet = textFont->Alphabet;
-            const sTexture* atlas = text->Font->Atlas;
+            const sFont* textFont = text->_font;
+            const std::string& textString = text->_text;
+            const auto& alphabet = textFont->_alphabet;
+            const sTexture* atlas = text->_font->_atlas;
 
             _textInstancesByteSize = 0;
             _materialsMap->clear();
@@ -671,10 +671,10 @@ namespace realware
             const sTransform transform(&it);
 
             const glm::vec2 windowSize = _app->GetWindowSize();
-            const glm::vec2 textPosition = glm::vec2((transform.Position.x * 2.0f) - 1.0f, (transform.Position.y * 2.0f) - 1.0f);
+            const glm::vec2 textPosition = glm::vec2((transform._position.x * 2.0f) - 1.0f, (transform._position.y * 2.0f) - 1.0f);
             const glm::vec2 textScale = glm::vec2(
-                (1.0f / windowSize.x) * it.GetTransform()->Scale.x,
-                (1.0f / windowSize.y) * it.GetTransform()->Scale.y
+                (1.0f / windowSize.x) * it.GetTransform()->_scale.x,
+                (1.0f / windowSize.y) * it.GetTransform()->_scale.y
             );
 
             const usize charCount = textString.length();
@@ -686,18 +686,18 @@ namespace realware
                    
                 if (glyphChar == '\t')
                 {
-                    offset.x += textFont->OffsetTab * textScale.x;
+                    offset.x += textFont->_offsetTab * textScale.x;
                     continue;
                 }
                 else if (glyphChar == '\n')
                 {
                     offset.x = 0.0f;
-                    offset.y -= textFont->OffsetNewline * textScale.y;
+                    offset.y -= textFont->_offsetNewline * textScale.y;
                     continue;
                 }
                 else if (glyphChar == ' ')
                 {
-                    offset.x += textFont->OffsetSpace * textScale.x;
+                    offset.x += textFont->_offsetSpace * textScale.x;
                     continue;
                 }
 
@@ -707,16 +707,16 @@ namespace realware
                 const sGlyph& glyph = alphabetEntry->second;
 
                 sTextInstance t;
-                t.Info.x = textPosition.x + offset.x;
-                t.Info.y = textPosition.y + (offset.y - (float)((glyph.Height - glyph.Top) * textScale.y));
-                t.Info.z = (float)glyph.Width * textScale.x;
-                t.Info.w = (float)glyph.Height * textScale.y;
-                t.AtlasInfo.x = (float)glyph.AtlasXOffset / (float)atlas->Width;
-                t.AtlasInfo.y = (float)glyph.AtlasYOffset / (float)atlas->Height;
-                t.AtlasInfo.z = (float)glyph.Width / (float)atlas->Width;
-                t.AtlasInfo.w = (float)glyph.Height / (float)atlas->Height;
+                t._info.x = textPosition.x + offset.x;
+                t._info.y = textPosition.y + (offset.y - (float)((glyph._height - glyph._top) * textScale.y));
+                t._info.z = (float)glyph._width * textScale.x;
+                t._info.w = (float)glyph._height * textScale.y;
+                t._atlasInfo.x = (float)glyph._atlasXOffset / (float)atlas->_width;
+                t._atlasInfo.y = (float)glyph._atlasYOffset / (float)atlas->_height;
+                t._atlasInfo.z = (float)glyph._width / (float)atlas->_width;
+                t._atlasInfo.w = (float)glyph._height / (float)atlas->_height;
 
-                offset.x += glyph.AdvanceX * textScale.x;
+                offset.x += glyph._advanceX * textScale.x;
 
                 memcpy((void*)((usize)_textInstances + _textInstancesByteSize), &t, sizeof(sTextInstance));
                 _textInstancesByteSize += sizeof(sTextInstance);
@@ -732,7 +732,7 @@ namespace realware
             _context->WriteBuffer(_textMaterialBuffer, 0, _textMaterialsByteSize, _textMaterials);
 
             _context->BindRenderPass(_text);
-            _context->BindTexture(_text->Desc.Shader, "FontAtlas", atlas, 0);
+            _context->BindTexture(_text->_desc._shader, "FontAtlas", atlas, 0);
             _context->DrawQuads(actualCharCount);
             _context->UnbindRenderPass(_text);
         }
@@ -763,55 +763,54 @@ namespace realware
 
         if (primitive == eCategory::PRIMITIVE_TRIANGLE)
         {
-            primitiveObject->Format = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
-            primitiveObject->Vertices = (sVertex*)memoryPool->Allocate(sizeof(sVertex) * 3);
-            primitiveObject->Indices = (index*)memoryPool->Allocate(sizeof(index) * 3);
-            primitiveObject->VertexCount = 3;
-            primitiveObject->IndexCount = 3;
-            primitiveObject->VerticesByteSize = sizeof(sVertex) * 3;
-            primitiveObject->IndicesByteSize = sizeof(index) * 3;
-
-            primitiveObject->Vertices[0].Position[0] = -1.0f; primitiveObject->Vertices[0].Position[1] = -1.0f; primitiveObject->Vertices[0].Position[2] = 0.0f;
-            primitiveObject->Vertices[0].Texcoord[0] = 0.0f; primitiveObject->Vertices[0].Texcoord[1] = 0.0f;
-            primitiveObject->Vertices[0].Normal[0] = 0.0f; primitiveObject->Vertices[0].Normal[1] = 0.0f; primitiveObject->Vertices[0].Normal[2] = 1.0f;
-            primitiveObject->Vertices[1].Position[0] = 0.0f; primitiveObject->Vertices[1].Position[1] = 1.0f; primitiveObject->Vertices[1].Position[2] = 0.0f;
-            primitiveObject->Vertices[1].Texcoord[0] = 0.5f; primitiveObject->Vertices[1].Texcoord[1] = 1.0f;
-            primitiveObject->Vertices[1].Normal[0] = 0.0f; primitiveObject->Vertices[1].Normal[1] = 0.0f; primitiveObject->Vertices[1].Normal[2] = 1.0f;
-            primitiveObject->Vertices[2].Position[0] = 1.0f; primitiveObject->Vertices[2].Position[1] = -1.0f; primitiveObject->Vertices[2].Position[2] = 0.0f;
-            primitiveObject->Vertices[2].Texcoord[0] = 1.0f; primitiveObject->Vertices[2].Texcoord[1] = 0.0f;
-            primitiveObject->Vertices[2].Normal[0] = 0.0f; primitiveObject->Vertices[2].Normal[1] = 0.0f; primitiveObject->Vertices[2].Normal[2] = 1.0f;
-            primitiveObject->Indices[0] = 0;
-            primitiveObject->Indices[1] = 1;
-            primitiveObject->Indices[2] = 2;
+            primitiveObject->_format = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+            primitiveObject->_vertices = (sVertex*)memoryPool->Allocate(sizeof(sVertex) * 3);
+            primitiveObject->_indices = (index*)memoryPool->Allocate(sizeof(index) * 3);
+            primitiveObject->_vertexCount = 3;
+            primitiveObject->_indexCount = 3;
+            primitiveObject->_verticesByteSize = sizeof(sVertex) * 3;
+            primitiveObject->_indicesByteSize = sizeof(index) * 3;
+            primitiveObject->_vertices[0]._position[0] = -1.0f; primitiveObject->_vertices[0]._position[1] = -1.0f; primitiveObject->_vertices[0]._position[2] = 0.0f;
+            primitiveObject->_vertices[0]._texcoord[0] = 0.0f; primitiveObject->_vertices[0]._texcoord[1] = 0.0f;
+            primitiveObject->_vertices[0]._normal[0] = 0.0f; primitiveObject->_vertices[0]._normal[1] = 0.0f; primitiveObject->_vertices[0]._normal[2] = 1.0f;
+            primitiveObject->_vertices[1]._position[0] = 0.0f; primitiveObject->_vertices[1]._position[1] = 1.0f; primitiveObject->_vertices[1]._position[2] = 0.0f;
+            primitiveObject->_vertices[1]._texcoord[0] = 0.5f; primitiveObject->_vertices[1]._texcoord[1] = 1.0f;
+            primitiveObject->_vertices[1]._normal[0] = 0.0f; primitiveObject->_vertices[1]._normal[1] = 0.0f; primitiveObject->_vertices[1]._normal[2] = 1.0f;
+            primitiveObject->_vertices[2]._position[0] = 1.0f; primitiveObject->_vertices[2]._position[1] = -1.0f; primitiveObject->_vertices[2]._position[2] = 0.0f;
+            primitiveObject->_vertices[2]._texcoord[0] = 1.0f; primitiveObject->_vertices[2]._texcoord[1] = 0.0f;
+            primitiveObject->_vertices[2]._normal[0] = 0.0f; primitiveObject->_vertices[2]._normal[1] = 0.0f; primitiveObject->_vertices[2]._normal[2] = 1.0f;
+            primitiveObject->_indices[0] = 0;
+            primitiveObject->_indices[1] = 1;
+            primitiveObject->_indices[2] = 2;
         }
         else if (primitive == eCategory::PRIMITIVE_QUAD)
         {
-            primitiveObject->Format = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
-            primitiveObject->Vertices = (sVertex*)memoryPool->Allocate(sizeof(sVertex) * 4);
-            primitiveObject->Indices = (index*)memoryPool->Allocate(sizeof(index) * 6);
-            primitiveObject->VertexCount = 4;
-            primitiveObject->IndexCount = 6;
-            primitiveObject->VerticesByteSize = sizeof(sVertex) * 4;
-            primitiveObject->IndicesByteSize = sizeof(index) * 6;
+            primitiveObject->_format = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+            primitiveObject->_vertices = (sVertex*)memoryPool->Allocate(sizeof(sVertex) * 4);
+            primitiveObject->_indices = (index*)memoryPool->Allocate(sizeof(index) * 6);
+            primitiveObject->_vertexCount = 4;
+            primitiveObject->_indexCount = 6;
+            primitiveObject->_verticesByteSize = sizeof(sVertex) * 4;
+            primitiveObject->_indicesByteSize = sizeof(index) * 6;
 
-            primitiveObject->Vertices[0].Position[0] = -1.0f; primitiveObject->Vertices[0].Position[1] = -1.0f; primitiveObject->Vertices[0].Position[2] = 0.0f;
-            primitiveObject->Vertices[0].Texcoord[0] = 0.0f; primitiveObject->Vertices[0].Texcoord[1] = 0.0f;
-            primitiveObject->Vertices[0].Normal[0] = 0.0f; primitiveObject->Vertices[0].Normal[1] = 0.0f; primitiveObject->Vertices[0].Normal[2] = 1.0f;
-            primitiveObject->Vertices[1].Position[0] = -1.0f; primitiveObject->Vertices[1].Position[1] = 1.0f; primitiveObject->Vertices[1].Position[2] = 0.0f;
-            primitiveObject->Vertices[1].Texcoord[0] = 0.0f; primitiveObject->Vertices[1].Texcoord[1] = 1.0f;
-            primitiveObject->Vertices[1].Normal[0] = 0.0f; primitiveObject->Vertices[1].Normal[1] = 0.0f; primitiveObject->Vertices[1].Normal[2] = 1.0f;
-            primitiveObject->Vertices[2].Position[0] = 1.0f; primitiveObject->Vertices[2].Position[1] = -1.0f; primitiveObject->Vertices[2].Position[2] = 0.0f;
-            primitiveObject->Vertices[2].Texcoord[0] = 1.0f; primitiveObject->Vertices[2].Texcoord[1] = 0.0f;
-            primitiveObject->Vertices[2].Normal[0] = 0.0f; primitiveObject->Vertices[2].Normal[1] = 0.0f; primitiveObject->Vertices[2].Normal[2] = 1.0f;
-            primitiveObject->Vertices[3].Position[0] = 1.0f; primitiveObject->Vertices[3].Position[1] = 1.0f; primitiveObject->Vertices[3].Position[2] = 0.0f;
-            primitiveObject->Vertices[3].Texcoord[0] = 1.0f; primitiveObject->Vertices[3].Texcoord[1] = 1.0f;
-            primitiveObject->Vertices[3].Normal[0] = 0.0f; primitiveObject->Vertices[3].Normal[1] = 0.0f; primitiveObject->Vertices[3].Normal[2] = 1.0f;
-            primitiveObject->Indices[0] = 0;
-            primitiveObject->Indices[1] = 1;
-            primitiveObject->Indices[2] = 2;
-            primitiveObject->Indices[3] = 1;
-            primitiveObject->Indices[4] = 3;
-            primitiveObject->Indices[5] = 2;
+            primitiveObject->_vertices[0]._position[0] = -1.0f; primitiveObject->_vertices[0]._position[1] = -1.0f; primitiveObject->_vertices[0]._position[2] = 0.0f;
+            primitiveObject->_vertices[0]._texcoord[0] = 0.0f; primitiveObject->_vertices[0]._texcoord[1] = 0.0f;
+            primitiveObject->_vertices[0]._normal[0] = 0.0f; primitiveObject->_vertices[0]._normal[1] = 0.0f; primitiveObject->_vertices[0]._normal[2] = 1.0f;
+            primitiveObject->_vertices[1]._position[0] = -1.0f; primitiveObject->_vertices[1]._position[1] = 1.0f; primitiveObject->_vertices[1]._position[2] = 0.0f;
+            primitiveObject->_vertices[1]._texcoord[0] = 0.0f; primitiveObject->_vertices[1]._texcoord[1] = 1.0f;
+            primitiveObject->_vertices[1]._normal[0] = 0.0f; primitiveObject->_vertices[1]._normal[1] = 0.0f; primitiveObject->_vertices[1]._normal[2] = 1.0f;
+            primitiveObject->_vertices[2]._position[0] = 1.0f; primitiveObject->_vertices[2]._position[1] = -1.0f; primitiveObject->_vertices[2]._position[2] = 0.0f;
+            primitiveObject->_vertices[2]._texcoord[0] = 1.0f; primitiveObject->_vertices[2]._texcoord[1] = 0.0f;
+            primitiveObject->_vertices[2]._normal[0] = 0.0f; primitiveObject->_vertices[2]._normal[1] = 0.0f; primitiveObject->_vertices[2]._normal[2] = 1.0f;
+            primitiveObject->_vertices[3]._position[0] = 1.0f; primitiveObject->_vertices[3]._position[1] = 1.0f; primitiveObject->_vertices[3]._position[2] = 0.0f;
+            primitiveObject->_vertices[3]._texcoord[0] = 1.0f; primitiveObject->_vertices[3]._texcoord[1] = 1.0f;
+            primitiveObject->_vertices[3]._normal[0] = 0.0f; primitiveObject->_vertices[3]._normal[1] = 0.0f; primitiveObject->_vertices[3]._normal[2] = 1.0f;
+            primitiveObject->_indices[0] = 0;
+            primitiveObject->_indices[1] = 1;
+            primitiveObject->_indices[2] = 2;
+            primitiveObject->_indices[3] = 1;
+            primitiveObject->_indices[4] = 3;
+            primitiveObject->_indices[5] = 2;
         }
 
         return primitiveObject;
@@ -825,7 +824,7 @@ namespace realware
         sModel* pModel = (sModel*)_app->GetMemoryPool()->Allocate(sizeof(sModel));
         sModel* model = new (pModel) sModel();
 
-        model->Format = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+        model->_format = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
 
         // Load model
         Assimp::Importer importer;
@@ -839,40 +838,40 @@ namespace realware
 
         // Load vertices
         usize totalVertexCount = 0;
-        model->Vertices = (sVertex*)memoryPool->Allocate(scene->mMeshes[0]->mNumVertices * sizeof(sVertex));
-        memset(model->Vertices, 0, scene->mMeshes[0]->mNumVertices * sizeof(sVertex));
+        model->_vertices = (sVertex*)memoryPool->Allocate(scene->mMeshes[0]->mNumVertices * sizeof(sVertex));
+        memset(model->_vertices, 0, scene->mMeshes[0]->mNumVertices * sizeof(sVertex));
         for (usize i = 0; i < scene->mMeshes[0]->mNumVertices; i++)
         {
             const aiVector3D pos = scene->mMeshes[0]->mVertices[i];
             const aiVector3D uv = scene->mMeshes[0]->mTextureCoords[0][i];
             const aiVector3D normal = scene->mMeshes[0]->HasNormals() ? scene->mMeshes[0]->mNormals[i] : aiVector3D(1.0f, 1.0f, 1.0f);
 
-            model->Vertices[totalVertexCount].Position = glm::vec3(pos.x, pos.y, pos.z);
-            model->Vertices[totalVertexCount].Texcoord = glm::vec2(uv.x, uv.y);
-            model->Vertices[totalVertexCount].Normal = glm::vec3(normal.x, normal.y, normal.z);
+            model->_vertices[totalVertexCount]._position = glm::vec3(pos.x, pos.y, pos.z);
+            model->_vertices[totalVertexCount]._texcoord = glm::vec2(uv.x, uv.y);
+            model->_vertices[totalVertexCount]._normal = glm::vec3(normal.x, normal.y, normal.z);
 
             totalVertexCount += 1;
         }
 
         // Load indices
         usize totalIndexCount = 0;
-        model->Indices = (index*)memoryPool->Allocate(scene->mMeshes[0]->mNumFaces * 3 * sizeof(index));
-        memset(model->Indices, 0, scene->mMeshes[0]->mNumFaces * 3 * sizeof(index));
+        model->_indices = (index*)memoryPool->Allocate(scene->mMeshes[0]->mNumFaces * 3 * sizeof(index));
+        memset(model->_indices, 0, scene->mMeshes[0]->mNumFaces * 3 * sizeof(index));
         for (usize i = 0; i < scene->mMeshes[0]->mNumFaces; i++)
         {
             const aiFace face = scene->mMeshes[0]->mFaces[i];
             for (usize j = 0; j < face.mNumIndices; j++)
             {
-                model->Indices[totalIndexCount] = face.mIndices[j];
+                model->_indices[totalIndexCount] = face.mIndices[j];
 
                 totalIndexCount += 1;
             }
         }
 
-        model->VertexCount = totalVertexCount;
-        model->VerticesByteSize = totalVertexCount * sizeof(sVertex);
-        model->IndexCount = totalIndexCount;
-        model->IndicesByteSize = totalIndexCount * sizeof(index);
+        model->_vertexCount = totalVertexCount;
+        model->_verticesByteSize = totalVertexCount * sizeof(sVertex);
+        model->_indexCount = totalIndexCount;
+        model->_indicesByteSize = totalIndexCount * sizeof(index);
 
         return model;
     }
@@ -881,10 +880,10 @@ namespace realware
     {
         cMemoryPool* memoryPool = _app->GetMemoryPool();
 
-        if (primitiveObject->Vertices)
-            memoryPool->Free(primitiveObject->Vertices);
-        if (primitiveObject->Indices)
-            memoryPool->Free(primitiveObject->Indices);
+        if (primitiveObject->_vertices)
+            memoryPool->Free(primitiveObject->_vertices);
+        if (primitiveObject->_indices)
+            memoryPool->Free(primitiveObject->_indices);
         primitiveObject->~sPrimitive();
         memoryPool->Free(primitiveObject);
     }
@@ -893,8 +892,8 @@ namespace realware
     {
         sFile* vertexFuncFile = _app->GetFileSystemManager()->CreateDataFile(vertexFuncPath, K_TRUE);
         sFile* fragmentFuncFile = _app->GetFileSystemManager()->CreateDataFile(fragmentFuncPath, K_TRUE);
-        vertexFunc = std::string((const char*)vertexFuncFile->Data);
-        fragmentFunc = std::string((const char*)fragmentFuncFile->Data);
+        vertexFunc = std::string((const char*)vertexFuncFile->_data);
+        fragmentFunc = std::string((const char*)fragmentFuncFile->_data);
         _app->GetFileSystemManager()->DestroyDataFile(vertexFuncFile);
         _app->GetFileSystemManager()->DestroyDataFile(fragmentFuncFile);
     }
@@ -904,29 +903,29 @@ namespace realware
         _context->UnbindRenderPass(_opaque);
         _context->UnbindRenderPass(_transparent);
 
-        _opaque->Desc.Viewport[2] = size.x;
-        _opaque->Desc.Viewport[3] = size.y;
-        _context->ResizeRenderTargetColors(_opaque->Desc.RenderTarget, size);
-        _transparent->Desc.Viewport[2] = size.x;
-        _transparent->Desc.Viewport[3] = size.y;
-        _context->ResizeRenderTargetColors(_transparent->Desc.RenderTarget, size);
-        _text->Desc.Viewport[2] = size.x;
-        _text->Desc.Viewport[3] = size.y;
-        _opaque->Desc.RenderTarget->DepthAttachment = _context->ResizeTexture(_opaque->Desc.RenderTarget->DepthAttachment, size);
-        _transparent->Desc.RenderTarget->DepthAttachment = _opaque->Desc.RenderTarget->DepthAttachment;
-        _context->UpdateRenderTargetBuffers(_opaque->Desc.RenderTarget);
-        _context->UpdateRenderTargetBuffers(_transparent->Desc.RenderTarget);
+        _opaque->_desc._viewport[2] = size.x;
+        _opaque->_desc._viewport[3] = size.y;
+        _context->ResizeRenderTargetColors(_opaque->_desc._renderTarget, size);
+        _transparent->_desc._viewport[2] = size.x;
+        _transparent->_desc._viewport[3] = size.y;
+        _context->ResizeRenderTargetColors(_transparent->_desc._renderTarget, size);
+        _text->_desc._viewport[2] = size.x;
+        _text->_desc._viewport[3] = size.y;
+        _opaque->_desc._renderTarget->_depthAttachment = _context->ResizeTexture(_opaque->_desc._renderTarget->_depthAttachment, size);
+        _transparent->_desc._renderTarget->_depthAttachment = _opaque->_desc._renderTarget->_depthAttachment;
+        _context->UpdateRenderTargetBuffers(_opaque->_desc._renderTarget);
+        _context->UpdateRenderTargetBuffers(_transparent->_desc._renderTarget);
 
-        _compositeTransparent->Desc.Viewport[2] = size.x;
-        _compositeTransparent->Desc.Viewport[3] = size.y;
-        _compositeTransparent->Desc.InputTextures[0] = _transparent->Desc.RenderTarget->ColorAttachments[0];
-        _compositeTransparent->Desc.InputTextureNames[0] = "AccumulationTexture";
-        _compositeTransparent->Desc.InputTextures[1] = _transparent->Desc.RenderTarget->ColorAttachments[1];
-        _compositeTransparent->Desc.InputTextureNames[1] = "RevealageTexture";
+        _compositeTransparent->_desc._viewport[2] = size.x;
+        _compositeTransparent->_desc._viewport[3] = size.y;
+        _compositeTransparent->_desc._inputTextures[0] = _transparent->_desc._renderTarget->_colorAttachments[0];
+        _compositeTransparent->_desc._inputTextureNames[0] = "AccumulationTexture";
+        _compositeTransparent->_desc._inputTextures[1] = _transparent->_desc._renderTarget->_colorAttachments[1];
+        _compositeTransparent->_desc._inputTextureNames[1] = "RevealageTexture";
 
-        _compositeFinal->Desc.Viewport[2] = size.x;
-        _compositeFinal->Desc.Viewport[3] = size.y;
-        _compositeFinal->Desc.InputTextures[0] = _opaque->Desc.RenderTarget->ColorAttachments[0];
-        _compositeFinal->Desc.InputTextureNames[0] = "ColorTexture";
+        _compositeFinal->_desc._viewport[2] = size.x;
+        _compositeFinal->_desc._viewport[3] = size.y;
+        _compositeFinal->_desc._inputTextures[0] = _opaque->_desc._renderTarget->_colorAttachments[0];
+        _compositeFinal->_desc._inputTextureNames[0] = "ColorTexture";
     }
 }

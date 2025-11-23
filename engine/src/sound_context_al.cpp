@@ -25,44 +25,44 @@ namespace realware
             Print("Error: can't open WAV file at '" + filename + "'!");
 
         // Chunk
-        fread(&wav->Type[0], sizeof(char), 4, fp);
-        if (std::string((const char*)&wav->Type[0]) != std::string("RIFF"))
+        fread(&wav->_type[0], sizeof(char), 4, fp);
+        if (std::string((const char*)&wav->_type[0]) != std::string("RIFF"))
             Print("Error: not a RIFF file!");
 
-        fread(&wav->ChunkSize, sizeof(int), 1, fp);
-        fread(&wav->Format[0], sizeof(char), 4, fp);
-        if (std::string((const char*)&wav->Format[0]) != std::string("WAVE"))
+        fread(&wav->_chunkSize, sizeof(int), 1, fp);
+        fread(&wav->_format[0], sizeof(char), 4, fp);
+        if (std::string((const char*)&wav->_format[0]) != std::string("WAVE"))
             Print("Error: not a WAVE file!");
 
         // 1st Subchunk
-        fread(&wav->Subchunk1ID[0], sizeof(char), 4, fp);
-        if (std::string((const char*)&wav->Subchunk1ID[0]) != std::string("fmt "))
+        fread(&wav->_subchunk1ID[0], sizeof(char), 4, fp);
+        if (std::string((const char*)&wav->_subchunk1ID[0]) != std::string("fmt "))
             Print("Error: missing fmt header!");
-        fread(&wav->Subchunk1Size, sizeof(int), 1, fp);
-        fread(&wav->AudioFormat, sizeof(short), 1, fp);
-        fread(&wav->NumChannels, sizeof(short), 1, fp);
-        fread(&wav->SampleRate, sizeof(int), 1, fp);
-        fread(&wav->ByteRate, sizeof(int), 1, fp);
-        fread(&wav->BlockAlign, sizeof(short), 1, fp);
-        fread(&wav->BitsPerSample, sizeof(short), 1, fp);
+        fread(&wav->_subchunk1Size, sizeof(int), 1, fp);
+        fread(&wav->_audioFormat, sizeof(short), 1, fp);
+        fread(&wav->_numChannels, sizeof(short), 1, fp);
+        fread(&wav->_sampleRate, sizeof(int), 1, fp);
+        fread(&wav->_byteRate, sizeof(int), 1, fp);
+        fread(&wav->_blockAlign, sizeof(short), 1, fp);
+        fread(&wav->_bitsPerSample, sizeof(short), 1, fp);
 
         // 2nd Subchunk
-        fread(&wav->Subchunk2ID[0], sizeof(char), 4, fp);
-        if (std::string((const char*)&wav->Subchunk2ID[0]) != std::string("data"))
+        fread(&wav->_subchunk2ID[0], sizeof(char), 4, fp);
+        if (std::string((const char*)&wav->_subchunk2ID[0]) != std::string("data"))
             Print("Error: missing data header!");
-        fread(&wav->Subchunk2Size, sizeof(int), 1, fp);
+        fread(&wav->_subchunk2Size, sizeof(int), 1, fp);
 
         // Data
-        const int NumSamples = wav->Subchunk2Size / (wav->NumChannels * (wav->BitsPerSample / 8));
-        wav->DataByteSize = NumSamples * (wav->BitsPerSample / 8) * wav->NumChannels;
-        wav->Data = (unsigned short*)memoryPool->Allocate(wav->DataByteSize);
-        if (wav->BitsPerSample == 16 && wav->NumChannels == 2)
+        const int NumSamples = wav->_subchunk2Size / (wav->_numChannels * (wav->_bitsPerSample / 8));
+        wav->_dataByteSize = NumSamples * (wav->_bitsPerSample / 8) * wav->_numChannels;
+        wav->_data = (unsigned short*)memoryPool->Allocate(wav->_dataByteSize);
+        if (wav->_bitsPerSample == 16 && wav->_numChannels == 2)
         {
             for (int i = 0; i < NumSamples; i++)
             {
                 const int idx = i * 2;
-                fread(&wav->Data[idx], sizeof(short), 1, fp);
-                fread(&wav->Data[idx + 1], sizeof(short), 1, fp);
+                fread(&wav->_data[idx], sizeof(short), 1, fp);
+                fread(&wav->_data[idx + 1], sizeof(short), 1, fp);
             }
         }
         fclose(fp);
@@ -102,8 +102,8 @@ namespace realware
             alGenBuffers(1, (ALuint*)&buffer);
 
             ALenum wavFormat = AL_FORMAT_STEREO16;
-            bool stereo = (wavFile->NumChannels > 1);
-            switch (wavFile->BitsPerSample) {
+            bool stereo = (wavFile->_numChannels > 1);
+            switch (wavFile->_bitsPerSample) {
                 case 16:
                     if (stereo) {
                         wavFormat = AL_FORMAT_STEREO16;
@@ -124,7 +124,7 @@ namespace realware
                     break;
             }
 
-            alBufferData(buffer, wavFormat, wavFile->Data, wavFile->DataByteSize, wavFile->SampleRate);
+            alBufferData(buffer, wavFormat, wavFile->_data, wavFile->_dataByteSize, wavFile->_sampleRate);
             alSourcei(source, AL_BUFFER, buffer);
         }
     }

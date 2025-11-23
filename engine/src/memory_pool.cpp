@@ -40,27 +40,27 @@ namespace realware
 #endif
         for (auto& alloc : _allocs)
         {
-            if (alloc.FreeFlag == 1 && alloc.AllocationByteSize >= size)
+            if (alloc._freeFlag == 1 && alloc._allocationByteSize >= size)
             {
-                alloc.FreeFlag = 255;
-                alloc.OccupiedByteSize = size;
+                alloc._freeFlag = 255;
+                alloc._occupiedByteSize = size;
 
-                return alloc.Address;
+                return alloc._address;
             }
 
-            if ((usize)(alloc.AllocationByteSize - alloc.OccupiedByteSize) >= size)
+            if ((usize)(alloc._allocationByteSize - alloc._occupiedByteSize) >= size)
             {
                 sMemoryPoolAllocation newAlloc;
-                newAlloc.FreeFlag = 0;
-                newAlloc.AllocationByteSize = alloc.AllocationByteSize - alloc.OccupiedByteSize;
-                newAlloc.OccupiedByteSize = size;
-                newAlloc.Address = (void*)((usize)alloc.Address + (usize)alloc.OccupiedByteSize);
+                newAlloc._freeFlag = 0;
+                newAlloc._allocationByteSize = alloc._allocationByteSize - alloc._occupiedByteSize;
+                newAlloc._occupiedByteSize = size;
+                newAlloc._address = (void*)((usize)alloc._address + (usize)alloc._occupiedByteSize);
 
-                alloc.AllocationByteSize = alloc.OccupiedByteSize;
+                alloc._allocationByteSize = alloc._occupiedByteSize;
 
                 _allocs.emplace_back(newAlloc);
 
-                return newAlloc.Address;
+                return newAlloc._address;
             }
         }
 
@@ -72,29 +72,29 @@ namespace realware
         }
 
         sMemoryPoolAllocation newAlloc;
-        newAlloc.FreeFlag = 0;
-        newAlloc.AllocationByteSize = size;
-        newAlloc.OccupiedByteSize = size;
-        newAlloc.Address = _lastAddress;
+        newAlloc._freeFlag = 0;
+        newAlloc._allocationByteSize = size;
+        newAlloc._occupiedByteSize = size;
+        newAlloc._address = _lastAddress;
         _allocs.emplace_back(newAlloc);
 
         _lastAddress = (void*)((usize)_lastAddress + size);
 
-        return newAlloc.Address;
+        return newAlloc._address;
     }
 
     bool cMemoryPool::Free(void* address)
     {
         for (auto& alloc : _allocs)
         {
-            if (alloc.Address == address)
+            if (alloc._address == address)
             {
 #ifdef DEBUG
                 _bytesFreed += alloc.OccupiedByteSize;
                 _lastFreedBytes = alloc.OccupiedByteSize;
 #endif
-                alloc.FreeFlag = 1;
-                alloc.OccupiedByteSize = 0;
+                alloc._freeFlag = 1;
+                alloc._occupiedByteSize = 0;
 
                 return true;
             }

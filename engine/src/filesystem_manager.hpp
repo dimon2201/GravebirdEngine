@@ -11,8 +11,8 @@ namespace realware
         
     struct sFile
     {
-        types::u8* Data = nullptr;
-        types::usize DataByteSize = 0;
+        types::u8* _data = nullptr;
+        types::usize _dataByteSize = 0;
     };
 
     class mFileSystem : public cObject

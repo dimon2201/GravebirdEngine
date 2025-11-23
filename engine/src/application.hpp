@@ -33,34 +33,34 @@ namespace realware
     {
         struct sWindowDescriptor
         {
-            std::string Title = "DefaultWindow";
-            types::u32 Width = 640;
-            types::u32 Height = 480;
-            types::boolean IsFullscreen = types::K_FALSE;
+            std::string _title = "DefaultWindow";
+            types::u32 _width = 640;
+            types::u32 _height = 480;
+            types::boolean _isFullscreen = types::K_FALSE;
         };
 
-        sWindowDescriptor WindowDesc;
-        types::u32 MemoryPoolByteSize = 1 * 1024 * 1024;
-        types::u32 MemoryPoolReservedAllocations = 65536;
-        types::u32 MemoryPoolAlignment = 64;
-        types::u32 TextureAtlasWidth = 1920;
-        types::u32 TextureAtlasHeight = 1080;
-        types::u32 TextureAtlasDepth = 16;
-        types::u32 VertexBufferSize = 65536;
-        types::u32 IndexBufferSize = 65536;
-        types::u32 MaxRenderOpaqueInstanceCount = 65536;
-        types::u32 MaxRenderTransparentInstanceCount = 65536;
-        types::u32 MaxRenderTextInstanceCount = 65536;
-        types::u32 MaxMaterialCount = 65536;
-        types::u32 MaxLightCount = 65536;
-        types::u32 MaxTextureAtlasTextureCount = 65536;
-        types::u32 MaxGameObjectCount = 65536;
-        types::u32 MaxPhysicsSceneCount = 4;
-        types::u32 MaxPhysicsSubstanceCount = 256;
-        types::u32 MaxPhysicsActorCount = 65536;
-        types::u32 MaxPhysicsControllerCount = 4;
-        types::u32 MaxSoundCount = 65536;
-        types::u32 MaxTextureCount = 65536;
+        sWindowDescriptor _windowDesc;
+        types::u32 _memoryPoolByteSize = 1 * 1024 * 1024;
+        types::u32 _memoryPoolReservedAllocations = 65536;
+        types::u32 _memoryPoolAlignment = 64;
+        types::u32 _textureAtlasWidth = 1920;
+        types::u32 _textureAtlasHeight = 1080;
+        types::u32 _textureAtlasDepth = 16;
+        types::u32 _vertexBufferSize = 65536;
+        types::u32 _indexBufferSize = 65536;
+        types::u32 _maxRenderOpaqueInstanceCount = 65536;
+        types::u32 _maxRenderTransparentInstanceCount = 65536;
+        types::u32 _maxRenderTextInstanceCount = 65536;
+        types::u32 _maxMaterialCount = 65536;
+        types::u32 _maxLightCount = 65536;
+        types::u32 _maxTextureAtlasTextureCount = 65536;
+        types::u32 _maxGameObjectCount = 65536;
+        types::u32 _maxPhysicsSceneCount = 4;
+        types::u32 _maxPhysicsSubstanceCount = 256;
+        types::u32 _maxPhysicsActorCount = 65536;
+        types::u32 _maxPhysicsControllerCount = 4;
+        types::u32 _maxSoundCount = 65536;
+        types::u32 _maxTextureCount = 65536;
     };
 
     class cApplication : public cObject
@@ -103,8 +103,8 @@ namespace realware
         inline mThread* GetThreadManager() const { return _thread; }
         inline cMemoryPool* GetMemoryPool() const { return _memoryPool; }
         inline void* GetWindow() const { return _window; }
-        inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc.WindowDesc.Width, _desc.WindowDesc.Height); }
-        inline const std::string& GetWindowTitle() const { return _desc.WindowDesc.Title; }
+        inline glm::vec2 GetWindowSize() const { return glm::vec2(_desc._windowDesc._width, _desc._windowDesc._height); }
+        inline const std::string& GetWindowTitle() const { return _desc._windowDesc._title; }
         inline const HWND& GetWindowHWND() const { return glfwGetWin32Window((GLFWwindow*)_window); }
         inline types::boolean GetKey(int key) const { return _keys[key]; }
         inline types::boolean GetMouseKey(int key) const { return _mouseKeys[key]; }

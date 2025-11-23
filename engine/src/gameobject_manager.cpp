@@ -46,7 +46,7 @@ namespace realware
         );
     }
 
-    mGameObject::mGameObject(cApplication* app) : _app(app), _maxGameObjectCount(app->GetDesc()->MaxGameObjectCount), _gameObjects(_app, _maxGameObjectCount)
+    mGameObject::mGameObject(cApplication* app) : _app(app), _maxGameObjectCount(app->GetDesc()->_maxGameObjectCount), _gameObjects(_app, _maxGameObjectCount)
     {
     }
 

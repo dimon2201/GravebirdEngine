@@ -14,20 +14,20 @@ namespace realware
 {
     cTextureAtlasTexture::cTextureAtlasTexture(const std::string& id, cApplication* app, types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size) : cIdVecObject(id, app), _isNormalized(isNormalized), _offset(offset), _size(size) {}
 
-    mTexture::mTexture(cApplication* app, iRenderContext* context) : _app(app), _textures(app, app->GetDesc()->MaxTextureCount)
+    mTexture::mTexture(cApplication* app, iRenderContext* context) : _app(app), _textures(app, app->GetDesc()->_maxTextureCount)
     {
         sApplicationDescriptor* desc = _app->GetDesc();
 
         _context = context;
         _atlas = _context->CreateTexture(
-            desc->TextureAtlasWidth,
-            desc->TextureAtlasHeight,
-            desc->TextureAtlasDepth,
+            desc->_textureAtlasWidth,
+            desc->_textureAtlasHeight,
+            desc->_textureAtlasDepth,
             sTexture::eType::TEXTURE_2D_ARRAY,
             sTexture::eFormat::RGBA8_MIPS,
             nullptr
         );
-        _atlas->Slot = 0;
+        _atlas->_slot = 0;
     }
 
     mTexture::~mTexture()
@@ -49,11 +49,11 @@ namespace realware
 
         const auto textures = _textures.GetObjects();
         const usize texturesCount = _textures.GetObjectCount();
-        for (usize layer = 0; layer < _atlas->Depth; layer++)
+        for (usize layer = 0; layer < _atlas->_depth; layer++)
         {
-            for (usize y = 0; y < _atlas->Height; y++)
+            for (usize y = 0; y < _atlas->_height; y++)
             {
-                for (usize x = 0; x < _atlas->Width; x++)
+                for (usize x = 0; x < _atlas->_width; x++)
                 {
                     types::boolean isIntersecting = K_FALSE;
 
@@ -69,7 +69,7 @@ namespace realware
                             if ((area.GetOffset().z == layer &&
                                 area.GetOffset().x <= textureRect.z && area.GetOffset().x + area.GetSize().x >= textureRect.x &&
                                 area.GetOffset().y <= textureRect.w && area.GetOffset().y + area.GetSize().y >= textureRect.y) ||
-                                (x + width > _atlas->Width || y + height > _atlas->Height))
+                                (x + width > _atlas->_width || y + height > _atlas->_height))
                             {
                                 isIntersecting = K_FALSE;
                                 break;
@@ -78,8 +78,8 @@ namespace realware
                         else if (area.IsNormalized() == K_TRUE)
                         {
                             const glm::vec4 textureRectNorm = glm::vec4(
-                                (f32)x / (f32)_atlas->Width, (f32)y / (f32)_atlas->Height,
-                                ((f32)x + (f32)width) / (f32)_atlas->Width, ((f32)y + (f32)height) / (f32)_atlas->Height
+                                (f32)x / (f32)_atlas->_width, (f32)y / (f32)_atlas->_height,
+                                ((f32)x + (f32)width) / (f32)_atlas->_width, ((f32)y + (f32)height) / (f32)_atlas->_height
                             );
                             if ((area.GetOffset().z == layer &&
                                 area.GetOffset().x <= textureRectNorm.z && area.GetOffset().x + area.GetSize().x >= textureRectNorm.x &&
@@ -98,7 +98,7 @@ namespace realware
                         const glm::vec2 size = glm::vec2(width, height);
 
                         _context->WriteTexture(_atlas, offset, size, data);
-                        if (_atlas->Format == sTexture::eFormat::RGBA8_MIPS)
+                        if (_atlas->_format == sTexture::eFormat::RGBA8_MIPS)
                             _context->GenerateTextureMips(_atlas);
 
                         cTextureAtlasTexture* newTex = _textures.Add(id, K_FALSE, offset, size);
@@ -142,8 +142,8 @@ namespace realware
             area.GetID(),
             area.GetApplication(),
             types::K_TRUE,
-            glm::vec3(area.GetOffset().x / _atlas->Width, area.GetOffset().y / _atlas->Height, area.GetOffset().z),
-            glm::vec2(area.GetSize().x / _atlas->Width, area.GetSize().y / _atlas->Height)
+            glm::vec3(area.GetOffset().x / _atlas->_width, area.GetOffset().y / _atlas->_height, area.GetOffset().z),
+            glm::vec2(area.GetSize().x / _atlas->_width, area.GetSize().y / _atlas->_height)
         );
 
         return norm;
@@ -156,16 +156,16 @@ namespace realware
 
     usize mTexture::GetWidth() const
     {
-        return _atlas->Width;
+        return _atlas->_width;
     }
 
     usize mTexture::GetHeight() const
     {
-        return _atlas->Height;
+        return _atlas->_height;
     }
 
     usize mTexture::GetDepth() const
     {
-        return _atlas->Depth;
+        return _atlas->_depth;
     }
 }

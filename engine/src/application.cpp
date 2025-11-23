@@ -52,8 +52,8 @@ namespace realware
     {
         cApplication* app = (cApplication*)glfwGetWindowUserPointer(window);
 
-        app->_desc.WindowDesc.Width = width;
-        app->_desc.WindowDesc.Height = height;
+        app->_desc._windowDesc._width = width;
+        app->_desc._windowDesc._height = height;
             
         app->_render->ResizeWindow(glm::vec2(width, height));
     }
@@ -124,18 +124,18 @@ namespace realware
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        if (_desc.WindowDesc.IsFullscreen == K_FALSE)
+        if (_desc._windowDesc._isFullscreen == K_FALSE)
         {
-            _window = (void*)glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title.c_str(), nullptr, nullptr);
+            _window = (void*)glfwCreateWindow(_desc._windowDesc._width, _desc._windowDesc._height, _desc._windowDesc._title.c_str(), nullptr, nullptr);
         }
         else
         {
             glfwWindowHint(GLFW_DECORATED, 0);
 
             const glm::vec2 monitorSize = GetMonitorSize();
-            _desc.WindowDesc.Width = monitorSize.x;
-            _desc.WindowDesc.Height = monitorSize.y;
-            _window = glfwCreateWindow(_desc.WindowDesc.Width, _desc.WindowDesc.Height, _desc.WindowDesc.Title.c_str(), glfwGetPrimaryMonitor(), nullptr);
+            _desc._windowDesc._width = monitorSize.x;
+            _desc._windowDesc._height = monitorSize.y;
+            _window = glfwCreateWindow(_desc._windowDesc._width, _desc._windowDesc._height, _desc._windowDesc._title.c_str(), glfwGetPrimaryMonitor(), nullptr);
         }
 
         glfwSetWindowUserPointer((GLFWwindow*)_window, this);
@@ -159,7 +159,7 @@ namespace realware
 
     void cApplication::CreateMemoryPool()
     {
-        _memoryPool = new cMemoryPool(_desc.MemoryPoolByteSize, _desc.MemoryPoolReservedAllocations, _desc.MemoryPoolAlignment);
+        _memoryPool = new cMemoryPool(_desc._memoryPoolByteSize, _desc._memoryPoolReservedAllocations, _desc._memoryPoolAlignment);
     }
 
     void cApplication::CreateContexts()

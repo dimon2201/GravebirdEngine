@@ -70,33 +70,33 @@ namespace realware
     {
         sBuffer* pBuffer = (sBuffer*)_app->GetMemoryPool()->Allocate(sizeof(sBuffer));
         sBuffer* buffer = new (pBuffer) sBuffer();
-        buffer->ByteSize = byteSize;
-        buffer->Type = type;
-        buffer->Slot = 0;
+        buffer->_byteSize = byteSize;
+        buffer->_type = type;
+        buffer->_slot = 0;
 
-        glGenBuffers(1, (GLuint*)&buffer->Instance);
+        glGenBuffers(1, (GLuint*)&buffer->_instance);
 
-        if (buffer->Type == sBuffer::eType::VERTEX)
+        if (buffer->_type == sBuffer::eType::VERTEX)
         {
-            glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->Instance);
+            glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
-        else if (buffer->Type == sBuffer::eType::INDEX)
+        else if (buffer->_type == sBuffer::eType::INDEX)
         {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->Instance);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
-        else if (buffer->Type == sBuffer::eType::UNIFORM)
+        else if (buffer->_type == sBuffer::eType::UNIFORM)
         {
-            glBindBuffer(GL_UNIFORM_BUFFER, (GLuint)buffer->Instance);
+            glBindBuffer(GL_UNIFORM_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_UNIFORM_BUFFER, byteSize, data, GL_STATIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
-        else if (buffer->Type == sBuffer::eType::LARGE)
+        else if (buffer->_type == sBuffer::eType::LARGE)
         {
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, (GLuint)buffer->Instance);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_SHADER_STORAGE_BUFFER, byteSize, data, GL_STATIC_DRAW);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         }
@@ -106,59 +106,59 @@ namespace realware
 
     void cOpenGLRenderContext::BindBuffer(const sBuffer* buffer)
     {
-        if (buffer->Type == sBuffer::eType::VERTEX)
-            glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->Instance);
-        else if (buffer->Type == sBuffer::eType::INDEX)
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->Instance);
-        else if (buffer->Type == sBuffer::eType::UNIFORM)
-            glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, (GLuint)buffer->Instance);
-        else if (buffer->Type == sBuffer::eType::LARGE)
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
+        if (buffer->_type == sBuffer::eType::VERTEX)
+            glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->_instance);
+        else if (buffer->_type == sBuffer::eType::INDEX)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->_instance);
+        else if (buffer->_type == sBuffer::eType::UNIFORM)
+            glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, (GLuint)buffer->_instance);
+        else if (buffer->_type == sBuffer::eType::LARGE)
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, buffer->_instance);
     }
 		
 	void cOpenGLRenderContext::BindBufferNotVAO(const sBuffer* buffer)
     {
-        if (buffer->Type == sBuffer::eType::UNIFORM)
-            glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, (GLuint)buffer->Instance);
-        else if (buffer->Type == sBuffer::eType::LARGE)
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, buffer->Instance);
+        if (buffer->_type == sBuffer::eType::UNIFORM)
+            glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, (GLuint)buffer->_instance);
+        else if (buffer->_type == sBuffer::eType::LARGE)
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, buffer->_instance);
     }
 
     void cOpenGLRenderContext::UnbindBuffer(const sBuffer* buffer)
     {
-        if (buffer->Type == sBuffer::eType::VERTEX)
+        if (buffer->_type == sBuffer::eType::VERTEX)
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-        else if (buffer->Type == sBuffer::eType::INDEX)
+        else if (buffer->_type == sBuffer::eType::INDEX)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        else if (buffer->Type == sBuffer::eType::UNIFORM)
-            glBindBufferBase(GL_UNIFORM_BUFFER, buffer->Slot, 0);
-        else if (buffer->Type == sBuffer::eType::LARGE)
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->Slot, 0);
+        else if (buffer->_type == sBuffer::eType::UNIFORM)
+            glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, 0);
+        else if (buffer->_type == sBuffer::eType::LARGE)
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, 0);
     }
 
     void cOpenGLRenderContext::WriteBuffer(const sBuffer* buffer, usize offset, usize byteSize, const void* data)
     {
-        if (buffer->Type == sBuffer::eType::VERTEX)
+        if (buffer->_type == sBuffer::eType::VERTEX)
         {
-            glBindBuffer(GL_ARRAY_BUFFER, buffer->Instance);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer->_instance);
             glBufferSubData(GL_ARRAY_BUFFER, offset, byteSize, data);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
-        else if (buffer->Type == sBuffer::eType::INDEX)
+        else if (buffer->_type == sBuffer::eType::INDEX)
         {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->Instance);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->_instance);
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, byteSize, data);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
-        else if (buffer->Type == sBuffer::eType::UNIFORM)
+        else if (buffer->_type == sBuffer::eType::UNIFORM)
         {
-            glBindBuffer(GL_UNIFORM_BUFFER, buffer->Instance);
+            glBindBuffer(GL_UNIFORM_BUFFER, buffer->_instance);
             glBufferSubData(GL_UNIFORM_BUFFER, offset, byteSize, data);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
-        else if (buffer->Type == sBuffer::eType::LARGE)
+        else if (buffer->_type == sBuffer::eType::LARGE)
         {
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->Instance);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->_instance);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byteSize, data);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         }
@@ -166,16 +166,16 @@ namespace realware
 
     void cOpenGLRenderContext::DestroyBuffer(sBuffer* buffer)
     {
-        if (buffer->Type == sBuffer::eType::VERTEX)
+        if (buffer->_type == sBuffer::eType::VERTEX)
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-        else if (buffer->Type == sBuffer::eType::INDEX)
+        else if (buffer->_type == sBuffer::eType::INDEX)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        else if (buffer->Type == sBuffer::eType::UNIFORM)
+        else if (buffer->_type == sBuffer::eType::UNIFORM)
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        else if (buffer->Type == sBuffer::eType::LARGE)
+        else if (buffer->_type == sBuffer::eType::LARGE)
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-        glDeleteBuffers(1, (GLuint*)&buffer->Instance);
+        glDeleteBuffers(1, (GLuint*)&buffer->_instance);
 
         if (buffer != nullptr)
         {
@@ -189,14 +189,14 @@ namespace realware
         sVertexArray* pVertexArray = (sVertexArray*)_app->GetMemoryPool()->Allocate(sizeof(sVertexArray));
         sVertexArray* vertexArray = new (pVertexArray) sVertexArray();
 
-        glGenVertexArrays(1, (GLuint*)&vertexArray->Instance);
+        glGenVertexArrays(1, (GLuint*)&vertexArray->_instance);
 
         return vertexArray;
     }
 
     void cOpenGLRenderContext::BindVertexArray(const sVertexArray* vertexArray)
     {
-        glBindVertexArray((GLuint)vertexArray->Instance);
+        glBindVertexArray((GLuint)vertexArray->_instance);
     }
 
     void cOpenGLRenderContext::BindDefaultVertexArray(const std::vector<sBuffer*>& buffersToBind)
@@ -224,7 +224,7 @@ namespace realware
 
     void cOpenGLRenderContext::DestroyVertexArray(sVertexArray* vertexArray)
     {
-        glDeleteVertexArrays(1, (GLuint*)&vertexArray->Instance);
+        glDeleteVertexArrays(1, (GLuint*)&vertexArray->_instance);
 
         if (vertexArray != nullptr)
         {
@@ -235,7 +235,7 @@ namespace realware
 
     void cOpenGLRenderContext::BindShader(const sShader* shader)
     {
-        const GLuint shaderID = (GLuint)shader->Instance;
+        const GLuint shaderID = (GLuint)shader->_instance;
         glUseProgram(shaderID);
     }
 
@@ -280,36 +280,36 @@ namespace realware
         const std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
 
         sFile* vertexShaderFile = _app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
-        shader->Vertex = CleanShaderSource(std::string((const char*)vertexShaderFile->Data));
+        shader->_vertex = CleanShaderSource(std::string((const char*)vertexShaderFile->_data));
         sFile* fragmentShaderFile = _app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
-        shader->Fragment = CleanShaderSource(std::string((const char*)fragmentShaderFile->Data));
+        shader->_fragment = CleanShaderSource(std::string((const char*)fragmentShaderFile->_data));
             
         DefineInShader(shader, definePairs);
 
-        shader->Vertex = appendStr + shader->Vertex;
-        shader->Fragment = appendStr + shader->Fragment;
+        shader->_vertex = appendStr + shader->_vertex;
+        shader->_fragment = appendStr + shader->_fragment;
 
-        const char* vertex = shader->Vertex.c_str();
-        const char* fragment = shader->Fragment.c_str();
+        const char* vertex = shader->_vertex.c_str();
+        const char* fragment = shader->_fragment.c_str();
 
         const GLint vertexByteSize = strlen(vertex);
         const GLint fragmentByteSize = strlen(fragment);
-        shader->Instance = glCreateProgram();
+        shader->_instance = glCreateProgram();
         const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
         glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
         glCompileShader(vertexShader);
         glCompileShader(fragmentShader);
-        glAttachShader(shader->Instance, vertexShader);
-        glAttachShader(shader->Instance, fragmentShader);
-        glLinkProgram(shader->Instance);
+        glAttachShader(shader->_instance, vertexShader);
+        glAttachShader(shader->_instance, fragmentShader);
+        glLinkProgram(shader->_instance);
 			
         GLint success;
-        glGetProgramiv((GLuint)shader->Instance, GL_LINK_STATUS, &success);
+        glGetProgramiv((GLuint)shader->_instance, GL_LINK_STATUS, &success);
         if (!success)
             Print("Error: can't link shader!");
-        if (!glIsProgram((GLuint)shader->Instance))
+        if (!glIsProgram((GLuint)shader->_instance))
             Print("Error: invalid shader!");
 
         GLint logBufferByteSize = 0;
@@ -347,58 +347,58 @@ namespace realware
         const std::string fragmentFuncDefinition = "void Fragment_Func(in vec2 _texcoord, in vec4 _textureColor, in vec4 _materialDiffuseColor, out vec4 _fragColor){}";
         const std::string fragmentFuncPassthroughCall = "Fragment_Passthrough(textureColor, DiffuseColor, fragColor);";
 
-        shader->Vertex = baseShader->Vertex;
-        shader->Fragment = baseShader->Fragment;
+        shader->_vertex = baseShader->_vertex;
+        shader->_fragment = baseShader->_fragment;
 
-        const usize vertexFuncDefinitionPos = shader->Vertex.find(vertexFuncDefinition);
+        const usize vertexFuncDefinitionPos = shader->_vertex.find(vertexFuncDefinition);
         if (vertexFuncDefinitionPos != std::string::npos)
-            shader->Vertex.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexFunc);
-        const usize vertexFuncPasstroughCallPos = shader->Vertex.find(vertexFuncPassthroughCall);
+            shader->_vertex.replace(vertexFuncDefinitionPos, vertexFuncDefinition.length(), vertexFunc);
+        const usize vertexFuncPasstroughCallPos = shader->_vertex.find(vertexFuncPassthroughCall);
         if (vertexFuncPasstroughCallPos != std::string::npos)
-            shader->Vertex.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
+            shader->_vertex.replace(vertexFuncPasstroughCallPos, vertexFuncPassthroughCall.length(), "");
 
-        const usize fragmentFuncDefinitionPos = shader->Fragment.find(fragmentFuncDefinition);
+        const usize fragmentFuncDefinitionPos = shader->_fragment.find(fragmentFuncDefinition);
         if (fragmentFuncDefinitionPos != std::string::npos)
-            shader->Fragment.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentFunc);
-        const usize fragmentFuncPassthroughPos = shader->Fragment.find(fragmentFuncPassthroughCall);
+            shader->_fragment.replace(fragmentFuncDefinitionPos, fragmentFuncDefinition.length(), fragmentFunc);
+        const usize fragmentFuncPassthroughPos = shader->_fragment.find(fragmentFuncPassthroughCall);
         if (fragmentFuncPassthroughPos != std::string::npos)
-            shader->Fragment.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
+            shader->_fragment.replace(fragmentFuncPassthroughPos, fragmentFuncPassthroughCall.length(), "");
 
-        shader->Vertex = CleanShaderSource(shader->Vertex);
-        shader->Fragment = CleanShaderSource(shader->Fragment);
+        shader->_vertex = CleanShaderSource(shader->_vertex);
+        shader->_fragment = CleanShaderSource(shader->_fragment);
 
         DefineInShader(shader, definePairs);
 
-        const usize vertexVersionPos = shader->Vertex.find("#version 430");
+        const usize vertexVersionPos = shader->_vertex.find("#version 430");
         if (vertexVersionPos != std::string::npos)
-            shader->Vertex.replace(vertexVersionPos, std::string("#version 430").length(), "");
-        const usize fragmentVersionPos = shader->Fragment.find("#version 430");
+            shader->_vertex.replace(vertexVersionPos, std::string("#version 430").length(), "");
+        const usize fragmentVersionPos = shader->_fragment.find("#version 430");
         if (fragmentVersionPos != std::string::npos)
-            shader->Fragment.replace(fragmentVersionPos, std::string("#version 430").length(), "");
+            shader->_fragment.replace(fragmentVersionPos, std::string("#version 430").length(), "");
 
-        shader->Vertex = "#version 430\n\n" + shader->Vertex;
-        shader->Fragment = "#version 430\n\n" + shader->Fragment;
+        shader->_vertex = "#version 430\n\n" + shader->_vertex;
+        shader->_fragment = "#version 430\n\n" + shader->_fragment;
 
-        const char* vertex = shader->Vertex.c_str();
-        const char* fragment = shader->Fragment.c_str();
+        const char* vertex = shader->_vertex.c_str();
+        const char* fragment = shader->_fragment.c_str();
         const GLint vertexByteSize = strlen(vertex);
         const GLint fragmentByteSize = strlen(fragment);
-        shader->Instance = glCreateProgram();
+        shader->_instance = glCreateProgram();
         const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(vertexShader, 1, &vertex, &vertexByteSize);
         glShaderSource(fragmentShader, 1, &fragment, &fragmentByteSize);
         glCompileShader(vertexShader);
         glCompileShader(fragmentShader);
-        glAttachShader(shader->Instance, vertexShader);
-        glAttachShader(shader->Instance, fragmentShader);
-        glLinkProgram(shader->Instance);
+        glAttachShader(shader->_instance, vertexShader);
+        glAttachShader(shader->_instance, fragmentShader);
+        glLinkProgram(shader->_instance);
 
         GLint success;
-        glGetProgramiv((GLuint)shader->Instance, GL_LINK_STATUS, &success);
+        glGetProgramiv((GLuint)shader->_instance, GL_LINK_STATUS, &success);
         if (!success)
             Print("Error: can't link shader!");
-        if (!glIsProgram((GLuint)shader->Instance))
+        if (!glIsProgram((GLuint)shader->_instance))
             Print("Error: invalid shader!");
 
         GLint logBufferByteSize = 0;
@@ -431,14 +431,14 @@ namespace realware
             for (const auto& define : definePairs)
                 defineStr += "#define " + define.Name + " " + std::to_string(define.Index) + "\n";
 
-            shader->Vertex = defineStr + shader->Vertex;
-            shader->Fragment = defineStr + shader->Fragment;
+            shader->_vertex = defineStr + shader->_vertex;
+            shader->_fragment = defineStr + shader->_fragment;
         }
     }
 
     void cOpenGLRenderContext::DestroyShader(sShader* shader)
     {
-        glDeleteProgram(shader->Instance);
+        glDeleteProgram(shader->_instance);
 
         if (shader != nullptr)
         {
@@ -449,12 +449,12 @@ namespace realware
 
     void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const std::string& name, const glm::mat4& matrix)
     {
-        glUniformMatrix4fv(glGetUniformLocation(shader->Instance, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader->_instance, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
     }
 
     void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const std::string& name, usize count, const f32* values)
     {
-        glUniform4fv(glGetUniformLocation(shader->Instance, name.c_str()), count, &values[0]);
+        glUniform4fv(glGetUniformLocation(shader->_instance, name.c_str()), count, &values[0]);
     }
 
     sTexture* cOpenGLRenderContext::CreateTexture(usize width, usize height, usize depth, sTexture::eType type, sTexture::eFormat format, const void* data)
@@ -462,62 +462,62 @@ namespace realware
         sTexture* pTexture = (sTexture*)_app->GetMemoryPool()->Allocate(sizeof(sTexture));
         sTexture* texture = new (pTexture) sTexture();
             
-        texture->Width = width;
-        texture->Height = height;
-        texture->Depth = depth;
-        texture->Type = type;
-        texture->Format = format;
+        texture->_width = width;
+        texture->_height = height;
+        texture->_depth = depth;
+        texture->_type = type;
+        texture->_format = format;
 
-        glGenTextures(1, (GLuint*)&texture->Instance);
+        glGenTextures(1, (GLuint*)&texture->_instance);
 
         GLenum formatGL = GL_RGBA8;
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
-        if (texture->Format == sTexture::eFormat::R8)
+        if (texture->_format == sTexture::eFormat::R8)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->Format == sTexture::eFormat::R8F)
+        else if (texture->_format == sTexture::eFormat::R8F)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_FLOAT;
         }
-        else if (texture->Format == sTexture::eFormat::RGBA8 || texture->Format == sTexture::eFormat::RGBA8_MIPS)
+        else if (texture->_format == sTexture::eFormat::RGBA8 || texture->_format == sTexture::eFormat::RGBA8_MIPS)
         {
             formatGL = GL_RGBA8;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->Format == sTexture::eFormat::RGB16F)
+        else if (texture->_format == sTexture::eFormat::RGB16F)
         {
             formatGL = GL_RGB16F;
             channelsGL = GL_RGB;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->Format == sTexture::eFormat::RGBA16F)
+        else if (texture->_format == sTexture::eFormat::RGBA16F)
         {
             formatGL = GL_RGBA16F;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->Format == sTexture::eFormat::DEPTH_STENCIL)
+        else if (texture->_format == sTexture::eFormat::DEPTH_STENCIL)
         {
             formatGL = GL_DEPTH24_STENCIL8;
             channelsGL = GL_DEPTH_STENCIL;
             formatComponentGL = GL_UNSIGNED_INT_24_8;
         }
 
-        if (texture->Type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == sTexture::eType::TEXTURE_2D)
         {
-            glBindTexture(GL_TEXTURE_2D, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D, texture->_instance);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, formatGL, texture->Width, texture->Height, 0, channelsGL, formatComponentGL, data);
-            if (texture->Format != sTexture::eFormat::DEPTH_STENCIL)
+            glTexImage2D(GL_TEXTURE_2D, 0, formatGL, texture->_width, texture->_height, 0, channelsGL, formatComponentGL, data);
+            if (texture->_format != sTexture::eFormat::DEPTH_STENCIL)
             {
-                if (texture->Format == sTexture::eFormat::RGBA8_MIPS)
+                if (texture->_format == sTexture::eFormat::RGBA8_MIPS)
                 {
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -533,13 +533,13 @@ namespace realware
 
             glBindTexture(GL_TEXTURE_2D, 0);
         }
-        else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
         {
-            glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, texture->_instance);
 
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatGL, texture->Width, texture->Height, texture->Depth, 0, channelsGL, formatComponentGL, data);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatGL, texture->_width, texture->_height, texture->_depth, 0, channelsGL, formatComponentGL, data);
                 
-            if (texture->Format == sTexture::eFormat::RGBA8_MIPS)
+            if (texture->_format == sTexture::eFormat::RGBA8_MIPS)
             {
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -563,7 +563,7 @@ namespace realware
         sTexture textureCopy = *texture;
         DestroyTexture(texture);
 
-        sTexture* newTexture = CreateTexture(size.x, size.y, textureCopy.Depth, textureCopy.Type, textureCopy.Format, nullptr);
+        sTexture* newTexture = CreateTexture(size.x, size.y, textureCopy._depth, textureCopy._type, textureCopy._format, nullptr);
             
         return newTexture;
     }
@@ -571,27 +571,27 @@ namespace realware
     void cOpenGLRenderContext::BindTexture(const sShader* shader, const std::string& name, const sTexture* texture, s32 slot)
     {
         if (slot == -1)
-            slot = texture->Slot;
+            slot = texture->_slot;
 
-        if (texture->Type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == sTexture::eType::TEXTURE_2D)
         {
-            glUniform1i(glGetUniformLocation(shader->Instance, name.c_str()), slot);
+            glUniform1i(glGetUniformLocation(shader->_instance, name.c_str()), slot);
             glActiveTexture(GL_TEXTURE0 + slot);
-            glBindTexture(GL_TEXTURE_2D, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glActiveTexture(GL_TEXTURE0);
         }
-        else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
         {
-            glUniform1i(glGetUniformLocation(shader->Instance, name.c_str()), slot);
+            glUniform1i(glGetUniformLocation(shader->_instance, name.c_str()), slot);
             glActiveTexture(GL_TEXTURE0 + slot);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, texture->_instance);
             glActiveTexture(GL_TEXTURE0);
         }
     }
 
     void cOpenGLRenderContext::UnbindTexture(const sTexture* texture)
     {
-        if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+        if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
@@ -601,54 +601,54 @@ namespace realware
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
 
-        if (texture->Format == sTexture::eFormat::R8)
+        if (texture->_format == sTexture::eFormat::R8)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->Format == sTexture::eFormat::R8F)
+        else if (texture->_format == sTexture::eFormat::R8F)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_FLOAT;
         }
-        else if (texture->Format == sTexture::eFormat::RGBA8 || texture->Format == sTexture::eFormat::RGBA8_MIPS)
+        else if (texture->_format == sTexture::eFormat::RGBA8 || texture->_format == sTexture::eFormat::RGBA8_MIPS)
         {
             formatGL = GL_RGBA8;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->Format == sTexture::eFormat::RGB16F)
+        else if (texture->_format == sTexture::eFormat::RGB16F)
         {
             formatGL = GL_RGB16F;
             channelsGL = GL_RGB;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->Format == sTexture::eFormat::RGBA16F)
+        else if (texture->_format == sTexture::eFormat::RGBA16F)
         {
             formatGL = GL_RGBA16F;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->Format == sTexture::eFormat::DEPTH_STENCIL)
+        else if (texture->_format == sTexture::eFormat::DEPTH_STENCIL)
         {
             formatGL = GL_DEPTH24_STENCIL8;
             channelsGL = GL_DEPTH_STENCIL;
             formatComponentGL = GL_UNSIGNED_INT_24_8;
         }
 
-        if (texture->Type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == sTexture::eType::TEXTURE_2D)
         {
-            glBindTexture(GL_TEXTURE_2D, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glTexSubImage2D(GL_TEXTURE_2D, 0, offset.x, offset.y, size.x, size.y, channelsGL, formatComponentGL, data);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
-        else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
         {
-            if (offset.x + size.x <= texture->Width && offset.y + size.y <= texture->Height && offset.z < texture->Depth)
+            if (offset.x + size.x <= texture->_width && offset.y + size.y <= texture->_height && offset.z < texture->_depth)
             {
-                glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, texture->_instance);
                 glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, offset.x, offset.y, offset.z, size.x, size.y, 1, channelsGL, formatComponentGL, data);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
             }
@@ -657,31 +657,31 @@ namespace realware
 
     void cOpenGLRenderContext::WriteTextureToFile(const sTexture* const texture, const std::string& filename)
     {
-        if (texture->Format != sTexture::eFormat::RGBA8)
+        if (texture->_format != sTexture::eFormat::RGBA8)
             return;
 
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
         usize formatByteCount = 4;
 
-        if (texture->Format == sTexture::eFormat::RGBA8)
+        if (texture->_format == sTexture::eFormat::RGBA8)
         {
             channelsGL = GL_RGBA;
             formatComponentGL = GL_UNSIGNED_BYTE;
             formatByteCount = 4;
         }
 
-        if (texture->Type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == sTexture::eType::TEXTURE_2D)
         {
             cMemoryPool* memoryPool = _app->GetMemoryPool();
 
-            unsigned char* pixels = (unsigned char*)memoryPool->Allocate(texture->Width * texture->Height * 4);
+            unsigned char* pixels = (unsigned char*)memoryPool->Allocate(texture->_width * texture->_height * 4);
 
-            glBindTexture(GL_TEXTURE_2D, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glGetTexImage(GL_TEXTURE_2D, 0, channelsGL, formatComponentGL, pixels);
             glBindTexture(GL_TEXTURE_2D, 0);
 
-            lodepng_encode32_file(filename.c_str(), (const unsigned char*)pixels, texture->Width, texture->Height);
+            lodepng_encode32_file(filename.c_str(), (const unsigned char*)pixels, texture->_width, texture->_height);
 
             memoryPool->Free(pixels);
         }
@@ -689,15 +689,15 @@ namespace realware
 
     void cOpenGLRenderContext::GenerateTextureMips(const sTexture* texture)
     {
-        if (texture->Type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == sTexture::eType::TEXTURE_2D)
         {
-            glBindTexture(GL_TEXTURE_2D, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glGenerateMipmap(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
-        else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
         {
-            glBindTexture(GL_TEXTURE_2D_ARRAY, texture->Instance);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, texture->_instance);
             glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
@@ -705,12 +705,12 @@ namespace realware
 
     void cOpenGLRenderContext::DestroyTexture(sTexture* texture)
     {
-        if (texture->Type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == sTexture::eType::TEXTURE_2D)
             glBindTexture(GL_TEXTURE_2D, 0);
-        else if (texture->Type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
-        glDeleteTextures(1, (GLuint*)&texture->Instance);
+        glDeleteTextures(1, (GLuint*)&texture->_instance);
 
         if (texture != nullptr)
         {
@@ -724,19 +724,19 @@ namespace realware
         sRenderTarget* pRenderTarget = (sRenderTarget*)_app->GetMemoryPool()->Allocate(sizeof(sRenderTarget));
         sRenderTarget* renderTarget = new (pRenderTarget) sRenderTarget();
 
-        renderTarget->ColorAttachments = colorAttachments;
-        renderTarget->DepthAttachment = depthAttachment;
+        renderTarget->_colorAttachments = colorAttachments;
+        renderTarget->_depthAttachment = depthAttachment;
 
         GLenum buffs[16] = {};
-        glGenFramebuffers(1, (GLuint*)&renderTarget->Instance);
-        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
-        for (usize i = 0; i < renderTarget->ColorAttachments.size(); i++)
+        glGenFramebuffers(1, (GLuint*)&renderTarget->_instance);
+        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->_instance);
+        for (usize i = 0; i < renderTarget->_colorAttachments.size(); i++)
         {
             buffs[i] = GL_COLOR_ATTACHMENT0 + i;
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->ColorAttachments[i]->Instance, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->_colorAttachments[i]->_instance, 0);
         }
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, renderTarget->DepthAttachment->Instance, 0);
-        glDrawBuffers(renderTarget->ColorAttachments.size(), &buffs[0]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, renderTarget->_depthAttachment->_instance, 0);
+        glDrawBuffers(renderTarget->_colorAttachments.size(), &buffs[0]);
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			
@@ -749,58 +749,58 @@ namespace realware
     void cOpenGLRenderContext::ResizeRenderTargetColors(sRenderTarget* renderTarget, const glm::vec2& size)
     {
         std::vector<sTexture*> newColorAttachments;
-        for (auto attachment : renderTarget->ColorAttachments)
+        for (auto attachment : renderTarget->_colorAttachments)
         {
             sTexture attachmentCopy = *attachment;
             DestroyTexture(attachment);
-            newColorAttachments.emplace_back(CreateTexture(size.x, size.y, attachmentCopy.Depth, attachmentCopy.Type, attachmentCopy.Format, nullptr));
+            newColorAttachments.emplace_back(CreateTexture(size.x, size.y, attachmentCopy._depth, attachmentCopy._type, attachmentCopy._format, nullptr));
         }
-        renderTarget->ColorAttachments.clear();
-        renderTarget->ColorAttachments = newColorAttachments;
+        renderTarget->_colorAttachments.clear();
+        renderTarget->_colorAttachments = newColorAttachments;
 
         GLenum buffs[16] = {};
-        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
-        for (usize i = 0; i < renderTarget->ColorAttachments.size(); i++)
+        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->_instance);
+        for (usize i = 0; i < renderTarget->_colorAttachments.size(); i++)
         {
             buffs[i] = GL_COLOR_ATTACHMENT0 + i;
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->ColorAttachments[i]->Instance, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->_colorAttachments[i]->_instance, 0);
         }
-        glDrawBuffers(renderTarget->ColorAttachments.size(), &buffs[0]);
+        glDrawBuffers(renderTarget->_colorAttachments.size(), &buffs[0]);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void cOpenGLRenderContext::ResizeRenderTargetDepth(sRenderTarget* renderTarget, const glm::vec2& size)
     {
-        sTexture attachmentCopy = *renderTarget->DepthAttachment;
-        DestroyTexture(renderTarget->DepthAttachment);
+        sTexture attachmentCopy = *renderTarget->_depthAttachment;
+        DestroyTexture(renderTarget->_depthAttachment);
 
-        sTexture* newDepthAttachment = CreateTexture(size.x, size.y, attachmentCopy.Depth, attachmentCopy.Type, attachmentCopy.Format, nullptr);
-        renderTarget->DepthAttachment = newDepthAttachment;
+        sTexture* newDepthAttachment = CreateTexture(size.x, size.y, attachmentCopy._depth, attachmentCopy._type, attachmentCopy._format, nullptr);
+        renderTarget->_depthAttachment = newDepthAttachment;
 
         GLenum buffs[16] = {};
-        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, renderTarget->DepthAttachment->Instance, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->_instance);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, renderTarget->_depthAttachment->_instance, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void cOpenGLRenderContext::UpdateRenderTargetBuffers(sRenderTarget* renderTarget)
     {
         GLenum buffs[16] = {};
-        glGenFramebuffers(1, (GLuint*)&renderTarget->Instance);
-        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
-        for (usize i = 0; i < renderTarget->ColorAttachments.size(); i++)
+        glGenFramebuffers(1, (GLuint*)&renderTarget->_instance);
+        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->_instance);
+        for (usize i = 0; i < renderTarget->_colorAttachments.size(); i++)
         {
             buffs[i] = GL_COLOR_ATTACHMENT0 + i;
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->ColorAttachments[i]->Instance, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, renderTarget->_colorAttachments[i]->_instance, 0);
         }
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, renderTarget->DepthAttachment->Instance, 0);
-        glDrawBuffers(renderTarget->ColorAttachments.size(), &buffs[0]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, renderTarget->_depthAttachment->_instance, 0);
+        glDrawBuffers(renderTarget->_colorAttachments.size(), &buffs[0]);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void cOpenGLRenderContext::BindRenderTarget(const sRenderTarget* renderTarget)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->Instance);
+        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->_instance);
     }
 
     void cOpenGLRenderContext::UnbindRenderTarget()
@@ -811,7 +811,7 @@ namespace realware
     void cOpenGLRenderContext::DestroyRenderTarget(sRenderTarget* renderTarget)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(1, (GLuint*)&renderTarget->Instance);
+        glDeleteFramebuffers(1, (GLuint*)&renderTarget->_instance);
 
         if (renderTarget != nullptr)
         {
@@ -825,51 +825,51 @@ namespace realware
         sRenderPass* pRenderPass = (sRenderPass*)_app->GetMemoryPool()->Allocate(sizeof(sRenderPass));
         sRenderPass* renderPass = new (pRenderPass) sRenderPass();
         memset(renderPass, 0, sizeof(sRenderPass));
-        renderPass->Desc = descriptor;
+        renderPass->_desc = descriptor;
 
         std::vector<sShader::sDefinePair> definePairs = {};
 
-        if (renderPass->Desc.InputTextureAtlasTextures.size() != renderPass->Desc.InputTextureAtlasTextureNames.size())
+        if (renderPass->_desc._inputTextureAtlasTextures.size() != renderPass->_desc._inputTextureAtlasTextureNames.size())
         {
             Print("Error: mismatch of render pass input texture atlas texture array and input texture atlas texture name array!");
             return nullptr;
         }
-        for (usize i = 0; i < renderPass->Desc.InputTextureAtlasTextures.size(); i++)
+        for (usize i = 0; i < renderPass->_desc._inputTextureAtlasTextures.size(); i++)
         {
             const usize textureAtlasTextureIndex = i;
-            const std::string& textureAtlasTextureName = renderPass->Desc.InputTextureAtlasTextureNames[i];
+            const std::string& textureAtlasTextureName = renderPass->_desc._inputTextureAtlasTextureNames[i];
             definePairs.push_back({ textureAtlasTextureName, textureAtlasTextureIndex });
         }
 
-        if (renderPass->Desc.ShaderBase == nullptr)
+        if (renderPass->_desc._shaderBase == nullptr)
         {
-            renderPass->Desc.Shader = CreateShader(
-                renderPass->Desc.ShaderRenderPath,
-                renderPass->Desc.ShaderVertexPath,
-                renderPass->Desc.ShaderFragmentPath,
+            renderPass->_desc._shader = CreateShader(
+                renderPass->_desc._shaderRenderPath,
+                renderPass->_desc._shaderVertexPath,
+                renderPass->_desc._shaderFragmentPath,
                 definePairs
             );
         }
         else
         {
-            renderPass->Desc.Shader = CreateShader(
-                renderPass->Desc.ShaderBase,
-                renderPass->Desc.ShaderVertexFunc,
-                renderPass->Desc.ShaderFragmentFunc,
+            renderPass->_desc._shader = CreateShader(
+                renderPass->_desc._shaderBase,
+                renderPass->_desc._shaderVertexFunc,
+                renderPass->_desc._shaderFragmentFunc,
                 definePairs
             );
         }
 
-        renderPass->Desc.VertexArray = CreateVertexArray();
-        BindVertexArray(renderPass->Desc.VertexArray);
-        if (renderPass->Desc.InputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
+        renderPass->_desc._vertexArray = CreateVertexArray();
+        BindVertexArray(renderPass->_desc._vertexArray);
+        if (renderPass->_desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_NONE)
         {
-            for (auto buffer : renderPass->Desc.InputBuffers)
+            for (auto buffer : renderPass->_desc._inputBuffers)
                 BindBuffer(buffer);
         }
-        else if (renderPass->Desc.InputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
+        else if (renderPass->_desc._inputVertexFormat == eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3)
         {
-            for (auto buffer : renderPass->Desc.InputBuffers)
+            for (auto buffer : renderPass->_desc._inputBuffers)
                 BindBuffer(buffer);
 
             BindDefaultInputLayout();
@@ -884,40 +884,40 @@ namespace realware
     {
         sShader* shader = nullptr;
         if (customShader == nullptr)
-            shader = renderPass->Desc.Shader;
+            shader = renderPass->_desc._shader;
         else
             shader = customShader;
 
         BindShader(shader);
-        BindVertexArray(renderPass->Desc.VertexArray);
-        if (renderPass->Desc.RenderTarget != nullptr)
-            BindRenderTarget(renderPass->Desc.RenderTarget);
+        BindVertexArray(renderPass->_desc._vertexArray);
+        if (renderPass->_desc._renderTarget != nullptr)
+            BindRenderTarget(renderPass->_desc._renderTarget);
         else
             UnbindRenderTarget();
-        Viewport(renderPass->Desc.Viewport);
-        for (auto buffer : renderPass->Desc.InputBuffers)
+        Viewport(renderPass->_desc._viewport);
+        for (auto buffer : renderPass->_desc._inputBuffers)
             BindBufferNotVAO(buffer);
-        BindDepthMode(renderPass->Desc.DepthMode);
-        BindBlendMode(renderPass->Desc.BlendMode);
-        for (usize i = 0; i < renderPass->Desc.InputTextures.size(); i++)
-            BindTexture(shader, renderPass->Desc.InputTextureNames[i].c_str(), renderPass->Desc.InputTextures[i], i);
+        BindDepthMode(renderPass->_desc._depthMode);
+        BindBlendMode(renderPass->_desc._blendMode);
+        for (usize i = 0; i < renderPass->_desc._inputTextures.size(); i++)
+            BindTexture(shader, renderPass->_desc._inputTextureNames[i].c_str(), renderPass->_desc._inputTextures[i], i);
     }
 
     void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* renderPass)
     {
         UnbindVertexArray();
-        if (renderPass->Desc.RenderTarget != nullptr)
+        if (renderPass->_desc._renderTarget != nullptr)
             UnbindRenderTarget();
-        for (auto buffer : renderPass->Desc.InputBuffers)
+        for (auto buffer : renderPass->_desc._inputBuffers)
             UnbindBuffer(buffer);
-        for (auto texture : renderPass->Desc.InputTextures)
+        for (auto texture : renderPass->_desc._inputTextures)
             UnbindTexture(texture);
     }
 
     void cOpenGLRenderContext::DestroyRenderPass(sRenderPass* renderPass)
     {
         glBindVertexArray(0);
-        DestroyVertexArray(renderPass->Desc.VertexArray);
+        DestroyVertexArray(renderPass->_desc._vertexArray);
 
         if (renderPass != nullptr)
         {
@@ -938,12 +938,12 @@ namespace realware
 
     void cOpenGLRenderContext::BindBlendMode(const sBlendMode& blendMode)
     {
-        for (usize i = 0; i < blendMode.FactorCount; i++)
+        for (usize i = 0; i < blendMode._factorCount; i++)
         {
             GLuint srcFactor = GL_ZERO;
             GLuint dstFactor = GL_ZERO;
 
-            switch (blendMode.SrcFactors[i])
+            switch (blendMode._srcFactors[i])
             {
                 case sBlendMode::eFactor::ONE: srcFactor = GL_ONE; break;
                 case sBlendMode::eFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
@@ -952,7 +952,7 @@ namespace realware
                 case sBlendMode::eFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
             }
 
-            switch (blendMode.DstFactors[i])
+            switch (blendMode._dstFactors[i])
             {
                 case sBlendMode::eFactor::ONE: dstFactor = GL_ONE; break;
                 case sBlendMode::eFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
@@ -967,12 +967,12 @@ namespace realware
 
     void cOpenGLRenderContext::BindDepthMode(const sDepthMode& blendMode)
     {
-        if (blendMode.UseDepthTest == K_TRUE)
+        if (blendMode._useDepthTest == K_TRUE)
             glEnable(GL_DEPTH_TEST);
         else
             glDisable(GL_DEPTH_TEST);
 
-        if (blendMode.UseDepthWrite == K_TRUE)
+        if (blendMode._useDepthWrite == K_TRUE)
             glDepthMask(GL_TRUE);
         else
             glDepthMask(GL_FALSE);

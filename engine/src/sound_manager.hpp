@@ -17,22 +17,22 @@ namespace realware
 
     struct sWAVStructure
     {
-        types::u8 Type[5];
-        types::u8 Format[5];
-        types::u8 Subchunk1ID[5];
-        types::u8 Subchunk2ID[5];
-        types::u32 ChunkSize;
-        types::u32 Subchunk1Size;
-        types::u32 SampleRate;
-        types::u32 ByteRate;
-        types::u32 Subchunk2Size;
-        types::u16 AudioFormat;
-        types::u16 NumChannels;
-        types::u16 BlockAlign;
-        types::u16 BitsPerSample;
-        types::u32 NumSamples;
-        types::u32 DataByteSize;
-        types::u16* Data;
+        types::u8 _type[5] = {};
+        types::u8 _format[5] = {};
+        types::u8 _subchunk1ID[5] = {};
+        types::u8 _subchunk2ID[5] = {};
+        types::u32 _chunkSize = 0;
+        types::u32 _subchunk1Size = 0;
+        types::u32 _sampleRate = 0;
+        types::u32 _byteRate = 0;
+        types::u32 _subchunk2Size = 0;
+        types::u16 _audioFormat = 0;
+        types::u16 _numChannels = 0;
+        types::u16 _blockAlign = 0;
+        types::u16 _bitsPerSample = 0;
+        types::u32 _numSamples = 0;
+        types::u32 _dataByteSize = 0;
+        types::u16* _data = nullptr;
     };
 
     class cSound : public cIdVecObject

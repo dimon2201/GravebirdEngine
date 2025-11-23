@@ -30,12 +30,12 @@ namespace realware
 
     usize CalculateNewlineOffset(sFont* font)
     {
-        return font->Font->size->metrics.height >> 6;
+        return font->_font->size->metrics.height >> 6;
     }
 
     usize CalculateSpaceOffset(sFont* font)
     {
-        const FT_Face& ftFont = font->Font;
+        const FT_Face& ftFont = font->_font;
         const FT_UInt spaceIndex = FT_Get_Char_Index(ftFont, ' ');
         if (FT_Load_Glyph(ftFont, spaceIndex, FT_LOAD_DEFAULT) == 0)
             return ftFont->glyph->advance.x >> 6;
@@ -45,7 +45,7 @@ namespace realware
 
     void FillAlphabetAndFindAtlasSize(cMemoryPool* memoryPool, sFont* font, usize& xOffset, usize& atlasWidth, usize& atlasHeight)
     {
-        const FT_Face& ftFont = font->Font;
+        const FT_Face& ftFont = font->_font;
         usize maxGlyphHeight = 0;
 
         for (usize c = 0; c < 256; c++)
@@ -56,32 +56,32 @@ namespace realware
             const FT_Int ci = FT_Get_Char_Index(ftFont, c);
             if (FT_Load_Glyph(ftFont, (FT_UInt)ci, FT_LOAD_DEFAULT) == 0)
             {
-                font->GlyphCount += 1;
+                font->_glyphCount += 1;
 
                 FT_Render_Glyph(ftFont->glyph, FT_RENDER_MODE_NORMAL);
 
                 sGlyph glyph = {};
-                glyph.Character = (u8)c;
-                glyph.Width = ftFont->glyph->bitmap.width;
-                glyph.Height = ftFont->glyph->bitmap.rows;
-                glyph.Left = ftFont->glyph->bitmap_left;
-                glyph.Top = ftFont->glyph->bitmap_top;
-                glyph.AdvanceX = ftFont->glyph->advance.x >> 6;
-                glyph.AdvanceY = ftFont->glyph->advance.y >> 6;
-                glyph.BitmapData = memoryPool->Allocate(glyph.Width * glyph.Height);
+                glyph._character = (u8)c;
+                glyph._width = ftFont->glyph->bitmap.width;
+                glyph._height = ftFont->glyph->bitmap.rows;
+                glyph._left = ftFont->glyph->bitmap_left;
+                glyph._top = ftFont->glyph->bitmap_top;
+                glyph._advanceX = ftFont->glyph->advance.x >> 6;
+                glyph._advanceY = ftFont->glyph->advance.y >> 6;
+                glyph._bitmapData = memoryPool->Allocate(glyph._width * glyph._height);
 
                 if (ftFont->glyph->bitmap.buffer)
-                    memcpy(glyph.BitmapData, ftFont->glyph->bitmap.buffer, glyph.Width * glyph.Height);
+                    memcpy(glyph._bitmapData, ftFont->glyph->bitmap.buffer, glyph._width * glyph._height);
 
-                font->Alphabet.insert({(u8)c, glyph});
+                font->_alphabet.insert({(u8)c, glyph});
 
-                xOffset += glyph.Width + 1;
+                xOffset += glyph._width + 1;
 
-                if (atlasWidth < mFont::K_MAX_ATLAS_WIDTH - (glyph.Width + 1))
-                    atlasWidth += glyph.Width + 1;
+                if (atlasWidth < mFont::K_MAX_ATLAS_WIDTH - (glyph._width + 1))
+                    atlasWidth += glyph._width + 1;
 
-                if (glyph.Height > maxGlyphHeight)
-                    maxGlyphHeight = glyph.Height;
+                if (glyph._height > maxGlyphHeight)
+                    maxGlyphHeight = glyph._height;
 
                 if (xOffset >= mFont::K_MAX_ATLAS_WIDTH)
                 {
@@ -130,27 +130,27 @@ namespace realware
         usize yOffset = 0;
         u8* pixelsU8 = (u8*)atlasPixels;
 
-        for (auto& glyph : font->Alphabet)
+        for (auto& glyph : font->_alphabet)
         {
-            glyph.second.AtlasXOffset = xOffset;
-            glyph.second.AtlasYOffset = yOffset;
+            glyph.second._atlasXOffset = xOffset;
+            glyph.second._atlasYOffset = yOffset;
 
-            for (usize y = 0; y < glyph.second.Height; y++)
+            for (usize y = 0; y < glyph.second._height; y++)
             {
-                for (usize x = 0; x < glyph.second.Width; x++)
+                for (usize x = 0; x < glyph.second._width; x++)
                 {
-                    const usize glyphPixelIndex = x + (y * glyph.second.Width);
+                    const usize glyphPixelIndex = x + (y * glyph.second._width);
                     const usize pixelIndex = (xOffset + x) + ((yOffset + y) * atlasWidth);
                         
-                    if (glyphPixelIndex < glyph.second.Width * glyph.second.Height &&
+                    if (glyphPixelIndex < glyph.second._width * glyph.second._height &&
                         pixelIndex < atlasWidth * atlasHeight)
-                        pixelsU8[pixelIndex] = ((u8*)glyph.second.BitmapData)[glyphPixelIndex];
+                        pixelsU8[pixelIndex] = ((u8*)glyph.second._bitmapData)[glyphPixelIndex];
                 }
             }
 
-            xOffset += glyph.second.Width + 1;
-            if (glyph.second.Height > maxGlyphHeight)
-                maxGlyphHeight = glyph.second.Height;
+            xOffset += glyph.second._width + 1;
+            if (glyph.second._height > maxGlyphHeight)
+                maxGlyphHeight = glyph.second._height;
 
             if (xOffset >= mFont::K_MAX_ATLAS_WIDTH)
             {
@@ -160,7 +160,7 @@ namespace realware
             }
         }
 
-        font->Atlas = context->CreateTexture(
+        font->_atlas = context->CreateTexture(
             atlasWidth,
             atlasHeight,
             0,
@@ -178,7 +178,7 @@ namespace realware
         sFont* pFont = (sFont*)memoryPool->Allocate(sizeof(sFont));
         sFont* font = new (pFont) sFont;
 
-        FT_Face& ftFont = font->Font;
+        FT_Face& ftFont = font->_font;
 
         if (FT_New_Face(_lib, filename.c_str(), 0, &ftFont) == 0)
         {
@@ -186,11 +186,11 @@ namespace realware
 
             if (FT_Set_Pixel_Sizes(ftFont, glyphSize, glyphSize) == 0)
             {
-                font->GlyphCount = 0;
-                font->GlyphSize = glyphSize;
-                font->OffsetNewline = CalculateNewlineOffset(font);
-                font->OffsetSpace = CalculateSpaceOffset(font);
-                font->OffsetTab = font->OffsetSpace * 4;
+                font->_glyphCount = 0;
+                font->_glyphSize = glyphSize;
+                font->_offsetNewline = CalculateNewlineOffset(font);
+                font->_offsetSpace = CalculateSpaceOffset(font);
+                font->_offsetTab = font->_offsetSpace * 4;
 
                 usize atlasWidth = 0;
                 usize atlasHeight = 0;
@@ -226,25 +226,25 @@ namespace realware
         sText* pTextObject = (sText*)_app->GetMemoryPool()->Allocate(sizeof(sText));
         sText* textObject = new (pTextObject) sText;
 
-        textObject->Font = (sFont*)font;
-        textObject->Text = text;
+        textObject->_font = (sFont*)font;
+        textObject->_text = text;
 
         return textObject;
     }
 
     void mFont::DestroyFontTTF(sFont* font)
     {
-        auto& alphabet = font->Alphabet;
-        sTexture* atlas = font->Atlas;
+        auto& alphabet = font->_alphabet;
+        sTexture* atlas = font->_atlas;
 
         for (const auto& glyph : alphabet)
-            _app->GetMemoryPool()->Free(glyph.second.BitmapData);
+            _app->GetMemoryPool()->Free(glyph.second._bitmapData);
 
         alphabet.clear();
 
         _context->DestroyTexture(atlas);
 
-        FT_Done_Face(font->Font);
+        FT_Done_Face(font->_font);
 
         font->~sFont();
         _app->GetMemoryPool()->Free(font);
@@ -265,15 +265,15 @@ namespace realware
 
         for (usize i = 0; i < textByteSize; i++)
         {
-            const sGlyph& glyph = font->Alphabet.find(text[i])->second;
+            const sGlyph& glyph = font->_alphabet.find(text[i])->second;
 
             if (text[i] == '\t')
             {
-                textWidth += font->OffsetTab;
+                textWidth += font->_offsetTab;
             }
             else if (text[i] == ' ')
             {
-                textWidth += font->OffsetSpace;
+                textWidth += font->_offsetSpace;
             }
             else if (text[i] == '\n')
             {
@@ -283,7 +283,7 @@ namespace realware
             }
             else
             {
-                textWidth += ((f32)glyph.Width / windowSize.x);
+                textWidth += ((f32)glyph._width / windowSize.x);
             }
         }
 
@@ -305,15 +305,15 @@ namespace realware
 
         for (usize i = 0; i < textByteSize; i++)
         {
-            const sGlyph& glyph = font->Alphabet.find(text[i])->second;
+            const sGlyph& glyph = font->_alphabet.find(text[i])->second;
 
             if (text[i] == '\n')
             {
-                textHeight += font->OffsetNewline;
+                textHeight += font->_offsetNewline;
             }
             else
             {
-                f32 glyphHeight = ((f32)glyph.Height / windowSize.y);
+                f32 glyphHeight = ((f32)glyph._height / windowSize.y);
                 if (glyphHeight > maxHeight) {
                     maxHeight = glyphHeight;
                 }

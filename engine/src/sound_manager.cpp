@@ -18,14 +18,14 @@ namespace realware
             if (_format == eCategory::SOUND_FORMAT_WAV)
             {
                 cMemoryPool* memoryPool = _app->GetMemoryPool();
-                memoryPool->Free(_file->Data);
+                memoryPool->Free(_file->_data);
                 _file->~sWAVStructure();
                 memoryPool->Free(_file);
             }
         }
     }
 
-    mSound::mSound(cApplication* app, iSoundContext* context) : _app(app), _context(context), _sounds(app, app->GetDesc()->MaxSoundCount)
+    mSound::mSound(cApplication* app, iSoundContext* context) : _app(app), _context(context), _sounds(app, app->GetDesc()->_maxSoundCount)
     {
     }
 

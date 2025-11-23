@@ -10,10 +10,10 @@ namespace realware
 {
     struct sMemoryPoolAllocation
     {
-        types::u8 FreeFlag = 0;
-        types::u32 AllocationByteSize = 0;
-        types::u32 OccupiedByteSize = 0;
-        void* Address = nullptr;
+        types::u8 _freeFlag = 0;
+        types::u32 _allocationByteSize = 0;
+        types::u32 _occupiedByteSize = 0;
+        void* _address = nullptr;
     };
 
     class cMemoryPool : public cObject

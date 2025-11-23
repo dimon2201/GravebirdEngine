@@ -9,7 +9,5 @@ namespace realware
 	public:
 		explicit cContext() = default;
 		~cContext() = default;
-
-	private:
 	};
 }

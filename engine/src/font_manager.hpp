@@ -17,34 +17,34 @@ namespace realware
 
     struct sGlyph
     {
-        types::u8 Character = 0;
-        types::s32 Width = 0;
-        types::s32 Height = 0;
-        types::s32 Left = 0;
-        types::s32 Top = 0;
-        types::f32 AdvanceX = 0.0f;
-        types::f32 AdvanceY = 0.0f;
-        types::s32 AtlasXOffset = 0;
-        types::s32 AtlasYOffset = 0;
-        void* BitmapData = nullptr;
+        types::u8 _character = 0;
+        types::s32 _width = 0;
+        types::s32 _height = 0;
+        types::s32 _left = 0;
+        types::s32 _top = 0;
+        types::f32 _advanceX = 0.0f;
+        types::f32 _advanceY = 0.0f;
+        types::s32 _atlasXOffset = 0;
+        types::s32 _atlasYOffset = 0;
+        void* _bitmapData = nullptr;
     };
 
     struct sFont
     {
-        FT_Face Font = {};
-        types::usize GlyphCount = 0;
-        types::usize GlyphSize = 0;
-        types::usize OffsetNewline = 0;
-        types::usize OffsetSpace = 0;
-        types::usize OffsetTab = 0;
-        std::unordered_map<types::u8, sGlyph> Alphabet = {};
-        sTexture* Atlas = nullptr;
+        FT_Face _font = {};
+        types::usize _glyphCount = 0;
+        types::usize _glyphSize = 0;
+        types::usize _offsetNewline = 0;
+        types::usize _offsetSpace = 0;
+        types::usize _offsetTab = 0;
+        std::unordered_map<types::u8, sGlyph> _alphabet = {};
+        sTexture* _atlas = nullptr;
     };
 
     struct sText
     {
-        sFont* Font = nullptr;
-        std::string Text = "";
+        sFont* _font = nullptr;
+        std::string _text = "";
     };
 
     class mFont : public cObject
