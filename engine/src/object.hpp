@@ -26,6 +26,8 @@ namespace realware
 	public:
 		explicit cObject() = default;
 		virtual ~cObject() = default;
+		cObject(const cObject& rhs) = delete;
+		cObject& operator=(const cObject& rhs) = delete;
 
 		virtual const cTypeInfo* GetType() const final;
 		virtual const std::string& GetTypeName() const final;
