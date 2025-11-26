@@ -12,8 +12,6 @@ namespace realware
 	template <typename T>
 	class cIdVector : public iObject
 	{
-		static constexpr types::s32 K_INVALID_INDEX = -1;
-
 	public:
 		explicit cIdVector(cContext* context);
 		~cIdVector();
@@ -28,6 +26,9 @@ namespace realware
 		inline T* GetElements() { return _elements; }
 		inline types::usize GetElementCount() { return _indexCount; }
 		inline types::usize GetMaxElementCount() { return _maxElementCount; }
+
+	private:
+		static constexpr types::s32 K_INVALID_INDEX = -1;
 
 	private:
 		types::usize _maxElementCount = 0;
