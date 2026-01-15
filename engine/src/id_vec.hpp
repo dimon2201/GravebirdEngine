@@ -16,8 +16,6 @@ namespace realware
 		explicit cIdVector(cContext* context);
 		~cIdVector();
 
-		inline virtual cType GetType() const override final { return cType("IdVector"); }
-
 		template<typename... Args>
 		T* Add(Args&&... args);
 		T* Find(const std::string& id);
@@ -73,8 +71,8 @@ namespace realware
 		const types::s32 index = _indices[_indexCount];
 		if (index == K_INVALID_INDEX)
 		{
-			_indices[_indexCount] = _indexCount;
 			new (&_elements[_indexCount]) T(std::forward<Args>(args)...);
+			_indices[_indexCount] = _indexCount;
 
 			return (T*)&_elements[_indexCount++];
 		}
@@ -93,7 +91,7 @@ namespace realware
 		for (types::usize i = 0; i < _indexCount; i++)
 		{
 			const types::s32 index = _indices[i];
-			if (_elements[index].GetID() == id)
+			if (_elements[index].GetIdentifier().GetID() == id)
 				return (T*)&_elements[index];
 		}
 

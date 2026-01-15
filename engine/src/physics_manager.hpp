@@ -79,11 +79,11 @@ namespace realware
 
     class cPhysicsScene : public cFactoryObject
     {
+        REALWARE_CLASS(cPhysicsScene)
+
     public:
         explicit cPhysicsScene(cContext* context, physx::PxScene* scene, physx::PxControllerManager* controllerManager) : cFactoryObject(context), _scene(scene), _controllerManager(controllerManager) {}
         ~cPhysicsScene() = default;
-
-        inline virtual cType GetType() const override final { return cType("PhysicsScene"); }
 
         inline physx::PxScene* GetScene() const { return _scene; }
         inline physx::PxControllerManager* GetControllerManager() const { return _controllerManager; }
@@ -95,11 +95,11 @@ namespace realware
 
     class cPhysicsSubstance : public cFactoryObject
     {
+        REALWARE_CLASS(cPhysicsSubstance)
+
     public:
         explicit cPhysicsSubstance(cContext* context, physx::PxMaterial* substance) : cFactoryObject(context), _substance(substance) {}
         ~cPhysicsSubstance() = default;
-
-        inline virtual cType GetType() const override final { return cType("PhysicsSubstance"); }
 
         inline physx::PxMaterial* GetSubstance() const { return _substance; }
 
@@ -109,11 +109,11 @@ namespace realware
 
     class cPhysicsController : public cFactoryObject
     {
+        REALWARE_CLASS(cPhysicsController)
+
     public:
         explicit cPhysicsController(cContext* context, physx::PxController* controller, types::f32 eyeHeight) : cFactoryObject(context), _controller(controller), _eyeHeight(eyeHeight) {}
         ~cPhysicsController() = default;
-
-        inline virtual cType GetType() const override final { return cType("PhysicsController"); }
 
         inline physx::PxController* GetController() const { return _controller; }
         inline types::f32 GetEyeHeight() const { return _eyeHeight; }
@@ -125,11 +125,11 @@ namespace realware
 
     class cPhysicsActor : public cFactoryObject
     {
+        REALWARE_CLASS(cPhysicsActor)
+
     public:
         explicit cPhysicsActor(cContext* context, cGameObject* gameObject, physx::PxActor* actor, eCategory actorType) : cFactoryObject(context), _gameObject(gameObject), _actor(actor), _type(actorType) {}
         ~cPhysicsActor() = default;
-
-        inline virtual cType GetType() const override final { return cType("PhysicsActor"); }
 
         inline cGameObject* GetGameObject() const { return _gameObject; }
         inline physx::PxActor* GetActor() const { return _actor; }
@@ -141,13 +141,13 @@ namespace realware
         eCategory _type = eCategory::PHYSICS_ACTOR_DYNAMIC;
     };
 
-    class mPhysics : public iObject
+    class cPhysics : public iObject
     {
-    public:
-        explicit mPhysics(cContext* context);
-        ~mPhysics();
+        REALWARE_CLASS(cPhysics)
 
-        inline virtual cType GetType() const override final { return cType("PhysicsManager"); }
+    public:
+        explicit cPhysics(cContext* context);
+        ~cPhysics();
 
         cPhysicsScene* CreateScene(const std::string& id, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f));
         cPhysicsSubstance* CreateSubstance(const std::string& id, const glm::vec3& params = glm::vec3(0.5f, 0.5f, 0.6f));

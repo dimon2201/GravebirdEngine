@@ -7,14 +7,16 @@
 
 namespace realware
 {
-    class cBuffer
+    class cDataBuffer : public cFactoryObject
     {
     public:
-        explicit cBuffer() = default;
-        ~cBuffer() = default;
+        explicit cDataBuffer(cContext* context);
+        virtual ~cDataBuffer() override;
+
+        void Create(void* data, types::usize byteSize);
 
     private:
-        types::usize _byteSize = 0;
         void* _data = nullptr;
+        types::usize _byteSize = 0;
     };
 }

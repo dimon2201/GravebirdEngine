@@ -5,11 +5,13 @@
 #include <string>
 #include <typeinfo>
 #include "log.hpp"
+#include "event_manager.hpp"
 #include "types.hpp"
 
 namespace realware
 {
 	class cContext;
+	class cMemoryAllocator;
 
 	using ClassType = std::string;
 
@@ -55,10 +57,17 @@ namespace realware
 		REALWARE_CLASS(cFactoryObject)
 
 		friend class iFactory;
+		friend class cMemoryAllocator;
 
 	public:
 		explicit cFactoryObject(cContext* context) : iObject(context) {}
-		virtual ~cFactoryObject() = default;
+		virtual ~cFactoryObject() override;
+
+		template <typename... Args>
+		void Subscribe(const std::string& id, eEventType type, Args... args);
+		void Unsubscribe(eEventType type, cGameObject* receiver);
+		void Send(eEventType type);
+		void Send(eEventType type, cBuffer* data);
 
 		inline cIdentifier* GetIdentifier() const { return _identifier; }
 
@@ -78,6 +87,8 @@ namespace realware
 
 		virtual iObject* Create() = 0;
 
+		virtual void Destroy(iObject* object) = 0;
+
 	protected:
 		types::usize _counter = 0;
 	};
@@ -92,7 +103,16 @@ namespace realware
 		virtual ~ÒFactory() = default;
 
 		virtual cFactoryObject* Create() override final;
+
+		virtual void Destroy(iObject* object) override final;
 	};
+
+	template <typename... Args>
+	void cFactoryObject::Subscribe(const std::string& id, eEventType type, Args... args)
+	{
+		const cEventDispatcher* dispatcher = _context->GetSubsystem<cEventDispatcher>();
+		dispatcher->Subscribe<Args>(id, type, std::forward<Args>(args)...);
+	}
 
 	template <typename T>
 	cFactoryObject* ÒFactory<T>::Create()
@@ -103,11 +123,19 @@ namespace realware
 
 			return nullptr;
 		}
-
-		T* object = new T(_context);
+		
+		const cMemoryPool<T>* memoryPool = _context->GetMemoryPool<T>(_context);
+		T* object = memoryPool->Allocate();
 		const std::string id = object->GetType() + std::to_string(_counter++);
 		object._identifier = new cIdentifier(id);
 
 		return (cFactoryObject*)object;
+	}
+
+	template <typename T>
+	void ÒFactory<T>::Destroy(iObject* object)
+	{
+		cMemoryPool<T>* memoryPool = _context->GetMemoryPool<T>(_context);
+		memoryPool->Deallocate(object);
 	}
 }

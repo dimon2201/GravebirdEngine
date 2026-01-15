@@ -20,6 +20,8 @@ namespace realware
 
     class cTask
     {
+        REALWARE_CLASS(cTask)
+
     public:
         cTask() = default;
         explicit cTask(cBuffer* data, TaskFunction&& function);
@@ -34,14 +36,14 @@ namespace realware
         std::shared_ptr<TaskFunction> _function;
     };
 
-    class mThread : public iObject
+    class cThread : public iObject
     {
-    public:
-        explicit mThread(cContext* context, types::usize threadCount = std::thread::hardware_concurrency());
-        ~mThread();
-        
-        inline virtual cType GetType() const override final { return cType("ThreadManager"); }
+        REALWARE_CLASS(cThread)
 
+    public:
+        explicit cThread(cContext* context, types::usize threadCount = std::thread::hardware_concurrency());
+        ~cThread();
+        
         void Submit(cTask& task);
         void Pause();
         void Resume();

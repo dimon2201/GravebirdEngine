@@ -7,23 +7,27 @@
 
 namespace realware
 {
-    class cApplication;
-        
-    struct sFile
-    {
-        types::u8* _data = nullptr;
-        types::usize _dataByteSize = 0;
-    };
+    class cDataBuffer;
 
-    class mFileSystem : public iObject
+    class cDataFile : public cFactoryObject
     {
     public:
-        explicit mFileSystem(cContext* context);
-        ~mFileSystem() = default;
+        cDataFile(cContext* context);
+        virtual ~cDataFile() override;
 
-        inline virtual cType GetType() const override final { return cType("FileSystem"); }
+        void Open(const std::string& path, types::boolean isText);
 
-        sFile* CreateDataFile(const std::string& filepath, types::boolean isString);
-        void DestroyDataFile(sFile* buffer);
+    private:
+        cDataBuffer* _data = nullptr;
+    };
+
+    class cFileSystem : public iObject
+    {
+    public:
+        explicit cFileSystem(cContext* context);
+        ~cFileSystem() = default;
+
+        cDataFile* CreateDataFile(const std::string& filepath, types::boolean isText);
+        void DestroyDataFile(cDataFile* buffer);
     };
 }

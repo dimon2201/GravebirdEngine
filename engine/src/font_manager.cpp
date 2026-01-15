@@ -5,13 +5,15 @@
 #include "render_context.hpp"
 #include "application.hpp"
 #include "memory_pool.hpp"
+#include "context.hpp"
+#include "graphics.hpp"
 #include "log.hpp"
 
 using namespace types;
 
 namespace realware
 {
-    mFont::mFont(cContext* context, iRenderContext* renderContext) : iObject(context), _renderContext(renderContext)
+    cFont::cFont(cContext* context) : iObject(context), _gfx(context->GetSubsystem<cGraphics>()->GetAPI())
     {
         if (FT_Init_FreeType(&_lib))
         {
@@ -22,7 +24,7 @@ namespace realware
         _initialized = K_TRUE;
     }
 
-    mFont::~mFont()
+    cFont::~cFont()
     {
         if (_initialized)
             FT_Done_FreeType(_lib);
@@ -77,13 +79,13 @@ namespace realware
 
                 xOffset += glyph._width + 1;
 
-                if (atlasWidth < mFont::K_MAX_ATLAS_WIDTH - (glyph._width + 1))
+                if (atlasWidth < cFont::K_MAX_ATLAS_WIDTH - (glyph._width + 1))
                     atlasWidth += glyph._width + 1;
 
                 if (glyph._height > maxGlyphHeight)
                     maxGlyphHeight = glyph._height;
 
-                if (xOffset >= mFont::K_MAX_ATLAS_WIDTH)
+                if (xOffset >= cFont::K_MAX_ATLAS_WIDTH)
                 {
                     atlasHeight += maxGlyphHeight + 1;
                     xOffset = 0;
@@ -152,7 +154,7 @@ namespace realware
             if (glyph.second._height > maxGlyphHeight)
                 maxGlyphHeight = glyph.second._height;
 
-            if (xOffset >= mFont::K_MAX_ATLAS_WIDTH)
+            if (xOffset >= cFont::K_MAX_ATLAS_WIDTH)
             {
                 yOffset += maxGlyphHeight + 1;
                 xOffset = 0;
@@ -172,7 +174,7 @@ namespace realware
         memoryPool->Free(atlasPixels);
     }
 
-    sFont* mFont::CreateFontTTF(const std::string& filename, usize glyphSize)
+    sFont* cFont::CreateFontTTF(const std::string& filename, usize glyphSize)
     {
         cApplication* app = GetApplication();
         cMemoryPool* memoryPool = app->GetMemoryPool();
@@ -222,7 +224,7 @@ namespace realware
         return font;
     }
 
-    sText* mFont::CreateText(const sFont* font, const std::string& text)
+    sText* cFont::CreateText(const sFont* font, const std::string& text)
     {
         sText* pTextObject = (sText*)GetApplication()->GetMemoryPool()->Allocate(sizeof(sText));
         sText* textObject = new (pTextObject) sText;
@@ -233,10 +235,10 @@ namespace realware
         return textObject;
     }
 
-    void mFont::DestroyFontTTF(sFont* font)
+    void cFont::DestroyFontTTF(sFont* font)
     {
         auto& alphabet = font->_alphabet;
-        sTexture* atlas = font->_atlas;
+        cTexture* atlas = font->_atlas;
 
         cApplication* app = GetApplication();
 
@@ -245,7 +247,7 @@ namespace realware
 
         alphabet.clear();
 
-        _renderContext->DestroyTexture(atlas);
+        _gfx->DestroyTexture(atlas);
 
         FT_Done_Face(font->_font);
 
@@ -253,13 +255,13 @@ namespace realware
         app->GetMemoryPool()->Free(font);
     }
 
-    void mFont::DestroyText(sText* text)
+    void cFont::DestroyText(sText* text)
     {
         text->~sText();
         GetApplication()->GetMemoryPool()->Free(text);
     }
 
-    f32 mFont::GetTextWidth(sFont* font, const std::string& text) const
+    f32 cFont::GetTextWidth(sFont* font, const std::string& text) const
     {
         f32 textWidth = 0.0f;
         f32 maxTextWidth = 0.0f;
@@ -299,7 +301,7 @@ namespace realware
         return maxTextWidth;
     }
 
-    f32 mFont::GetTextHeight(sFont* font, const std::string& text) const
+    f32 cFont::GetTextHeight(sFont* font, const std::string& text) const
     {
         f32 textHeight = 0.0f;
         f32 maxHeight = 0.0f;
@@ -332,12 +334,12 @@ namespace realware
         return textHeight;
     }
 
-    usize mFont::GetCharacterCount(const std::string& text) const
+    usize cFont::GetCharacterCount(const std::string& text) const
     {
         return strlen(text.c_str());
     }
 
-    usize mFont::GetNewlineCount(const std::string& text) const
+    usize cFont::GetNewlineCount(const std::string& text) const
     {
         usize newlineCount = 0;
         const usize charCount = strlen(text.c_str());

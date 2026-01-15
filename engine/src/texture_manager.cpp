@@ -1,41 +1,42 @@
 // texture_manager.cpp
 
+#include "texture_manager.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../thirdparty/stb-master/stb_image.h"
 #include "application.hpp"
-#include "texture_manager.hpp"
 #include "render_context.hpp"
 #include "memory_pool.hpp"
+#include "context.hpp"
+#include "graphics.hpp"
 #include "log.hpp"
 
 using namespace types;
 
 namespace realware
 {
-    cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size) : cFactoryObject(context), _isNormalized(isNormalized), _offset(offset), _size(size) {}
-
-    mTexture::mTexture(cContext* context, iRenderContext* renderContext) : iObject(context), _textures(app)
+    cTextureAtlasTexture::cTextureAtlasTexture(cContext* context, types::boolean isNormalized, const glm::vec3& offset, const glm::vec2& size, cTexture* atlas = nullptr) : cFactoryObject(context), _isNormalized(isNormalized)
     {
-        sApplicationDescriptor* desc = GetApplication()->GetDesc();
-
-        _renderContext = renderContext;
-        _atlas = _renderContext->CreateTexture(
-            desc->_textureAtlasWidth,
-            desc->_textureAtlasHeight,
-            desc->_textureAtlasDepth,
-            sTexture::eType::TEXTURE_2D_ARRAY,
-            sTexture::eFormat::RGBA8_MIPS,
-            nullptr
-        );
-        _atlas->_slot = 0;
+        if (isNormalized == K_TRUE)
+        {
+            _offset = glm::vec3(offset.x / atlas->GetWidth(), offset.y / atlas->GetHeight(), offset.z);
+            _size = glm::vec2(size.x / atlas->GetWidth(), size.y / atlas->GetHeight());
+        }
+        else
+        {
+            _offset = offset;
+            _size = size;
+        }
     }
 
-    mTexture::~mTexture()
+    cTextureAtlas::cTextureAtlas(cContext* context) : iObject(context), _textures(context), _gfx(_context->GetSubsystem<cGraphics>()->GetAPI()) {}
+
+    cTextureAtlas::~cTextureAtlas()
     {
-        _renderContext->DestroyTexture(_atlas);
+        if (_atlas)
+            _gfx->DestroyTexture(_atlas);
     }
 
-    cTextureAtlasTexture* mTexture::CreateTexture(const std::string& id, const glm::vec2& size, usize channels, const u8* data)
+    cTextureAtlasTexture* cTextureAtlas::CreateTexture(const std::string& id, const glm::vec2& size, usize channels, const u8* data)
     {
         const usize width = size.x;
         const usize height = size.y;
@@ -49,11 +50,11 @@ namespace realware
 
         const auto textures = _textures.GetElements();
         const usize texturesCount = _textures.GetElementCount();
-        for (usize layer = 0; layer < _atlas->_depth; layer++)
+        for (usize layer = 0; layer < _atlas->GetDepth(); layer++)
         {
-            for (usize y = 0; y < _atlas->_height; y++)
+            for (usize y = 0; y < _atlas->GetHeight(); y++)
             {
-                for (usize x = 0; x < _atlas->_width; x++)
+                for (usize x = 0; x < _atlas->GetWidth(); x++)
                 {
                     types::boolean isIntersecting = K_FALSE;
 
@@ -69,7 +70,7 @@ namespace realware
                             if ((area.GetOffset().z == layer &&
                                 area.GetOffset().x <= textureRect.z && area.GetOffset().x + area.GetSize().x >= textureRect.x &&
                                 area.GetOffset().y <= textureRect.w && area.GetOffset().y + area.GetSize().y >= textureRect.y) ||
-                                (x + width > _atlas->_width || y + height > _atlas->_height))
+                                (x + width > _atlas->GetWidth() || y + height > _atlas->GetHeight()))
                             {
                                 isIntersecting = K_FALSE;
                                 break;
@@ -78,8 +79,8 @@ namespace realware
                         else if (area.IsNormalized() == K_TRUE)
                         {
                             const glm::vec4 textureRectNorm = glm::vec4(
-                                (f32)x / (f32)_atlas->_width, (f32)y / (f32)_atlas->_height,
-                                ((f32)x + (f32)width) / (f32)_atlas->_width, ((f32)y + (f32)height) / (f32)_atlas->_height
+                                (f32)x / (f32)_atlas->GetWidth(), (f32)y / (f32)_atlas->GetHeight(),
+                                ((f32)x + (f32)width) / (f32)_atlas->GetWidth(), ((f32)y + (f32)height) / (f32)_atlas->GetHeight()
                             );
                             if ((area.GetOffset().z == layer &&
                                 area.GetOffset().x <= textureRectNorm.z && area.GetOffset().x + area.GetSize().x >= textureRectNorm.x &&
@@ -97,12 +98,11 @@ namespace realware
                         const glm::vec3 offset = glm::vec3(x, y, layer);
                         const glm::vec2 size = glm::vec2(width, height);
 
-                        _renderContext->WriteTexture(_atlas, offset, size, data);
-                        if (_atlas->_format == sTexture::eFormat::RGBA8_MIPS)
-                            _renderContext->GenerateTextureMips(_atlas);
+                        _gfx->WriteTexture(_atlas, offset, size, data);
+                        if (_atlas->GetFormat() == cTexture::eFormat::RGBA8_MIPS)
+                            _gfx->GenerateTextureMips(_atlas);
 
-                        cTextureAtlasTexture* newTex = _textures.Add(id, GetApplication(), K_FALSE, offset, size);
-                        *newTex = CalculateNormalizedArea(*newTex);
+                        cTextureAtlasTexture* newTex = _textures.Add(_context, K_TRUE, offset, size);
 
                         return newTex;
                     }
@@ -113,7 +113,7 @@ namespace realware
         return nullptr;
     }
 
-    cTextureAtlasTexture* mTexture::CreateTexture(const std::string& id, const std::string& filename)
+    cTextureAtlasTexture* cTextureAtlas::CreateTexture(const std::string& id, const std::string& filename)
     {
         const usize channelsRequired = 4;
 
@@ -126,46 +126,46 @@ namespace realware
         return CreateTexture(id, glm::vec2(width, height), channelsRequired, data);
     }
 
-    cTextureAtlasTexture* mTexture::FindTexture(const std::string& id)
+    cTextureAtlasTexture* cTextureAtlas::FindTexture(const std::string& id)
     {
         return _textures.Find(id);
     }
 
-    void mTexture::DestroyTexture(const std::string& id)
+    void cTextureAtlas::DestroyTexture(const std::string& id)
     {
         _textures.Delete(id);
     }
 
-    cTextureAtlasTexture mTexture::CalculateNormalizedArea(const cTextureAtlasTexture& area)
-    {
-        cTextureAtlasTexture norm = cTextureAtlasTexture(
-            area.GetID(),
-            GetApplication(),
-            types::K_TRUE,
-            glm::vec3(area.GetOffset().x / _atlas->_width, area.GetOffset().y / _atlas->_height, area.GetOffset().z),
-            glm::vec2(area.GetSize().x / _atlas->_width, area.GetSize().y / _atlas->_height)
-        );
-
-        return norm;
-    }
-
-    sTexture* mTexture::GetAtlas() const
+    cTexture* cTextureAtlas::GetAtlas() const
     {
         return _atlas;
     }
 
-    usize mTexture::GetWidth() const
+    usize cTextureAtlas::GetWidth() const
     {
-        return _atlas->_width;
+        return _atlas->GetWidth();
     }
 
-    usize mTexture::GetHeight() const
+    usize cTextureAtlas::GetHeight() const
     {
-        return _atlas->_height;
+        return _atlas->GetHeight();
     }
 
-    usize mTexture::GetDepth() const
+    usize cTextureAtlas::GetDepth() const
     {
-        return _atlas->_depth;
+        return _atlas->GetDepth();
+    }
+
+    void cTextureAtlas::SetAtlas(const glm::vec3& size)
+    {
+        _atlas = _gfx->CreateTexture(
+            size.x,
+            size.y,
+            size.z,
+            cTexture::eType::TEXTURE_2D_ARRAY,
+            cTexture::eFormat::RGBA8_MIPS,
+            nullptr
+        );
+        _atlas->SetSlot(0);
     }
 }

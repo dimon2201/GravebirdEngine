@@ -17,11 +17,13 @@ namespace realware
     class cSound;
     struct sWAVStructure;
 
-    class iSoundContext : public iObject
+    class iSoundAPI : public iObject
     {
+        REALWARE_CLASS(iSoundAPI)
+
     public:
-        explicit iSoundContext(cContext* context) : iObject(context) {}
-        virtual ~iSoundContext() = default;
+        explicit iSoundAPI(cContext* context) : iObject(context) {}
+        virtual ~iSoundAPI() = default;
 
         virtual void Create(const std::string& filename, eCategory format, const sWAVStructure** file, types::u32& source, types::u32& buffer) = 0;
         virtual void Destroy(cSound* sound) = 0;
@@ -34,13 +36,13 @@ namespace realware
         virtual void SetListenerOrientation(const glm::vec3& at, const glm::vec3& up) = 0;
     };
 
-    class cOpenALSoundContext : public iSoundContext
+    class cOpenALSoundAPI : public iSoundAPI
     {
-    public:
-        cOpenALSoundContext(cContext* context);
-        virtual ~cOpenALSoundContext() override final;
+        REALWARE_CLASS(cOpenALSoundAPI)
 
-        inline virtual cType GetType() const override final { return cType("OpenALSoundContext"); }
+    public:
+        cOpenALSoundAPI(cContext* context);
+        virtual ~cOpenALSoundAPI() override final;
 
         virtual void Create(const std::string& filename, eCategory format, const sWAVStructure** file, types::u32& source, types::u32& buffer) override final;
         virtual void Destroy(cSound* sound) override final;

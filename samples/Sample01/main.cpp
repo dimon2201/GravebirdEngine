@@ -6,6 +6,7 @@
 #include "../../engine/thirdparty/glm/glm/glm.hpp"
 #include "../../engine/thirdparty/glm/glm/gtc/matrix_transform.hpp"
 #include "../../engine/src/application.hpp"
+#include "../../engine/src/context.hpp"
 #include "../../engine/src/camera_manager.hpp"
 #include "../../engine/src/texture_manager.hpp"
 #include "../../engine/src/render_manager.hpp"
@@ -28,10 +29,10 @@ void func(cBuffer* const data)
 {
 }
 
-class MyApp : public cApplication
+class MyApp : public iApplication
 {
 public:
-    MyApp(const sApplicationDescriptor* const desc) : cApplication(desc) {}
+    MyApp(cContext* context) : iApplication(context) {}
     ~MyApp()
     {
         _render->DestroyGeometry(_triangleGeometry);
@@ -112,30 +113,30 @@ public:
         );
 
         sRenderPass::sDescriptor renderPassDesc;
-        renderPassDesc.InputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
-        renderPassDesc.InputBuffers.emplace_back(render->GetVertexBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetIndexBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueInstanceBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueMaterialBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetLightBuffer());
-        renderPassDesc.InputBuffers.emplace_back(render->GetOpaqueTextureAtlasTexturesBuffer());
-        renderPassDesc.InputTextures.emplace_back(GetTextureManager()->GetAtlas());
-        renderPassDesc.InputTextureNames.emplace_back("TextureAtlas");
-        renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture1);
-        renderPassDesc.InputTextureAtlasTextures.emplace_back(customRenderPassTexture2);
-        renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyRedTexture");
-        renderPassDesc.InputTextureAtlasTextureNames.emplace_back("MyWhiteTexture");
-        renderPassDesc.ShaderBase = nullptr;
-        renderPassDesc.ShaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
-        renderPassDesc.ShaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
-        renderPassDesc.ShaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
-        renderPassDesc.RenderTarget = opaqueRenderPass->Desc.RenderTarget;
-        renderPassDesc.Viewport = glm::vec4(0.0f, 0.0f, windowSize.x, windowSize.y);
-        renderPassDesc.DepthMode.UseDepthTest = K_TRUE;
-        renderPassDesc.DepthMode.UseDepthWrite = K_TRUE;
-        renderPassDesc.BlendMode.FactorCount = 1;
-        renderPassDesc.BlendMode.SrcFactors[0] = sBlendMode::eFactor::ONE;
-        renderPassDesc.BlendMode.DstFactors[0] = sBlendMode::eFactor::ZERO;
+        renderPassDesc._inputVertexFormat = eCategory::VERTEX_BUFFER_FORMAT_POS_TEX_NRM_VEC3_VEC2_VEC3;
+        renderPassDesc._inputBuffers.emplace_back(render->GetVertexBuffer());
+        renderPassDesc._inputBuffers.emplace_back(render->GetIndexBuffer());
+        renderPassDesc._inputBuffers.emplace_back(render->GetOpaqueInstanceBuffer());
+        renderPassDesc._inputBuffers.emplace_back(render->GetOpaqueMaterialBuffer());
+        renderPassDesc._inputBuffers.emplace_back(render->GetLightBuffer());
+        renderPassDesc._inputBuffers.emplace_back(render->GetOpaqueTextureAtlasTexturesBuffer());
+        renderPassDesc._inputTextures.emplace_back(GetTextureManager()->GetAtlas());
+        renderPassDesc._inputTextureNames.emplace_back("TextureAtlas");
+        renderPassDesc._inputTextureAtlasTextures.emplace_back(customRenderPassTexture1);
+        renderPassDesc._inputTextureAtlasTextures.emplace_back(customRenderPassTexture2);
+        renderPassDesc._inputTextureAtlasTextureNames.emplace_back("MyRedTexture");
+        renderPassDesc._inputTextureAtlasTextureNames.emplace_back("MyWhiteTexture");
+        renderPassDesc._shaderBase = nullptr;
+        renderPassDesc._shaderRenderPath = eCategory::RENDER_PATH_OPAQUE;
+        renderPassDesc._shaderVertexPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_vertex.shader";
+        renderPassDesc._shaderFragmentPath = "C:/DDD/RealWare/out/build/x64-Debug/samples/Sample01/data/shaders/main_fragment.shader";
+        renderPassDesc._renderTarget = opaqueRenderPass->_desc._renderTarget;
+        renderPassDesc._viewport = glm::vec4(0.0f, 0.0f, windowSize.x, windowSize.y);
+        renderPassDesc._depthMode._useDepthTest = K_TRUE;
+        renderPassDesc._depthMode._useDepthWrite = K_TRUE;
+        renderPassDesc._blendMode._factorCount = 1;
+        renderPassDesc._blendMode._srcFactors[0] = sBlendMode::eFactor::ONE;
+        renderPassDesc._blendMode._dstFactors[0] = sBlendMode::eFactor::ZERO;
         
         return renderContext->CreateRenderPass(renderPassDesc);
     }
@@ -148,29 +149,29 @@ public:
         // Triangle geometry
         _trianglePrimitive = _render->CreatePrimitive(eCategory::PRIMITIVE_TRIANGLE);
         _triangleGeometry = _render->CreateGeometry(
-            _trianglePrimitive->Format,
-            _trianglePrimitive->VerticesByteSize,
-            _trianglePrimitive->Vertices,
-            _trianglePrimitive->IndicesByteSize,
-            _trianglePrimitive->Indices
+            _trianglePrimitive->_format,
+            _trianglePrimitive->_verticesByteSize,
+            _trianglePrimitive->_vertices,
+            _trianglePrimitive->_indicesByteSize,
+            _trianglePrimitive->_indices
         );
         _quadPrimitive = _render->CreatePrimitive(eCategory::PRIMITIVE_QUAD);
         _quadGeometry = _render->CreateGeometry(
-            _quadPrimitive->Format,
-            _quadPrimitive->VerticesByteSize,
-            _quadPrimitive->Vertices,
-            _quadPrimitive->IndicesByteSize,
-            _quadPrimitive->Indices
+            _quadPrimitive->_format,
+            _quadPrimitive->_verticesByteSize,
+            _quadPrimitive->_vertices,
+            _quadPrimitive->_indicesByteSize,
+            _quadPrimitive->_indices
         );
 
         // Models
         _cubeModel = _render->CreateModel("C:/DDD/RealWare/resources/cube.fbx");
         _cubeGeometry = _render->CreateGeometry(
-            _cubeModel->Format,
-            _cubeModel->VerticesByteSize,
-            _cubeModel->Vertices,
-            _cubeModel->IndicesByteSize,
-            _cubeModel->Indices
+            _cubeModel->_format,
+            _cubeModel->_verticesByteSize,
+            _cubeModel->_vertices,
+            _cubeModel->_indicesByteSize,
+            _cubeModel->_indices
         );
 
         // Textures
@@ -220,8 +221,8 @@ public:
                     cubeObject1->SetVisible(K_TRUE);
                     cubeObject1->SetOpaque(K_TRUE);
                     cubeObject1->SetGeometry(_cubeGeometry);
-                    cubeObject1->GetTransform()->Position = position;
-                    cubeObject1->GetTransform()->Scale = glm::vec3(1.0f);
+                    cubeObject1->GetTransform()->_position = position;
+                    cubeObject1->GetTransform()->_scale = glm::vec3(1.0f);
                     cubeObject1->SetMaterial(material2);
                 }
             }
@@ -230,8 +231,8 @@ public:
         cGameObject* textObject = _gameObject->CreateGameObject("TextObject");
         textObject->SetVisible(K_TRUE);
         textObject->SetOpaque(K_TRUE);
-        textObject->GetTransform()->Position = glm::vec3(0.5f, 0.5f, 0.0f);
-        textObject->GetTransform()->Scale = glm::vec3(1.0f);
+        textObject->GetTransform()->_position = glm::vec3(0.5f, 0.5f, 0.0f);
+        textObject->GetTransform()->_scale = glm::vec3(1.0f);
         textObject->SetMaterial(material1);
         textObject->SetText(text);
         
@@ -242,15 +243,14 @@ public:
         //);
 
         EventFunction ef = EventFunction([](cBuffer* const data) {std::cout << "Success KEY_PRESS!" << std::endl;});
-        cEvent e(eEvent::KEY_PRESS, std::move(ef));
-        GetEventManager()->Subscribe(textObject, e);
+        GetEventManager()->Subscribe("Event1", eEvent::KEY_PRESS, textObject, std::move(ef));
         GetEventManager()->Send(eEvent::KEY_PRESS);
 
         // Create camera
         _camera->CreateCamera();
         _camera->SetMoveSpeed(5.0f);
         _cameraGameObject = _camera->GetCameraGameObject();
-        _cameraGameObject->GetTransform()->Position = glm::vec3(0.0f, 5.0f, 0.0f);
+        _cameraGameObject->GetTransform()->_position = glm::vec3(0.0f, 5.0f, 0.0f);
         _cameraGameObject->SetPhysicsController(
             0.0f,
             0.51f,
@@ -260,24 +260,13 @@ public:
             pxSubstance
         );
 
-        auto& gameObjects = _gameObject->GetObjects();
-        auto gameObjectsArray = gameObjects.GetObjects();
-        _transparentGameObjects = new std::vector<cGameObject>();
-        for (usize i = 0; i < gameObjects.GetObjectCount(); i++)
-        {
-            if (gameObjectsArray[i].GetOpaque() == K_TRUE)
-                _transparentGameObjects->push_back(gameObjectsArray[i]);
-        }
         _render->WriteObjectsToOpaqueBuffers(_gameObject->GetObjects(), _customRenderPass);
-
-        _textGameObjects = new std::vector<cGameObject>();
-        _textGameObjects->push_back(*textObject);
     }
 
     virtual void Update() override final
     {
         // Custom render pass
-        _customRenderPass->Desc.Viewport = glm::vec4(0.0f, 0.0f, GetWindowSize().x, GetWindowSize().y);
+        _customRenderPass->_desc._viewport = glm::vec4(0.0f, 0.0f, GetWindowSize().x, GetWindowSize().y);
 
         // Rendering
         cGameObject* cameraObject = _cameraGameObject;
@@ -302,21 +291,22 @@ private:
     sVertexBufferGeometry* _cubeGeometry = nullptr;
     cGameObject* _cameraGameObject = nullptr;
     sRenderPass* _customRenderPass = nullptr;
-    std::vector<cGameObject>* _transparentGameObjects = {};
-    std::vector<cGameObject>* _textGameObjects = {};
+    cVector<cGameObject>* _transparentGameObjects = {};
+    cVector<cGameObject>* _textGameObjects = {};
 };
 
 int main()
 {
     sApplicationDescriptor* appDesc = new sApplicationDescriptor;
-    appDesc->WindowDesc.Title = "Test Window";
-    appDesc->WindowDesc.Width = 640;
-    appDesc->WindowDesc.Height = 480;
-    appDesc->WindowDesc.IsFullscreen = K_FALSE;
-    appDesc->MemoryPoolByteSize = 128 * 1024 * 1024;
-    appDesc->MaxGameObjectCount = 100 * 50 * 50;
-    appDesc->MaxRenderOpaqueInstanceCount = 100 * 50 * 50;
+    appDesc->_windowDesc._title = "Test Window";
+    appDesc->_windowDesc._width = 640;
+    appDesc->_windowDesc._height = 480;
+    appDesc->_windowDesc._isFullscreen = K_FALSE;
+    appDesc->_memoryPoolByteSize = 128 * 1024 * 1024;
+    appDesc->_maxGameObjectCount = 100 * 50 * 50;
+    appDesc->_maxRenderOpaqueInstanceCount = 100 * 50 * 50;
 
+    cContext* context = new cContext();
     MyApp* app = new MyApp(appDesc);
     app->Run();
     

@@ -11,6 +11,7 @@
 #include "application.hpp"
 #include "render_manager.hpp"
 #include "memory_pool.hpp"
+#include "context.hpp"
 #include "log.hpp"
 
 using namespace types;
@@ -43,7 +44,14 @@ namespace realware
         return out;
     }
 
-    cOpenGLRenderContext::cOpenGLRenderContext(cContext* context) : iRenderContext(context)
+    void cWindow::SetWindow(GLFWwindow* window, types::usize width, types::usize height)
+    {
+        _window = window;
+        _width = width;
+        _height = height;
+    }
+
+    cOpenGLGraphicsAPI::cOpenGLGraphicsAPI(cContext* context) : iGraphicsAPI(context)
     {
         if (glewInit() != GLEW_OK)
         {
@@ -62,39 +70,95 @@ namespace realware
         glDebugMessageCallback(GLDebugCallback, nullptr);
     }
 
-    cOpenGLRenderContext::~cOpenGLRenderContext()
+    cOpenGLGraphicsAPI::~cOpenGLGraphicsAPI()
     {
     }
 
-    sBuffer* cOpenGLRenderContext::CreateBuffer(usize byteSize, sBuffer::eType type, const void* data)
+    cWindow* cOpenGLGraphicsAPI::OpenWindow(const std::string& title, usize width, usize height, usize fullscreen)
     {
-        sBuffer* pBuffer = (sBuffer*)GetApplication()->GetMemoryPool()->Allocate(sizeof(sBuffer));
-        sBuffer* buffer = new (pBuffer) sBuffer();
+        cWindow* window = _context->Create<cWindow>();
+
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        if (fullscreen == K_FALSE)
+        {
+            window->SetWindow(glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr), width, height);
+        }
+        else
+        {
+            glfwWindowHint(GLFW_DECORATED, 0);
+
+            const glm::vec2 monitorSize = GetMonitorSize();
+            const usize newWidth = monitorSize.x;
+            const usize newHeight = monitorSize.y;
+            window->SetWindow(glfwCreateWindow(newWidth, newHeight, title.c_str(), glfwGetPrimaryMonitor(), nullptr), newWidth, newHeight);
+        }
+
+        GLFWwindow* glfwWindow = window->GetWindow();
+
+        glfwSetWindowUserPointer(glfwWindow, this);
+
+        if (!glfwWindow)
+        {
+            Print("Error: incompatible GL version!");
+            return;
+        }
+
+        glfwMakeContextCurrent(glfwWindow);
+
+        glfwSwapInterval(1);
+
+        glfwSetKeyCallback(glfwWindow, &KeyCallback);
+        glfwSetWindowFocusCallback(glfwWindow, &WindowFocusCallback);
+        glfwSetWindowSizeCallback(glfwWindow, &WindowSizeCallback);
+        glfwSetCursorPosCallback(glfwWindow, &CursorCallback);
+        glfwSetMouseButtonCallback(glfwWindow, &MouseButtonCallback);
+
+        return window;
+    }
+
+    glm::vec2 cOpenGLGraphicsAPI::GetMonitorSize()
+    {
+        return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+    }
+
+    void cOpenGLGraphicsAPI::SwapBuffers(const cWindow* window)
+    {
+        glfwSwapBuffers(window->GetWindow());
+    }
+
+    cBuffer* cOpenGLGraphicsAPI::CreateBuffer(usize byteSize, cBuffer::eType type, const void* data)
+    {
+        cBuffer* buffer = _context->Create<cBuffer>();
         buffer->_byteSize = byteSize;
         buffer->_type = type;
         buffer->_slot = 0;
 
         glGenBuffers(1, (GLuint*)&buffer->_instance);
 
-        if (buffer->_type == sBuffer::eType::VERTEX)
+        if (buffer->GetBufferType() == cBuffer::eType::VERTEX)
         {
             glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
-        else if (buffer->_type == sBuffer::eType::INDEX)
+        else if (buffer->GetBufferType() == cBuffer::eType::INDEX)
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, data, GL_STATIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
-        else if (buffer->_type == sBuffer::eType::UNIFORM)
+        else if (buffer->GetBufferType() == cBuffer::eType::UNIFORM)
         {
             glBindBuffer(GL_UNIFORM_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_UNIFORM_BUFFER, byteSize, data, GL_STATIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
-        else if (buffer->_type == sBuffer::eType::LARGE)
+        else if (buffer->GetBufferType() == cBuffer::eType::LARGE)
         {
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, (GLuint)buffer->_instance);
             glBufferData(GL_SHADER_STORAGE_BUFFER, byteSize, data, GL_STATIC_DRAW);
@@ -104,59 +168,59 @@ namespace realware
         return buffer;
     }
 
-    void cOpenGLRenderContext::BindBuffer(const sBuffer* buffer)
+    void cOpenGLGraphicsAPI::BindBuffer(const cBuffer* buffer)
     {
-        if (buffer->_type == sBuffer::eType::VERTEX)
+        if (buffer->_type == cBuffer::eType::VERTEX)
             glBindBuffer(GL_ARRAY_BUFFER, (GLuint)buffer->_instance);
-        else if (buffer->_type == sBuffer::eType::INDEX)
+        else if (buffer->_type == cBuffer::eType::INDEX)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)buffer->_instance);
-        else if (buffer->_type == sBuffer::eType::UNIFORM)
+        else if (buffer->_type == cBuffer::eType::UNIFORM)
             glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, (GLuint)buffer->_instance);
-        else if (buffer->_type == sBuffer::eType::LARGE)
+        else if (buffer->_type == cBuffer::eType::LARGE)
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, buffer->_instance);
     }
 		
-	void cOpenGLRenderContext::BindBufferNotVAO(const sBuffer* buffer)
+	void cOpenGLGraphicsAPI::BindBufferNotVAO(const cBuffer* buffer)
     {
-        if (buffer->_type == sBuffer::eType::UNIFORM)
+        if (buffer->_type == cBuffer::eType::UNIFORM)
             glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, (GLuint)buffer->_instance);
-        else if (buffer->_type == sBuffer::eType::LARGE)
+        else if (buffer->_type == cBuffer::eType::LARGE)
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, buffer->_instance);
     }
 
-    void cOpenGLRenderContext::UnbindBuffer(const sBuffer* buffer)
+    void cOpenGLGraphicsAPI::UnbindBuffer(const cBuffer* buffer)
     {
-        if (buffer->_type == sBuffer::eType::VERTEX)
+        if (buffer->_type == cBuffer::eType::VERTEX)
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-        else if (buffer->_type == sBuffer::eType::INDEX)
+        else if (buffer->_type == cBuffer::eType::INDEX)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        else if (buffer->_type == sBuffer::eType::UNIFORM)
+        else if (buffer->_type == cBuffer::eType::UNIFORM)
             glBindBufferBase(GL_UNIFORM_BUFFER, buffer->_slot, 0);
-        else if (buffer->_type == sBuffer::eType::LARGE)
+        else if (buffer->_type == cBuffer::eType::LARGE)
             glBindBufferBase(GL_SHADER_STORAGE_BUFFER, buffer->_slot, 0);
     }
 
-    void cOpenGLRenderContext::WriteBuffer(const sBuffer* buffer, usize offset, usize byteSize, const void* data)
+    void cOpenGLGraphicsAPI::WriteBuffer(const cBuffer* buffer, usize offset, usize byteSize, const void* data)
     {
-        if (buffer->_type == sBuffer::eType::VERTEX)
+        if (buffer->_type == cBuffer::eType::VERTEX)
         {
             glBindBuffer(GL_ARRAY_BUFFER, buffer->_instance);
             glBufferSubData(GL_ARRAY_BUFFER, offset, byteSize, data);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
-        else if (buffer->_type == sBuffer::eType::INDEX)
+        else if (buffer->_type == cBuffer::eType::INDEX)
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->_instance);
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, byteSize, data);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
-        else if (buffer->_type == sBuffer::eType::UNIFORM)
+        else if (buffer->_type == cBuffer::eType::UNIFORM)
         {
             glBindBuffer(GL_UNIFORM_BUFFER, buffer->_instance);
             glBufferSubData(GL_UNIFORM_BUFFER, offset, byteSize, data);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
-        else if (buffer->_type == sBuffer::eType::LARGE)
+        else if (buffer->_type == cBuffer::eType::LARGE)
         {
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->_instance);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byteSize, data);
@@ -164,44 +228,40 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::DestroyBuffer(sBuffer* buffer)
+    void cOpenGLGraphicsAPI::DestroyBuffer(cBuffer* buffer)
     {
-        if (buffer->_type == sBuffer::eType::VERTEX)
+        if (buffer->_type == cBuffer::eType::VERTEX)
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-        else if (buffer->_type == sBuffer::eType::INDEX)
+        else if (buffer->_type == cBuffer::eType::INDEX)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        else if (buffer->_type == sBuffer::eType::UNIFORM)
+        else if (buffer->_type == cBuffer::eType::UNIFORM)
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        else if (buffer->_type == sBuffer::eType::LARGE)
+        else if (buffer->_type == cBuffer::eType::LARGE)
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         glDeleteBuffers(1, (GLuint*)&buffer->_instance);
 
         if (buffer != nullptr)
-        {
-            buffer->~sBuffer();
-            GetApplication()->GetMemoryPool()->Free(buffer);
-        }
+            _context->Destroy<cBuffer>(buffer);
     }
 
-    sVertexArray* cOpenGLRenderContext::CreateVertexArray()
+    cVertexArray* cOpenGLGraphicsAPI::CreateVertexArray()
     {
-        sVertexArray* pVertexArray = (sVertexArray*)GetApplication()->GetMemoryPool()->Allocate(sizeof(sVertexArray));
-        sVertexArray* vertexArray = new (pVertexArray) sVertexArray();
+        cVertexArray* vertexArray = _context->Create<cVertexArray>();
 
         glGenVertexArrays(1, (GLuint*)&vertexArray->_instance);
 
         return vertexArray;
     }
 
-    void cOpenGLRenderContext::BindVertexArray(const sVertexArray* vertexArray)
+    void cOpenGLGraphicsAPI::BindVertexArray(const cVertexArray* vertexArray)
     {
         glBindVertexArray((GLuint)vertexArray->_instance);
     }
 
-    void cOpenGLRenderContext::BindDefaultVertexArray(const std::vector<sBuffer*>& buffersToBind)
+    void cOpenGLGraphicsAPI::BindDefaultVertexArray(const std::vector<cBuffer*>& buffersToBind)
     {
-        static sVertexArray* vertexArray = nullptr;
+        static cVertexArray* vertexArray = nullptr;
 
         if (vertexArray == nullptr)
         {
@@ -217,38 +277,33 @@ namespace realware
         BindVertexArray(vertexArray);
     }
 
-    void cOpenGLRenderContext::UnbindVertexArray()
+    void cOpenGLGraphicsAPI::UnbindVertexArray()
     {
         glBindVertexArray(0);
     }
 
-    void cOpenGLRenderContext::DestroyVertexArray(sVertexArray* vertexArray)
+    void cOpenGLGraphicsAPI::DestroyVertexArray(cVertexArray* vertexArray)
     {
         glDeleteVertexArrays(1, (GLuint*)&vertexArray->_instance);
 
         if (vertexArray != nullptr)
-        {
-            vertexArray->~sVertexArray();
-            GetApplication()->GetMemoryPool()->Free(vertexArray);
-        }
+            _context->Destroy<cVertexArray>(vertexArray);
     }
 
-    void cOpenGLRenderContext::BindShader(const sShader* shader)
+    void cOpenGLGraphicsAPI::BindShader(const cShader* shader)
     {
         const GLuint shaderID = (GLuint)shader->_instance;
         glUseProgram(shaderID);
     }
 
-    void cOpenGLRenderContext::UnbindShader()
+    void cOpenGLGraphicsAPI::UnbindShader()
     {
         glUseProgram(0);
     }
 
-    sShader* cOpenGLRenderContext::CreateShader(eCategory renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<sShader::sDefinePair>& definePairs)
+    cShader* cOpenGLGraphicsAPI::CreateShader(eCategory renderPath, const std::string& vertexPath, const std::string& fragmentPath, const std::vector<cShader::sDefinePair>& definePairs)
     {
-        cApplication* app = GetApplication();
-        sShader* pShader = (sShader*)app->GetMemoryPool()->Allocate(sizeof(sShader));
-        sShader* shader = new (pShader) sShader();
+        cShader* shader = _context->Create<cShader>();
 
         std::string header = "";
         switch (renderPath)
@@ -280,9 +335,10 @@ namespace realware
 
         const std::string appendStr = "#version 430\n\n#define " + header + "\n\n";
 
-        sFile* vertexShaderFile = app->GetFileSystemManager()->CreateDataFile(vertexPath, K_TRUE);
+        cFileSystem* fileSystem = _context->GetSubsystem<cFileSystem>();
+        sFile* vertexShaderFile = fileSystem->CreateDataFile(vertexPath, K_TRUE);
         shader->_vertex = CleanShaderSource(std::string((const char*)vertexShaderFile->_data));
-        sFile* fragmentShaderFile = app->GetFileSystemManager()->CreateDataFile(fragmentPath, K_TRUE);
+        sFile* fragmentShaderFile = fileSystem->CreateDataFile(fragmentPath, K_TRUE);
         shader->_fragment = CleanShaderSource(std::string((const char*)fragmentShaderFile->_data));
             
         DefineInShader(shader, definePairs);
@@ -332,16 +388,15 @@ namespace realware
 		glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
 
-        app->GetFileSystemManager()->DestroyDataFile(vertexShaderFile);
-        app->GetFileSystemManager()->DestroyDataFile(fragmentShaderFile);
+        fileSystem->DestroyDataFile(vertexShaderFile);
+        fileSystem->DestroyDataFile(fragmentShaderFile);
 
         return shader;
     }
 
-    sShader* cOpenGLRenderContext::CreateShader(const sShader* baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<sShader::sDefinePair>& definePairs)
+    cShader* cOpenGLGraphicsAPI::CreateShader(const cShader* baseShader, const std::string& vertexFunc, const std::string& fragmentFunc, const std::vector<cShader::sDefinePair>& definePairs)
     {
-        sShader* pShader = (sShader*)GetApplication()->GetMemoryPool()->Allocate(sizeof(sShader));
-        sShader* shader = new (pShader) sShader();
+        cShader* shader = _context->Create<cShader>();
 
         const std::string vertexFuncDefinition = "void Vertex_Func(in vec3 _positionLocal, in vec2 _texcoord, in vec3 _normal, in int _instanceID, in Instance _instance, in Material material, in float _use2D, out vec4 _glPosition){}";
         const std::string vertexFuncPassthroughCall = "Vertex_Passthrough(InPositionLocal, instance, instance.Use2D, gl_Position);";
@@ -424,45 +479,40 @@ namespace realware
         return shader;
     }
 
-    void cOpenGLRenderContext::DefineInShader(sShader* shader, const std::vector<sShader::sDefinePair>& definePairs)
+    void cOpenGLGraphicsAPI::DefineInShader(cShader* shader, const std::vector<cShader::sDefinePair>& definePairs)
     {
         if (!definePairs.empty())
         {
             std::string defineStr = "";
             for (const auto& define : definePairs)
-                defineStr += "#define " + define.Name + " " + std::to_string(define.Index) + "\n";
+                defineStr += "#define " + define._name + " " + std::to_string(define._index) + "\n";
 
             shader->_vertex = defineStr + shader->_vertex;
             shader->_fragment = defineStr + shader->_fragment;
         }
     }
 
-    void cOpenGLRenderContext::DestroyShader(sShader* shader)
+    void cOpenGLGraphicsAPI::DestroyShader(cShader* shader)
     {
         glDeleteProgram(shader->_instance);
 
         if (shader != nullptr)
-        {
-            shader->~sShader();
-            GetApplication()->GetMemoryPool()->Free(shader);
-        }
+            _context->Destroy<cShader>(shader);
     }
 
-    void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const std::string& name, const glm::mat4& matrix)
+    void cOpenGLGraphicsAPI::SetShaderUniform(const cShader* shader, const std::string& name, const glm::mat4& matrix)
     {
         glUniformMatrix4fv(glGetUniformLocation(shader->_instance, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
     }
 
-    void cOpenGLRenderContext::SetShaderUniform(const sShader* shader, const std::string& name, usize count, const f32* values)
+    void cOpenGLGraphicsAPI::SetShaderUniform(const cShader* shader, const std::string& name, usize count, const f32* values)
     {
         glUniform4fv(glGetUniformLocation(shader->_instance, name.c_str()), count, &values[0]);
     }
 
-    sTexture* cOpenGLRenderContext::CreateTexture(usize width, usize height, usize depth, sTexture::eType type, sTexture::eFormat format, const void* data)
+    cTexture* cOpenGLGraphicsAPI::CreateTexture(usize width, usize height, usize depth, cTexture::eType type, cTexture::eFormat format, const void* data)
     {
-        sTexture* pTexture = (sTexture*)GetApplication()->GetMemoryPool()->Allocate(sizeof(sTexture));
-        sTexture* texture = new (pTexture) sTexture();
-            
+        cTexture* texture = _context->Create<cTexture>();
         texture->_width = width;
         texture->_height = height;
         texture->_depth = depth;
@@ -474,51 +524,51 @@ namespace realware
         GLenum formatGL = GL_RGBA8;
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
-        if (texture->_format == sTexture::eFormat::R8)
+        if (texture->_format == cTexture::eFormat::R8)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->_format == sTexture::eFormat::R8F)
+        else if (texture->_format == cTexture::eFormat::R8F)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_FLOAT;
         }
-        else if (texture->_format == sTexture::eFormat::RGBA8 || texture->_format == sTexture::eFormat::RGBA8_MIPS)
+        else if (texture->_format == cTexture::eFormat::RGBA8 || texture->_format == cTexture::eFormat::RGBA8_MIPS)
         {
             formatGL = GL_RGBA8;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->_format == sTexture::eFormat::RGB16F)
+        else if (texture->_format == cTexture::eFormat::RGB16F)
         {
             formatGL = GL_RGB16F;
             channelsGL = GL_RGB;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->_format == sTexture::eFormat::RGBA16F)
+        else if (texture->_format == cTexture::eFormat::RGBA16F)
         {
             formatGL = GL_RGBA16F;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->_format == sTexture::eFormat::DEPTH_STENCIL)
+        else if (texture->_format == cTexture::eFormat::DEPTH_STENCIL)
         {
             formatGL = GL_DEPTH24_STENCIL8;
             channelsGL = GL_DEPTH_STENCIL;
             formatComponentGL = GL_UNSIGNED_INT_24_8;
         }
 
-        if (texture->_type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == cTexture::eType::TEXTURE_2D)
         {
             glBindTexture(GL_TEXTURE_2D, texture->_instance);
 
             glTexImage2D(GL_TEXTURE_2D, 0, formatGL, texture->_width, texture->_height, 0, channelsGL, formatComponentGL, data);
-            if (texture->_format != sTexture::eFormat::DEPTH_STENCIL)
+            if (texture->_format != cTexture::eFormat::DEPTH_STENCIL)
             {
-                if (texture->_format == sTexture::eFormat::RGBA8_MIPS)
+                if (texture->_format == cTexture::eFormat::RGBA8_MIPS)
                 {
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -534,13 +584,13 @@ namespace realware
 
             glBindTexture(GL_TEXTURE_2D, 0);
         }
-        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == cTexture::eType::TEXTURE_2D_ARRAY)
         {
             glBindTexture(GL_TEXTURE_2D_ARRAY, texture->_instance);
 
             glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatGL, texture->_width, texture->_height, texture->_depth, 0, channelsGL, formatComponentGL, data);
                 
-            if (texture->_format == sTexture::eFormat::RGBA8_MIPS)
+            if (texture->_format == cTexture::eFormat::RGBA8_MIPS)
             {
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -559,29 +609,29 @@ namespace realware
         return texture;
     }
 
-    sTexture* cOpenGLRenderContext::ResizeTexture(sTexture* texture, const glm::vec2& size)
+    cTexture* cOpenGLGraphicsAPI::ResizeTexture(cTexture* texture, const glm::vec2& size)
     {
-        sTexture textureCopy = *texture;
+        cTexture textureCopy = *texture;
         DestroyTexture(texture);
 
-        sTexture* newTexture = CreateTexture(size.x, size.y, textureCopy._depth, textureCopy._type, textureCopy._format, nullptr);
+        cTexture* newTexture = CreateTexture(size.x, size.y, textureCopy._depth, textureCopy._type, textureCopy._format, nullptr);
             
         return newTexture;
     }
 
-    void cOpenGLRenderContext::BindTexture(const sShader* shader, const std::string& name, const sTexture* texture, s32 slot)
+    void cOpenGLGraphicsAPI::BindTexture(const cShader* shader, const std::string& name, const cTexture* texture, s32 slot)
     {
         if (slot == -1)
             slot = texture->_slot;
 
-        if (texture->_type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == cTexture::eType::TEXTURE_2D)
         {
             glUniform1i(glGetUniformLocation(shader->_instance, name.c_str()), slot);
             glActiveTexture(GL_TEXTURE0 + slot);
             glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glActiveTexture(GL_TEXTURE0);
         }
-        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == cTexture::eType::TEXTURE_2D_ARRAY)
         {
             glUniform1i(glGetUniformLocation(shader->_instance, name.c_str()), slot);
             glActiveTexture(GL_TEXTURE0 + slot);
@@ -590,62 +640,62 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::UnbindTexture(const sTexture* texture)
+    void cOpenGLGraphicsAPI::UnbindTexture(const cTexture* texture)
     {
-        if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
+        if (texture->_type == cTexture::eType::TEXTURE_2D_ARRAY)
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
-    void cOpenGLRenderContext::WriteTexture(const sTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data)
+    void cOpenGLGraphicsAPI::WriteTexture(const cTexture* texture, const glm::vec3& offset, const glm::vec2& size, const void* data)
     {
         GLenum formatGL = GL_RGBA8;
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
 
-        if (texture->_format == sTexture::eFormat::R8)
+        if (texture->_format == cTexture::eFormat::R8)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->_format == sTexture::eFormat::R8F)
+        else if (texture->_format == cTexture::eFormat::R8F)
         {
             formatGL = GL_R8;
             channelsGL = GL_RED;
             formatComponentGL = GL_FLOAT;
         }
-        else if (texture->_format == sTexture::eFormat::RGBA8 || texture->_format == sTexture::eFormat::RGBA8_MIPS)
+        else if (texture->_format == cTexture::eFormat::RGBA8 || texture->_format == cTexture::eFormat::RGBA8_MIPS)
         {
             formatGL = GL_RGBA8;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_UNSIGNED_BYTE;
         }
-        else if (texture->_format == sTexture::eFormat::RGB16F)
+        else if (texture->_format == cTexture::eFormat::RGB16F)
         {
             formatGL = GL_RGB16F;
             channelsGL = GL_RGB;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->_format == sTexture::eFormat::RGBA16F)
+        else if (texture->_format == cTexture::eFormat::RGBA16F)
         {
             formatGL = GL_RGBA16F;
             channelsGL = GL_RGBA;
             formatComponentGL = GL_HALF_FLOAT;
         }
-        else if (texture->_format == sTexture::eFormat::DEPTH_STENCIL)
+        else if (texture->_format == cTexture::eFormat::DEPTH_STENCIL)
         {
             formatGL = GL_DEPTH24_STENCIL8;
             channelsGL = GL_DEPTH_STENCIL;
             formatComponentGL = GL_UNSIGNED_INT_24_8;
         }
 
-        if (texture->_type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == cTexture::eType::TEXTURE_2D)
         {
             glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glTexSubImage2D(GL_TEXTURE_2D, 0, offset.x, offset.y, size.x, size.y, channelsGL, formatComponentGL, data);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
-        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == cTexture::eType::TEXTURE_2D_ARRAY)
         {
             if (offset.x + size.x <= texture->_width && offset.y + size.y <= texture->_height && offset.z < texture->_depth)
             {
@@ -656,47 +706,47 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::WriteTextureToFile(const sTexture* const texture, const std::string& filename)
+    void cOpenGLGraphicsAPI::WriteTextureToFile(const cTexture* texture, const std::string& filename)
     {
-        if (texture->_format != sTexture::eFormat::RGBA8)
+        if (texture->_format != cTexture::eFormat::RGBA8)
             return;
 
         GLenum channelsGL = GL_RGBA;
         GLenum formatComponentGL = GL_UNSIGNED_BYTE;
         usize formatByteCount = 4;
 
-        if (texture->_format == sTexture::eFormat::RGBA8)
+        if (texture->_format == cTexture::eFormat::RGBA8)
         {
             channelsGL = GL_RGBA;
             formatComponentGL = GL_UNSIGNED_BYTE;
             formatByteCount = 4;
         }
 
-        if (texture->_type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == cTexture::eType::TEXTURE_2D)
         {
-            cMemoryPool* memoryPool = GetApplication()->GetMemoryPool();
+            cMemoryPool<u8>* memoryPool = _context->GetMemoryPool<u8>();
 
-            unsigned char* pixels = (unsigned char*)memoryPool->Allocate(texture->_width * texture->_height * 4);
+            u8* pixels = (u8*)memoryPool->Allocate();
 
             glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glGetTexImage(GL_TEXTURE_2D, 0, channelsGL, formatComponentGL, pixels);
             glBindTexture(GL_TEXTURE_2D, 0);
 
-            lodepng_encode32_file(filename.c_str(), (const unsigned char*)pixels, texture->_width, texture->_height);
+            lodepng_encode32_file(filename.c_str(), pixels, texture->_width, texture->_height);
 
-            memoryPool->Free(pixels);
+            memoryPool->Deallocate(pixels);
         }
     }
 
-    void cOpenGLRenderContext::GenerateTextureMips(const sTexture* texture)
+    void cOpenGLGraphicsAPI::GenerateTextureMips(const cTexture* texture)
     {
-        if (texture->_type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == cTexture::eType::TEXTURE_2D)
         {
             glBindTexture(GL_TEXTURE_2D, texture->_instance);
             glGenerateMipmap(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
-        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == cTexture::eType::TEXTURE_2D_ARRAY)
         {
             glBindTexture(GL_TEXTURE_2D_ARRAY, texture->_instance);
             glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
@@ -704,26 +754,22 @@ namespace realware
         }
     }
 
-    void cOpenGLRenderContext::DestroyTexture(sTexture* texture)
+    void cOpenGLGraphicsAPI::DestroyTexture(cTexture* texture)
     {
-        if (texture->_type == sTexture::eType::TEXTURE_2D)
+        if (texture->_type == cTexture::eType::TEXTURE_2D)
             glBindTexture(GL_TEXTURE_2D, 0);
-        else if (texture->_type == sTexture::eType::TEXTURE_2D_ARRAY)
+        else if (texture->_type == cTexture::eType::TEXTURE_2D_ARRAY)
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
         glDeleteTextures(1, (GLuint*)&texture->_instance);
 
         if (texture != nullptr)
-        {
-            texture->~sTexture();
-            GetApplication()->GetMemoryPool()->Free(texture);
-        }
+            _context->Destroy<cTexture>(texture);
     }
 
-    sRenderTarget* cOpenGLRenderContext::CreateRenderTarget(const std::vector<sTexture*>& colorAttachments, sTexture* depthAttachment)
+    cRenderTarget* cOpenGLGraphicsAPI::CreateRenderTarget(const std::vector<cTexture*>& colorAttachments, cTexture* depthAttachment)
     {
-        sRenderTarget* pRenderTarget = (sRenderTarget*)GetApplication()->GetMemoryPool()->Allocate(sizeof(sRenderTarget));
-        sRenderTarget* renderTarget = new (pRenderTarget) sRenderTarget();
+        cRenderTarget* renderTarget = _context->Create<cRenderTarget>();
 
         renderTarget->_colorAttachments = colorAttachments;
         renderTarget->_depthAttachment = depthAttachment;
@@ -747,12 +793,12 @@ namespace realware
         return renderTarget;
     }
 
-    void cOpenGLRenderContext::ResizeRenderTargetColors(sRenderTarget* renderTarget, const glm::vec2& size)
+    void cOpenGLGraphicsAPI::ResizeRenderTargetColors(cRenderTarget* renderTarget, const glm::vec2& size)
     {
-        std::vector<sTexture*> newColorAttachments;
+        std::vector<cTexture*> newColorAttachments;
         for (auto attachment : renderTarget->_colorAttachments)
         {
-            sTexture attachmentCopy = *attachment;
+            cTexture attachmentCopy = *attachment;
             DestroyTexture(attachment);
             newColorAttachments.emplace_back(CreateTexture(size.x, size.y, attachmentCopy._depth, attachmentCopy._type, attachmentCopy._format, nullptr));
         }
@@ -770,12 +816,12 @@ namespace realware
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void cOpenGLRenderContext::ResizeRenderTargetDepth(sRenderTarget* renderTarget, const glm::vec2& size)
+    void cOpenGLGraphicsAPI::ResizeRenderTargetDepth(cRenderTarget* renderTarget, const glm::vec2& size)
     {
-        sTexture attachmentCopy = *renderTarget->_depthAttachment;
+        cTexture attachmentCopy = *renderTarget->_depthAttachment;
         DestroyTexture(renderTarget->_depthAttachment);
 
-        sTexture* newDepthAttachment = CreateTexture(size.x, size.y, attachmentCopy._depth, attachmentCopy._type, attachmentCopy._format, nullptr);
+        cTexture* newDepthAttachment = CreateTexture(size.x, size.y, attachmentCopy._depth, attachmentCopy._type, attachmentCopy._format, nullptr);
         renderTarget->_depthAttachment = newDepthAttachment;
 
         GLenum buffs[16] = {};
@@ -784,7 +830,7 @@ namespace realware
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void cOpenGLRenderContext::UpdateRenderTargetBuffers(sRenderTarget* renderTarget)
+    void cOpenGLGraphicsAPI::UpdateRenderTargetBuffers(cRenderTarget* renderTarget)
     {
         GLenum buffs[16] = {};
         glGenFramebuffers(1, (GLuint*)&renderTarget->_instance);
@@ -799,36 +845,32 @@ namespace realware
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void cOpenGLRenderContext::BindRenderTarget(const sRenderTarget* renderTarget)
+    void cOpenGLGraphicsAPI::BindRenderTarget(const cRenderTarget* renderTarget)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, renderTarget->_instance);
     }
 
-    void cOpenGLRenderContext::UnbindRenderTarget()
+    void cOpenGLGraphicsAPI::UnbindRenderTarget()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void cOpenGLRenderContext::DestroyRenderTarget(sRenderTarget* renderTarget)
+    void cOpenGLGraphicsAPI::DestroyRenderTarget(cRenderTarget* renderTarget)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDeleteFramebuffers(1, (GLuint*)&renderTarget->_instance);
 
         if (renderTarget != nullptr)
-        {
-            renderTarget->~sRenderTarget();
-            GetApplication()->GetMemoryPool()->Free(renderTarget);
-        }
+            _context->Destroy<cRenderTarget>(renderTarget);
     }
 
-    sRenderPass* cOpenGLRenderContext::CreateRenderPass(const sRenderPass::sDescriptor& descriptor)
+    cRenderPass* cOpenGLGraphicsAPI::CreateRenderPass(const cRenderPass::sDescriptor& descriptor)
     {
-        sRenderPass* pRenderPass = (sRenderPass*)GetApplication()->GetMemoryPool()->Allocate(sizeof(sRenderPass));
-        sRenderPass* renderPass = new (pRenderPass) sRenderPass();
-        memset(renderPass, 0, sizeof(sRenderPass));
+        cRenderPass* renderPass = _context->Create<cRenderPass>();
+        memset(renderPass, 0, sizeof(cRenderPass));
         renderPass->_desc = descriptor;
 
-        std::vector<sShader::sDefinePair> definePairs = {};
+        std::vector<cShader::sDefinePair> definePairs = {};
 
         if (renderPass->_desc._inputTextureAtlasTextures.size() != renderPass->_desc._inputTextureAtlasTextureNames.size())
         {
@@ -881,9 +923,9 @@ namespace realware
         return renderPass;
     }
 
-    void cOpenGLRenderContext::BindRenderPass(const sRenderPass* renderPass, sShader* customShader)
+    void cOpenGLGraphicsAPI::BindRenderPass(const cRenderPass* renderPass, cShader* customShader)
     {
-        sShader* shader = nullptr;
+        cShader* shader = nullptr;
         if (customShader == nullptr)
             shader = renderPass->_desc._shader;
         else
@@ -904,7 +946,7 @@ namespace realware
             BindTexture(shader, renderPass->_desc._inputTextureNames[i].c_str(), renderPass->_desc._inputTextures[i], i);
     }
 
-    void cOpenGLRenderContext::UnbindRenderPass(const sRenderPass* renderPass)
+    void cOpenGLGraphicsAPI::UnbindRenderPass(const cRenderPass* renderPass)
     {
         UnbindVertexArray();
         if (renderPass->_desc._renderTarget != nullptr)
@@ -915,19 +957,16 @@ namespace realware
             UnbindTexture(texture);
     }
 
-    void cOpenGLRenderContext::DestroyRenderPass(sRenderPass* renderPass)
+    void cOpenGLGraphicsAPI::DestroyRenderPass(cRenderPass* renderPass)
     {
         glBindVertexArray(0);
         DestroyVertexArray(renderPass->_desc._vertexArray);
 
         if (renderPass != nullptr)
-        {
-            renderPass->~sRenderPass();
-            GetApplication()->GetMemoryPool()->Free(renderPass);
-        }
+            _context->Destroy<cRenderPass>(renderPass);
     }
 
-    void cOpenGLRenderContext::BindDefaultInputLayout()
+    void cOpenGLGraphicsAPI::BindDefaultInputLayout()
     {
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
@@ -937,7 +976,7 @@ namespace realware
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 32, (void*)20);
     }
 
-    void cOpenGLRenderContext::BindBlendMode(const sBlendMode& blendMode)
+    void cOpenGLGraphicsAPI::BindBlendMode(const cBlendMode& blendMode)
     {
         for (usize i = 0; i < blendMode._factorCount; i++)
         {
@@ -946,27 +985,27 @@ namespace realware
 
             switch (blendMode._srcFactors[i])
             {
-                case sBlendMode::eFactor::ONE: srcFactor = GL_ONE; break;
-                case sBlendMode::eFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
-                case sBlendMode::eFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
-                case sBlendMode::eFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
-                case sBlendMode::eFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+                case cBlendMode::eFactor::ONE: srcFactor = GL_ONE; break;
+                case cBlendMode::eFactor::SRC_COLOR: srcFactor = GL_SRC_COLOR; break;
+                case cBlendMode::eFactor::INV_SRC_COLOR: srcFactor = GL_ONE_MINUS_SRC_COLOR; break;
+                case cBlendMode::eFactor::SRC_ALPHA: srcFactor = GL_SRC_ALPHA; break;
+                case cBlendMode::eFactor::INV_SRC_ALPHA: srcFactor = GL_ONE_MINUS_SRC_ALPHA; break;
             }
 
             switch (blendMode._dstFactors[i])
             {
-                case sBlendMode::eFactor::ONE: dstFactor = GL_ONE; break;
-                case sBlendMode::eFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
-                case sBlendMode::eFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
-                case sBlendMode::eFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
-                case sBlendMode::eFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
+                case cBlendMode::eFactor::ONE: dstFactor = GL_ONE; break;
+                case cBlendMode::eFactor::SRC_COLOR: dstFactor = GL_SRC_COLOR; break;
+                case cBlendMode::eFactor::INV_SRC_COLOR: dstFactor = GL_ONE_MINUS_SRC_COLOR; break;
+                case cBlendMode::eFactor::SRC_ALPHA: dstFactor = GL_SRC_ALPHA; break;
+                case cBlendMode::eFactor::INV_SRC_ALPHA: dstFactor = GL_ONE_MINUS_SRC_ALPHA; break;
             }
 
             glBlendFunci(i, srcFactor, dstFactor);
         }
     }
 
-    void cOpenGLRenderContext::BindDepthMode(const sDepthMode& blendMode)
+    void cOpenGLGraphicsAPI::BindDepthMode(const cDepthMode& blendMode)
     {
         if (blendMode._useDepthTest == K_TRUE)
             glEnable(GL_DEPTH_TEST);
@@ -979,35 +1018,35 @@ namespace realware
             glDepthMask(GL_FALSE);
     }
 
-    void cOpenGLRenderContext::Viewport(const glm::vec4& viewport)
+    void cOpenGLGraphicsAPI::Viewport(const glm::vec4& viewport)
     {
         glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
     }
 
-    void cOpenGLRenderContext::ClearColor(const glm::vec4& color)
+    void cOpenGLGraphicsAPI::ClearColor(const glm::vec4& color)
     {
         glClearColor(color.x, color.y, color.z, color.w);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    void cOpenGLRenderContext::ClearDepth(const f32 depth)
+    void cOpenGLGraphicsAPI::ClearDepth(const f32 depth)
     {
         glClearDepth(depth);
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    void cOpenGLRenderContext::ClearFramebufferColor(usize bufferIndex, const glm::vec4& color)
+    void cOpenGLGraphicsAPI::ClearFramebufferColor(usize bufferIndex, const glm::vec4& color)
     {
         glClearBufferfv(GL_COLOR, bufferIndex, &color.x);
     }
 
-    void cOpenGLRenderContext::ClearFramebufferDepth(f32 depth)
+    void cOpenGLGraphicsAPI::ClearFramebufferDepth(f32 depth)
     {
         glClearDepth(depth);
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    void cOpenGLRenderContext::Draw(usize indexCount, usize vertexOffset, usize indexOffset, usize instanceCount)
+    void cOpenGLGraphicsAPI::Draw(usize indexCount, usize vertexOffset, usize indexOffset, usize instanceCount)
     {
         glDrawElementsInstancedBaseVertex(
             GL_TRIANGLES,
@@ -1019,12 +1058,12 @@ namespace realware
         );
     }
 
-    void cOpenGLRenderContext::DrawQuad()
+    void cOpenGLGraphicsAPI::DrawQuad()
     {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
-    void cOpenGLRenderContext::DrawQuads(usize count)
+    void cOpenGLGraphicsAPI::DrawQuads(usize count)
     {
         glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, count);
     }

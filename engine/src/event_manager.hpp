@@ -12,61 +12,61 @@
 
 namespace realware
 {
-    class cApplication;
+    class cDataBuffer;
+    class cContext;
     class cGameObject;
-    class cBuffer;
     
-    enum class eEvent
+    enum class eEventType
     {
         NONE,
         KEY_PRESS
     };
 
-    using EventFunction = std::function<void(cBuffer* const data)>;
+    using EventFunction = std::function<void(cDataBuffer* const data)>;
 
-    class cEvent
+    class cEventHandler
     {
         friend class mEvent;
 
     public:
-        cEvent(eEvent type, cGameObject* receiver, EventFunction&& function);
-        ~cEvent() = default;
+        cEventHandler(eEventType type, cGameObject* receiver, EventFunction&& function);
+        ~cEventHandler() = default;
 
-        void Invoke(cBuffer* data);
+        void Invoke(cDataBuffer* data);
         inline cGameObject* GetReceiver() const { return _receiver; }
-        inline eEvent GetEventType() const { return _type; }
+        inline eEventType GetEventType() const { return _type; }
         inline std::shared_ptr<EventFunction> GetFunction() const { return _function; }
 
     private:
-        eEvent _type = eEvent::NONE;
+        eEventType _type = eEventType::NONE;
         cGameObject* _receiver = nullptr;
         mutable std::shared_ptr<EventFunction> _function;
     };
 
-    class mEvent : public iObject
+    class cEventDispatcher : public iObject
     {
-    public:
-        explicit mEvent(cContext* context);
-        ~mEvent() = default;
+        REALWARE_CLASS(cEventDispatcher)
 
-        inline virtual cType GetType() const override final { return cType("EventManager"); }
-        
+    public:
+        explicit cEventDispatcher(cContext* context);
+        virtual ~cEventDispatcher() = default;
+
         template <typename... Args>
-        void Subscribe(const std::string& id, eEvent type, Args... args);
-        void Unsubscribe(eEvent type, cGameObject* receiver);
-        void Send(eEvent type);
-        void Send(eEvent type, cBuffer* data);
+        void Subscribe(const std::string& id, eEventType type, Args... args);
+        void Unsubscribe(eEventType type, cGameObject* receiver);
+        void Send(eEventType type);
+        void Send(eEventType type, cDataBuffer* data);
 
     private:
-        std::unordered_map<eEvent, std::shared_ptr<cIdVector<cEvent>>> _listeners;
+        std::unordered_map<eEventType, std::shared_ptr<cIdVector<cEventHandler>>> _listeners;
     };
 
     template <typename... Args>
-    void mEvent::Subscribe(const std::string& id, eEvent type, Args... args)
+    void cEventDispatcher::Subscribe(const std::string& id, eEventType type, Args... args)
     {
         const auto listener = _listeners.find(type);
         if (listener == _listeners.end())
-            _listeners.insert({ type, std::make_shared<cVector<cEvent>>(GetApplication()) });
+            _listeners.insert({ type, std::make_shared<cIdVector<cEventHandler>>(GetApplication()) });
         _listeners[type]->Add(id, type, std::forward<Args>(args)...);
     }
 }

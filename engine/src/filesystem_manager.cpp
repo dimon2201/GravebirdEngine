@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include "application.hpp"
+#include "context.hpp"
 #include "filesystem_manager.hpp"
 #include "memory_pool.hpp"
 
@@ -12,27 +13,31 @@ using namespace types;
 
 namespace realware
 {
-    mFileSystem::mFileSystem(cContext* context) : iObject(context)
+    cDataFile::cDataFile(cContext* context) : cFactoryObject(context) {}
+
+    cDataFile::~cDataFile()
     {
+        _context->Destroy<cDataBuffer>(_data);
     }
 
-    sFile* mFileSystem::CreateDataFile(const std::string& filepath, types::boolean isString)
+    void cDataFile::Open(const std::string& path, types::boolean isText)
     {
-        std::ifstream inputFile(filepath, std::ios::binary);
-        
+        std::ifstream inputFile(path, std::ios::binary);
+
         inputFile.seekg(0, std::ios::end);
         const usize byteSize = inputFile.tellg();
         inputFile.seekg(0, std::ios::beg);
-        const usize databyteSize = byteSize + (isString == K_TRUE ? 1 : 0);
-        
-        cApplication* app = GetApplication();
+        const usize databyteSize = byteSize + (isText == K_TRUE ? 1 : 0);
 
-        u8* data = (u8*)app->GetMemoryPool()->Allocate(databyteSize);
+        auto memoryPoolBuffer = _context->GetMemoryPool<cDataBuffer>();
+        auto memoryPoolFile = _context->GetMemoryPool<cDataFile>();
+
+        cDataBuffer* data = memoryPoolBuffer->Allocate();
         memset(data, 0, databyteSize);
         inputFile.read((char*)&data[0], byteSize);
 
-        sFile* pFile = (sFile*)app->GetMemoryPool()->Allocate(sizeof(sFile));
-        sFile* file = new (pFile) sFile;
+        cDataFile* pFile = memoryPoolFile->Allocate();
+        cDataFile* file = new (pFile) cDataFile;
 
         file->_data = data;
         file->_dataByteSize = databyteSize;
@@ -40,7 +45,34 @@ namespace realware
         return file;
     }
 
-    void mFileSystem::DestroyDataFile(sFile* file)
+    cFileSystem::cFileSystem(cContext* context) : iObject(context) {}
+
+    cDataFile* cFileSystem::CreateDataFile(const std::string& filepath, types::boolean isText)
+    {
+        std::ifstream inputFile(filepath, std::ios::binary);
+        
+        inputFile.seekg(0, std::ios::end);
+        const usize byteSize = inputFile.tellg();
+        inputFile.seekg(0, std::ios::beg);
+        const usize databyteSize = byteSize + (isText == K_TRUE ? 1 : 0);
+        
+        auto memoryPoolBuffer = _context->GetMemoryPool<cDataBuffer>();
+        auto memoryPoolFile = _context->GetMemoryPool<cDataFile>();
+
+        cDataBuffer* data = memoryPoolBuffer->Allocate();
+        memset(data, 0, databyteSize);
+        inputFile.read((char*)&data[0], byteSize);
+
+        cDataFile* pFile = memoryPoolFile->Allocate();
+        cDataFile* file = new (pFile) cDataFile;
+
+        file->_data = data;
+        file->_dataByteSize = databyteSize;
+
+        return file;
+    }
+
+    void cFileSystem::DestroyDataFile(cDataFile* file)
     {
         void* fileData = file->_data;
 

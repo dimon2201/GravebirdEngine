@@ -3,97 +3,96 @@
 #include <iostream>
 #include <cstdlib>
 #include "memory_pool.hpp"
+#include "application.hpp"
+#include "render_context.hpp"
 #include "log.hpp"
 
 using namespace types;
 
 namespace realware
 {
-    cMemoryPool::cMemoryPool(cContext* context) : iObject(context)
-    {
-        if (alignment == 0)
-            _memory = malloc(byteSize);
-        else
-            _memory = _aligned_malloc(byteSize, alignment);
-    }
+	cMemoryAllocator::cMemoryAllocator(cContext* context) : iObject(context) {}
 
-    cMemoryPool::~cMemoryPool()
-    {
-        if (_alignment == 0)
-            free(_memory);
-        else
-            _aligned_free(_memory);
+	cMemoryAllocator::~cMemoryAllocator()
+	{
+		if (_bins)
+		{
+			for (usize i = 0; i < MAX_BIN_COUNT; i++)
+				std::free(_bins[i]._blocks);
+		}
 
-        _allocs.clear();
-    }
+		if (_memSizeToBin)
+			std::free(_memSizeToBin);
+	}
 
-    void* cMemoryPool::Allocate(usize size)
-    {
-#ifdef DEBUG
-        _bytesOccupied += size;
-#endif
-        for (auto& alloc : _allocs)
-        {
-            if (alloc._freeFlag == 1 && alloc._allocationByteSize >= size)
-            {
-                alloc._freeFlag = 255;
-                alloc._occupiedByteSize = size;
+	void* cMemoryAllocator::Allocate(types::usize byteSize, types::usize alignment)
+	{
+		if (byteSize < MAX_ALLOCATION_BYTE_SIZE)
+		{
+			sAllocatorBin* bin = _memSizeToBin[byteSize];
 
-                return alloc._address;
-            }
+			for (usize i = 0; i < bin->_maxBlockCount; i++)
+			{
+				cFactoryObject* obj = (cFactoryObject*)((u8*)bin->_blocks + bin->_blockSize * i);
+				
+				if (obj->_occupied == K_FALSE)
+				{
+					obj->_occupied = K_TRUE;
 
-            if ((usize)(alloc._allocationByteSize - alloc._occupiedByteSize) >= size)
-            {
-                sMemoryPoolAllocation newAlloc;
-                newAlloc._freeFlag = 0;
-                newAlloc._allocationByteSize = alloc._allocationByteSize - alloc._occupiedByteSize;
-                newAlloc._occupiedByteSize = size;
-                newAlloc._address = (void*)((usize)alloc._address + (usize)alloc._occupiedByteSize);
+					return (void*)obj;
+				}
+			}
 
-                alloc._allocationByteSize = alloc._occupiedByteSize;
+			return std::malloc(byteSize);
+		}
+		else
+		{
+			return std::malloc(byteSize);
+		}
+	}
 
-                _allocs.emplace_back(newAlloc);
+	void cMemoryAllocator::Deallocate(void* ptr)
+	{
+		if (ptr == nullptr)
+			return;
 
-                return newAlloc._address;
-            }
-        }
+		cFactoryObject* obj = (cFactoryObject*)ptr;
+		obj->_occupied = K_FALSE;
+	}
 
-        if ((usize)_lastAddress + size >= (usize)_maxAddress)
-        {
-            Print("Error: memory pool byte size '" + std::to_string(_byteSize) + "' is not enough to allocate next '" + std::to_string(size) + "' bytes!");
-                
-            return nullptr;
-        }
+	void cMemoryAllocator::AllocateBins(usize maxBinByteSize)
+	{
+		if (_bins || _memSizeToBin)
+			return;
 
-        sMemoryPoolAllocation newAlloc;
-        newAlloc._freeFlag = 0;
-        newAlloc._allocationByteSize = size;
-        newAlloc._occupiedByteSize = size;
-        newAlloc._address = _lastAddress;
-        _allocs.emplace_back(newAlloc);
+		_bins = (sAllocatorBin*)std::malloc(MAX_BIN_COUNT * sizeof(sAllocatorBin));
+		_memSizeToBin = (sAllocatorBin**)std::malloc(MAX_ALLOCATION_BYTE_SIZE * sizeof(sAllocatorBin*));
+		
+		static const usize blockSizes[MAX_BIN_COUNT] =
+		{
+			0, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 4608, 5120,
+			5632, 6144, 6656, 7168, 7680, 8192, 8704, 9216, 9728, 10240,
+			10752, 11264, 11776, 12288, 12800, 13312, 13824, 14336, 14848,
+			15360, 15872, 16384, 16896, 17408, 17920, 18432, 18944, 19456,
+			19968, 20480, 20992, 21504, 22016, 22528, 23040, 23552, 24064,
+			24576, 25088, 25600, 26112, 26624, 27136, 27648, 28160, 28672,
+			29184, 29696, 30208, 30720, 31232, 31744, 32256, 32768
+		};
 
-        _lastAddress = (void*)((usize)_lastAddress + size);
+		for (usize i = 0; i < MAX_BIN_COUNT; i++)
+		{
+			_bins[i]._blockSize = blockSizes[i];
+			_bins[i]._maxBlockCount = maxBinByteSize / _bins[i]._blockSize;
+			_bins[i]._blocks = std::malloc(maxBinByteSize);
+		}
 
-        return newAlloc._address;
-    }
+		for (usize i = 0; i < MAX_ALLOCATION_BYTE_SIZE; i++)
+		{
+			usize index = 0;
+			while (_bins[index]._blockSize < i)
+				++index;
 
-    bool cMemoryPool::Free(void* address)
-    {
-        for (auto& alloc : _allocs)
-        {
-            if (alloc._address == address)
-            {
-#ifdef DEBUG
-                _bytesFreed += alloc.OccupiedByteSize;
-                _lastFreedBytes = alloc.OccupiedByteSize;
-#endif
-                alloc._freeFlag = 1;
-                alloc._occupiedByteSize = 0;
-
-                return true;
-            }
-        }
-
-        return false;
-    }
+			_memSizeToBin[i] = &_bins[index];
+		}
+	}
 }

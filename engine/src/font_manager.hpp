@@ -11,9 +11,9 @@
 
 namespace realware
 {
-    class iRenderContext;
+    class iGraphicsAPI;
     class cApplication;
-    struct sTexture;
+    class cTexture;
 
     struct sGlyph
     {
@@ -38,7 +38,7 @@ namespace realware
         types::usize _offsetSpace = 0;
         types::usize _offsetTab = 0;
         std::unordered_map<types::u8, sGlyph> _alphabet = {};
-        sTexture* _atlas = nullptr;
+        cTexture* _atlas = nullptr;
     };
 
     struct sText
@@ -47,13 +47,13 @@ namespace realware
         std::string _text = "";
     };
 
-    class mFont : public iObject
+    class cFont : public iObject
     {
-    public:
-        mFont(cContext* context, iRenderContext* renderContext);
-        ~mFont();
+        REALWARE_CLASS(cFont)
 
-        inline virtual cType GetType() const override final { return cType("Font"); }
+    public:
+        cFont(cContext* context);
+        ~cFont();
 
         sFont* CreateFontTTF(const std::string& filename, types::usize glyphSize);
         sText* CreateText(const sFont* font, const std::string& text);
@@ -69,7 +69,7 @@ namespace realware
 
     private:
         types::boolean _initialized = types::K_FALSE;
-        iRenderContext* _renderContext = nullptr;
+        iGraphicsAPI* _gfx = nullptr;
         FT_Library _lib = {};
     };
 }

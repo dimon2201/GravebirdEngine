@@ -6,7 +6,13 @@
 
 namespace realware
 {
-    namespace utils
+    cDataBuffer::cDataBuffer(cContext* context) : cFactoryObject(context) {}
+
+    cDataBuffer::~cDataBuffer()
+    {
+    }
+
+    void cDataBuffer::Create(void* data, types::usize byteSize)
     {
     }
 }

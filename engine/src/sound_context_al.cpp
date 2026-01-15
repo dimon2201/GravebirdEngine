@@ -70,21 +70,21 @@ namespace realware
         return wav;
     }
 
-    cOpenALSoundContext::cOpenALSoundContext(cContext* context) : iSoundContext(context)
+    cOpenALSoundAPI::cOpenALSoundAPI(cContext* context) : iSoundAPI(context)
     {
         _device = alcOpenDevice(nullptr);
         _context = alcCreateContext(_device, nullptr);
         alcMakeContextCurrent(_context);
     }
 
-    cOpenALSoundContext::~cOpenALSoundContext()
+    cOpenALSoundAPI::~cOpenALSoundAPI()
     {
         alcMakeContextCurrent(nullptr);
         alcDestroyContext(_context);
         alcCloseDevice(_device);
     }
 
-    void cOpenALSoundContext::Create(const std::string& filename, eCategory format, const sWAVStructure** file, types::u32& source, types::u32& buffer)
+    void cOpenALSoundAPI::Create(const std::string& filename, eCategory format, const sWAVStructure** file, types::u32& source, types::u32& buffer)
     {
         if (format == eCategory::SOUND_FORMAT_WAV)
         {
@@ -128,7 +128,7 @@ namespace realware
         }
     }
 
-    void cOpenALSoundContext::Destroy(cSound* sound)
+    void cOpenALSoundAPI::Destroy(cSound* sound)
     {
         u32 buffer = sound->GetBuffer();
         u32 source = sound->GetSource();
@@ -139,37 +139,37 @@ namespace realware
         _app->GetMemoryPool()->Free(sound);
     }
 
-    void cOpenALSoundContext::Play(const cSound* sound)
+    void cOpenALSoundAPI::Play(const cSound* sound)
     {
         alSourcePlay(sound->GetSource());
     }
 
-    void cOpenALSoundContext::Stop(const cSound* sound)
+    void cOpenALSoundAPI::Stop(const cSound* sound)
     {
         alSourceStop(sound->GetSource());
     }
 
-    void cOpenALSoundContext::SetPosition(const cSound* sound, const glm::vec3& position)
+    void cOpenALSoundAPI::SetPosition(const cSound* sound, const glm::vec3& position)
     {
         alSource3f(sound->GetSource(), AL_POSITION, position.x, position.y, position.z);
     }
 
-    void cOpenALSoundContext::SetVelocity(const cSound* sound, const glm::vec3& velocity)
+    void cOpenALSoundAPI::SetVelocity(const cSound* sound, const glm::vec3& velocity)
     {
         alSource3f(sound->GetSource(), AL_VELOCITY, velocity.x, velocity.y, velocity.z);
     }
 
-    void cOpenALSoundContext::SetListenerPosition(const glm::vec3& position)
+    void cOpenALSoundAPI::SetListenerPosition(const glm::vec3& position)
     {
         alListener3f(AL_POSITION, position.x, position.y, position.z);
     }
 
-    void cOpenALSoundContext::SetListenerVelocity(const glm::vec3& velocity)
+    void cOpenALSoundAPI::SetListenerVelocity(const glm::vec3& velocity)
     {
         alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
     }
 
-    void cOpenALSoundContext::SetListenerOrientation(const glm::vec3& at, const glm::vec3& up)
+    void cOpenALSoundAPI::SetListenerOrientation(const glm::vec3& at, const glm::vec3& up)
     {
         ALfloat values[] = { at.x, at.y, at.z, up.x, up.y, up.z };
         alListenerfv(AL_ORIENTATION, &values[0]);

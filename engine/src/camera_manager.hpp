@@ -9,26 +9,22 @@
 
 namespace realware
 {
-    class cApplication;
-    class cGameObject;
+    struct sTransform;
 
-    class mCamera : public iObject
+    class cCamera : public iObject
     {
+        REALWARE_CLASS(cCamera)
+
     public:
-        explicit mCamera(cContext* context);
-        ~mCamera() = default;
+        explicit cCamera(cContext* context);
+        ~cCamera() = default;
 
-        inline virtual cType GetType() const override final { return cType("CameraManager"); }
-
-        void CreateCamera();
-        void DestroyCamera();
         void Update();
         void AddEuler(eCategory angle, types::f32 value);
         void Move(types::f32 value);
         void Strafe(types::f32 value);
         void Lift(types::f32 value);
 
-        inline cGameObject* GetCameraGameObject() const { return _cameraGameObject; }
         inline const glm::mat4& GetViewProjectionMatrix() const { return _viewProjection; }
         inline types::f32 GetMouseSensitivity() const { return _mouseSensitivity; }
         inline types::f32 GetMoveSpeed() const { return _moveSpeed; }
@@ -37,9 +33,7 @@ namespace realware
         inline void SetMoveSpeed(types::f32 value) { _moveSpeed = value; }
 
     private:
-        static constexpr const char* K_CAMERA_ID = "__Camera";
-
-        cGameObject* _cameraGameObject = nullptr;
+        std::shared_ptr<sTransform> _transform;
         glm::vec3 _euler = glm::vec3(0.0f);
         glm::vec3 _direction = glm::vec3(0.0f);
         glm::mat4 _view = glm::mat4(1.0f);

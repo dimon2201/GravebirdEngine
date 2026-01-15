@@ -21,7 +21,7 @@ namespace realware
             _function->operator()(_data);
     }
 
-    mThread::mThread(cContext* context, usize threadCount) : iObject(context), _stop(K_FALSE)
+    cThread::cThread(cContext* context, usize threadCount) : iObject(context), _stop(K_FALSE)
     {
         for (usize i = 0; i < threadCount; ++i)
         {
@@ -48,7 +48,7 @@ namespace realware
         }
     }
 
-    mThread::~mThread()
+    cThread::~cThread()
     {
         Stop();
 
@@ -58,17 +58,17 @@ namespace realware
             thread.join();
     }
 
-    void mThread::Pause()
+    void cThread::Pause()
     {
         _pause.store(K_TRUE);
     }
 
-    void mThread::Resume()
+    void cThread::Resume()
     {
         _pause.store(K_FALSE);
     }
 
-    void mThread::Submit(cTask& task)
+    void cThread::Submit(cTask& task)
     {
         {
             std::unique_lock<std::mutex> lock(_mtx);
@@ -78,7 +78,7 @@ namespace realware
         _cv.notify_one();
     }
 
-    void mThread::Stop()
+    void cThread::Stop()
     {
         std::unique_lock<std::mutex> lock(_mtx);
         _stop = K_TRUE;

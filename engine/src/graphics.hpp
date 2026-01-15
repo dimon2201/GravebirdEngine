@@ -1,18 +1,15 @@
-// render_manager.hpp
+// graphics.hpp
 
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-#include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "id_vec.hpp"
-#include "category.hpp"
 #include "object.hpp"
 #include "types.hpp"
 
 namespace realware
 {
+	class cWindow;
+	class iGraphicsAPI;
     class iRenderContext;
     class cApplication;
     class cGameObject;
@@ -144,13 +141,23 @@ namespace realware
         glm::vec4 _attenuation = glm::vec4(0.0f);
     };
 
-    class mRender : public iObject
-    {
-        REALWARE_CLASS(mRender)
+	class cGraphics : public iObject
+	{
+	public:
+		enum class API
+		{
+			NONE = 0,
+			OPENGL,
+			D3D11
+		};
 
-    public:
-        explicit mRender(cContext* context, iRenderContext* renderContext);
-        ~mRender();
+	public:
+		explicit cGraphics(cContext* context);
+		virtual ~cGraphics();
+
+		void SetAPI(API api);
+		void SetWindow(types::usize width, types::usize height);
+		void SwapBuffers();
 
         cMaterial* CreateMaterial(const std::string& id, cTextureAtlasTexture* diffuseTexture, const glm::vec4& diffuseColor, const glm::vec4& highlightColor, eCategory customShaderRenderPath = eCategory::RENDER_PATH_OPAQUE, const std::string& customVertexFuncPath = "", const std::string& customFragmentFuncPath = "");
         cMaterial* FindMaterial(const std::string& id);
@@ -158,11 +165,11 @@ namespace realware
         sVertexArray* CreateDefaultVertexArray();
         sVertexBufferGeometry* CreateGeometry(eCategory format, types::usize verticesByteSize, const void* vertices, types::usize indicesByteSize, const void* indices);
         void DestroyGeometry(sVertexBufferGeometry* geometry);
-            
+
         void ClearGeometryBuffer();
         void ClearRenderPass(const sRenderPass* renderPass, types::boolean clearColor, types::usize bufferIndex, const glm::vec4& color, types::boolean clearDepth, types::f32 depth);
         void ClearRenderPasses(const glm::vec4& clearColor, types::f32 clearDepth);
-            
+
         void UpdateLights();
 
         void WriteObjectsToOpaqueBuffers(cIdVector<cGameObject>& objects, sRenderPass* renderPass);
@@ -172,18 +179,18 @@ namespace realware
         void DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const std::vector<cGameObject>& objects, const cGameObject* cameraObject, sRenderPass* renderPass);
         void DrawGeometryTransparent(const sVertexBufferGeometry* geometry, const cGameObject* cameraObject, sShader* singleShader = nullptr);
         void DrawTexts(const std::vector<cGameObject>& objects);
-            
+
         void CompositeTransparent();
         void CompositeFinal();
-            
+
         sPrimitive* CreatePrimitive(eCategory primitive);
         sModel* CreateModel(const std::string& filename);
         void DestroyPrimitive(sPrimitive* primitiveObject);
-            
+
         void LoadShaderFiles(const std::string& vertexFuncPath, const std::string& fragmentFuncPath, std::string& vertexFunc, std::string& fragmentFunc);
 
         void ResizeWindow(const glm::vec2& size);
-            
+
         inline sBuffer* GetVertexBuffer() const { return _vertexBuffer; }
         inline sBuffer* GetIndexBuffer() const { return _indexBuffer; }
         inline sBuffer* GetOpaqueInstanceBuffer() const { return _opaqueInstanceBuffer; }
@@ -203,7 +210,12 @@ namespace realware
         inline sRenderTarget* GetOpaqueRenderTarget() const { return _opaqueRenderTarget; }
         inline sRenderTarget* GetTransparentRenderTarget() const { return _transparentRenderTarget; }
 
-    private:
+		inline iGraphicsAPI* GetAPI() const { return _api; }
+		inline cWindow* GetWindow() const { return _window; }
+
+	private:
+		iGraphicsAPI* _api = nullptr;
+		cWindow* _window = nullptr;
         iRenderContext* _renderContext = nullptr;
         types::usize _maxOpaqueInstanceBufferByteSize = 0;
         types::usize _maxTransparentInstanceBufferByteSize = 0;
@@ -259,5 +271,5 @@ namespace realware
         sRenderTarget* _transparentRenderTarget = nullptr;
         types::usize _materialCountCPU = 0;
         cIdVector<cMaterial> _materialsCPU;
-    };
+	};
 }

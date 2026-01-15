@@ -27,14 +27,14 @@ namespace realware
     
     class cGameObject : public cFactoryObject
     {
+        REALWARE_CLASS(cGameObject)
+
         friend class mGameObject;
 
     public:
         explicit cGameObject(cContext* context);
         ~cGameObject() = default;
 
-        inline virtual cType GetType() const override { return cType("GameObject"); }
-        
         inline types::boolean GetVisible() const { return _isVisible; }
         inline types::boolean GetOpaque() const { return _isOpaque; }
         inline sVertexBufferGeometry* GetGeometry() const { return _geometry; }

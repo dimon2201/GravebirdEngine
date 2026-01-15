@@ -9,33 +9,22 @@
 #include "render_context.hpp"
 #include "application.hpp"
 #include "gameobject_manager.hpp"
+#include "context.hpp"
+#include "time.hpp"
+#include "graphics.hpp"
 
 using namespace types;
 
 namespace realware
 {
-    mCamera::mCamera(cContext* context) : iObject(context)
-    {
-    }
+    cCamera::cCamera(cContext* context) : iObject(context), _transform(_context->Create<sTransform>()) {}
 
-    void mCamera::CreateCamera()
+    void cCamera::Update()
     {
-        mGameObject* gameObjectManager = GetApplication()->GetGameObjectManager();
-        _cameraGameObject = gameObjectManager->CreateGameObject(K_CAMERA_ID);
-        _cameraGameObject->SetVisible(K_FALSE);
-        _cameraGameObject->SetOpaque(K_FALSE);
-    }
-
-    void mCamera::DestroyCamera()
-    {
-        mGameObject* gameObjectManager = GetApplication()->GetGameObjectManager();
-        gameObjectManager->DestroyGameObject(K_CAMERA_ID);
-    }
-
-    void mCamera::Update()
-    {
-        cApplication* app = GetApplication();
-        const f32 deltaTime = app->GetDeltaTime();
+        const cGraphics* graphics = _context->GetSubsystem<cGraphics>();
+        const cTime* time = _context->GetSubsystem<cTime>();
+        const f32 deltaTime = time->GetDeltaTime();
+        const cWindow* window = graphics->GetWindow();
 
         if (_euler.x > glm::radians(65.0f))
             _euler.x = glm::radians(65.0f);
@@ -47,13 +36,12 @@ namespace realware
         const glm::quat quatZ = glm::angleAxis(_euler.z, glm::vec3(0.0f, 0.0f, 1.0f));
         _direction = quatZ * quatY * quatX * glm::vec3(0.0f, 0.0f, -1.0f);
 
-        sTransform* transform = _cameraGameObject->GetTransform();
-        _view = glm::lookAtRH(transform->_position, transform->_position + _direction, glm::vec3(0.0f, 1.0f, 0.0f));
-        _projection = glm::perspective(glm::radians(_fov), app->GetWindowSize().x / app->GetWindowSize().y, _zNear, _zFar);
+        _view = glm::lookAtRH(_transform->_position, _transform->_position + _direction, glm::vec3(0.0f, 1.0f, 0.0f));
+        _projection = glm::perspective(glm::radians(_fov), (f32)window->GetWidth() / window->GetHeight(), _zNear, _zFar);
         _viewProjection = _projection * _view;
 
-        double x = 0.0, y = 0.0;
-        glfwGetCursorPos((GLFWwindow*)app->GetWindow(), &x, &y);
+        f64 x = 0.0, y = 0.0;
+        glfwGetCursorPos(window->GetWindow(), &x, &y);
 
         _prevCursorPosition = _cursorPosition;
         _cursorPosition = glm::vec2(x, y);
@@ -79,11 +67,9 @@ namespace realware
         {
             _isMoving = K_FALSE;
         }
-            
-        _cameraGameObject->SetViewProjectionMatrix(_viewProjection);
     }
 
-    void mCamera::AddEuler(eCategory angle, f32 value)
+    void cCamera::AddEuler(eCategory angle, f32 value)
     {
         if (angle == eCategory::CAMERA_ANGLE_PITCH)
             _euler[0] += value;
@@ -93,7 +79,7 @@ namespace realware
             _euler[2] += value;
     }
 
-    void mCamera::Move(f32 value)
+    void cCamera::Move(f32 value)
     {
         mPhysics* physics = GetApplication()->GetPhysicsManager();
         const cPhysicsController* controller = _cameraGameObject->GetPhysicsController();
@@ -110,7 +96,7 @@ namespace realware
         _cameraGameObject->GetTransform()->_position = cameraPosition;
     }
 
-    void mCamera::Strafe(f32 value)
+    void cCamera::Strafe(f32 value)
     {
         mPhysics* physics = GetApplication()->GetPhysicsManager();
         const cPhysicsController* controller = _cameraGameObject->GetPhysicsController();
@@ -128,7 +114,7 @@ namespace realware
         _cameraGameObject->GetTransform()->_position = cameraPosition;
     }
 
-    void mCamera::Lift(f32 value)
+    void cCamera::Lift(f32 value)
     {
         mPhysics* physics = GetApplication()->GetPhysicsManager();
         const cPhysicsController* controller = _cameraGameObject->GetPhysicsController();

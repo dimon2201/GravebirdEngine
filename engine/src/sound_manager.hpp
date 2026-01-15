@@ -37,11 +37,11 @@ namespace realware
 
     class cSound : public cFactoryObject
     {
+        REALWARE_CLASS(cSound)
+
     public:
         explicit cSound(cContext* context, types::u32 source, types::u32 buffer);
         ~cSound();
-
-        inline virtual cType GetType() const override { return cType("Sound"); }
 
         inline eCategory GetFormat() const { return _format; }
         inline sWAVStructure* GetFile() const { return _file; }
@@ -57,11 +57,11 @@ namespace realware
 
     class mSound : public iObject
     {
+        REALWARE_CLASS(mSound)
+
     public:
         mSound(cContext* context, iSoundContext* soundContext);
         ~mSound() = default;
-
-        inline virtual cType GetType() const override { return cType("SoundManager"); }
 
         cSound* CreateSound(const std::string& id, const std::string& filename, eCategory format);
         cSound* FindSound(const std::string& id);

@@ -11,18 +11,16 @@ using namespace types;
 
 namespace realware
 {
-    cEvent::cEvent(eEvent type, cGameObject* receiver, EventFunction&& function) : _receiver(receiver), _type(type), _function(std::make_shared<EventFunction>(std::move(function)))
-    {
-    }
+    cEventHandler::cEventHandler(eEventType type, cGameObject* receiver, EventFunction&& function) : _receiver(receiver), _type(type), _function(std::make_shared<EventFunction>(std::move(function))) {}
 
-    void cEvent::Invoke(cBuffer* data)
+    void cEventHandler::Invoke(cDataBuffer* data)
     {
         _function->operator()(data);
     };
 
-    mEvent::mEvent(cContext* context) : iObject(context) {}
+    cEventDispatcher::cEventDispatcher(cContext* context) : iObject(context) {}
 
-    void mEvent::Unsubscribe(eEvent type, cGameObject* receiver)
+    void cEventDispatcher::Unsubscribe(eEventType type, cGameObject* receiver)
     {
         if (_listeners.find(type) == _listeners.end())
             return;
@@ -30,24 +28,24 @@ namespace realware
         auto& events = _listeners[type];
         for (usize i = 0; i < events->GetElementCount(); i++)
         {
-            const cEvent* listenerEvent = &events->GetElements()[i];
+            const cEventHandler* listenerEvent = &events->GetElements()[i];
             const cGameObject* listenerReceiver = listenerEvent->GetReceiver();
             if (listenerReceiver == receiver)
             {
-                events->Delete(listenerReceiver->GetID());
+                events->Delete(listenerReceiver->GetIdentifier()->GetID());
                 return;
             }
         }
     }
 
-    void mEvent::Send(eEvent type)
+    void cEventDispatcher::Send(eEventType type)
     {
-        cBuffer data;
+        cDataBuffer data(_context);
 
         Send(type, &data);
     }
 
-    void mEvent::Send(eEvent type, cBuffer* data)
+    void cEventDispatcher::Send(eEventType type, cDataBuffer* data)
     {
         if (_listeners.find(type) == _listeners.end())
             return;
