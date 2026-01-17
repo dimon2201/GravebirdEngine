@@ -71,14 +71,69 @@ namespace realware
             input->SetMouseKey(button, 1);
     }
 
-    void cWindow::SetWindow(GLFWwindow* window, types::usize width, types::usize height)
+    cWindow::cWindow(cContext* context, GLFWwindow* window, const std::string& title, types::usize width, types::usize height) : iObject(context), _title(title), _window(window), _width(width), _height(height) {}
+
+    types::boolean cWindow::GetRunState() const
     {
-        _window = window;
-        _width = width;
-        _height = height;
+        return glfwWindowShouldClose(_window);
+    }
+
+    HWND cWindow::GetWin32Window() const
+    {
+        return glfwGetWin32Window(_window);
     }
     
-    cInput::cInput(cContext* context) : iObject(context) {}
+    cInput::cInput(cContext* context, const std::string& title, types::usize width, types::usize height) : iObject(context)
+    {
+        if (_window)
+            return;
+
+        GLFWwindow* windowGlfw = nullptr;
+        glm::vec2 windowSize = glm::vec2(width, height);
+
+        if (_initialized == types::K_FALSE)
+        {
+            _initialized = types::K_TRUE;
+
+            glfwInit();
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        }
+
+        if (fullscreen == K_FALSE)
+        {
+            windowGlfw = glfwCreateWindow(windowSize.x, windowSize.y, title.c_str(), nullptr, nullptr);
+        }
+        else
+        {
+            glfwWindowHint(GLFW_DECORATED, 0);
+
+            windowSize = GetMonitorSize();
+            windowGlfw = glfwCreateWindow(windowSize.x, windowSize.y, title.c_str(), glfwGetPrimaryMonitor(), nullptr);
+        }
+
+        if (!windowGlfw)
+        {
+            Print("Error: incompatible GL version!");
+            return;
+        }
+
+        _window = _context->Create<cWindow>(_context, title, windowSize.x, windowSize.y);
+
+        glfwSetWindowUserPointer(windowGlfw, _context);
+
+        glfwMakeContextCurrent(windowGlfw);
+
+        glfwSwapInterval(1);
+
+        glfwSetKeyCallback(windowGlfw, &KeyCallback);
+        glfwSetWindowFocusCallback(windowGlfw, &WindowFocusCallback);
+        glfwSetWindowSizeCallback(windowGlfw, &WindowSizeCallback);
+        glfwSetCursorPosCallback(windowGlfw, &CursorCallback);
+        glfwSetMouseButtonCallback(windowGlfw, &MouseButtonCallback);
+    }
 
     cInput::~cInput()
     {
@@ -100,57 +155,4 @@ namespace realware
     {
         return glm::vec2(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
     }
-
-	void cInput::SetWindow(usize width, usize height, const std::string& title)
-	{
-        if (_window)
-            return;
-
-        _window = _context->Create<cWindow>(_context);
-
-        if (_initialized == types::K_FALSE)
-        {
-            _initialized = types::K_TRUE;
-
-            glfwInit();
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        }
-
-        if (fullscreen == K_FALSE)
-        {
-            _window->SetWindow(glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr), width, height);
-        }
-        else
-        {
-            glfwWindowHint(GLFW_DECORATED, 0);
-
-            const glm::vec2 monitorSize = GetMonitorSize();
-            const usize newWidth = monitorSize.x;
-            const usize newHeight = monitorSize.y;
-            _window->SetWindow(glfwCreateWindow(newWidth, newHeight, title.c_str(), glfwGetPrimaryMonitor(), nullptr), newWidth, newHeight);
-        }
-
-        GLFWwindow* glfwWindow = _window->GetWindow();
-
-        glfwSetWindowUserPointer(glfwWindow, _context);
-
-        if (!glfwWindow)
-        {
-            Print("Error: incompatible GL version!");
-            return;
-        }
-
-        glfwMakeContextCurrent(glfwWindow);
-
-        glfwSwapInterval(1);
-
-        glfwSetKeyCallback(glfwWindow, &KeyCallback);
-        glfwSetWindowFocusCallback(glfwWindow, &WindowFocusCallback);
-        glfwSetWindowSizeCallback(glfwWindow, &WindowSizeCallback);
-        glfwSetCursorPosCallback(glfwWindow, &CursorCallback);
-        glfwSetMouseButtonCallback(glfwWindow, &MouseButtonCallback);
-	}
 }

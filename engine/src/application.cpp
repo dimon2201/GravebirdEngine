@@ -46,9 +46,11 @@ namespace realware
         auto time = _context->GetSubsystem<cTime>();
         auto physics = _context->GetSubsystem<cPhysics>();
 
+        cWindow* window = input->GetWindow();
+
         time->BeginFrame();
 
-        while (GetRunState() == K_FALSE)
+        while (window->GetRunState() == K_FALSE)
         {
             time->Update();
             physics->Simulate();

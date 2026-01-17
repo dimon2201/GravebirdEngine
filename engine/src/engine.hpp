@@ -10,11 +10,14 @@ namespace realware
 {
 	struct sEngineCapabilities
 	{
-		types::usize _memoryAlignment = 64;
-		types::usize _maxPhysicsSceneCount = 16;
-		types::usize _maxPhysicsMaterialCount = 256;
-		types::usize _maxPhysicsActorCount = 8192;
-		types::usize _maxPhysicsControllerCount = 8;
+		std::string windowTitle = "Test app";
+		types::usize windowWidth = 640;
+		types::usize windowHeight = 480;
+		types::usize memoryAlignment = 64;
+		types::usize maxPhysicsSceneCount = 16;
+		types::usize maxPhysicsMaterialCount = 256;
+		types::usize maxPhysicsActorCount = 8192;
+		types::usize maxPhysicsControllerCount = 8;
 	};
 
 	class cEngine : public iObject

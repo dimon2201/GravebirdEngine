@@ -36,7 +36,7 @@ namespace realware
 		// Register subsystems
 		_context->RegisterSubsystem(this);
 		_context->RegisterSubsystem(new cGraphics(_context));
-		_context->RegisterSubsystem(new cInput(_context));
+		_context->RegisterSubsystem(new cInput(_context, _capabilities->windowTitle, _capabilities->windowWidth, _capabilities->windowHeight));
 		_context->RegisterSubsystem(new cCamera(_context));
 		_context->RegisterSubsystem(new cTextureAtlas(_context));
 		_context->RegisterSubsystem(new cFileSystem(_context));
@@ -51,10 +51,6 @@ namespace realware
 		// Create graphics backend
 		cGraphics* graphics = _context->GetSubsystem<cGraphics>();
 		graphics->SetAPI(cGraphics::API::OGL);
-
-		// Create game window
-		cInput* input = _context->GetSubsystem<cInput>();
-		input->SetWindow(640, 480, "Test window");
 
 		// Create texture manager
 		cTextureAtlas* texture = _context->GetSubsystem<cTextureAtlas>();

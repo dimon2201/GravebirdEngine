@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <windows.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "object.hpp"
 #include "types.hpp"
@@ -20,18 +21,20 @@ namespace realware
         friend void WindowSizeCallback(GLFWwindow* window, int width, int height);
 
     public:
-        cWindow(cContext* context) : iObject(context) {}
-        virtual ~cWindow() = default;
+        explicit cWindow(cContext* context, GLFWwindow* window, const std::string& title, types::usize width, types::usize height);
+        virtual ~cWindow() override final = default;
 
+        types::boolean GetRunState() const;
+        HWND GetWin32Window() const;
         inline GLFWwindow* GetWindow() const { return _window; }
+        inline const std::string& GetTitle() const { return _title; }
         inline glm::vec2 GetSize() const { return glm::vec2(_width, _height); }
         inline types::usize GetWidth() const { return _width; }
         inline types::usize GetHeight() const { return _height; }
 
-        void SetWindow(GLFWwindow* window, types::usize width, types::usize height);
-
     private:
         GLFWwindow* _window = nullptr;
+        std::string _title = "";
         types::usize _width = 0;
         types::usize _height = 0;
     };
@@ -47,19 +50,18 @@ namespace realware
         friend void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 	public:
-		explicit cInput(cContext* context);
+		explicit cInput(cContext* context, const std::string& title, types::usize width, types::usize height);
 		virtual ~cInput() override final;
 
         void SwapBuffers();
 		void PollEvents();
 
-        inline cWindow* GetWindow() const { return _window; }
         glm::vec2 GetMonitorSize() const;
+        inline cWindow* GetWindow() const { return _window; }
         inline types::boolean GetKey(int key) const { return _keys[key]; }
         inline types::boolean GetMouseKey(int key) const { return _mouseKeys[key]; }
         inline types::boolean GetWindowFocus() const { return _isFocused; }
-        void SetWindow(types::usize width, types::usize height, const std::string& title);
-
+        
     private:
         static constexpr types::usize K_MAX_KEY_COUNT = 256;
 
