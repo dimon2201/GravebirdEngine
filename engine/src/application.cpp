@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "application.hpp"
+#include "engine.hpp"
 #include "graphics.hpp"
 #include "context.hpp"
 #include "camera_manager.hpp"
@@ -25,43 +26,15 @@ using namespace types;
 
 namespace realware
 {
-    iApplication::iApplication(cContext* context) : iObject(context)
+    iApplication::iApplication(cContext* context, const sEngineCapabilities* capabilities) : iObject(context)
     {
-        _engine = std::make_shared<cEngine>(_context);
+        _engine = _context->Create<cEngine>(_context, capabilities, this);
+        _window = _context->Create<cWindow>(_context, capabilities->windowTitle, capabilities->windowWidth, capabilities->windowHeight);
     }
 
     iApplication::~iApplication()
     {
-    }
-
-    void iApplication::Run()
-    {
-        _engine->Initialize();
-
-        Setup();
-
-        auto gfx = _context->GetSubsystem<cGraphics>();
-        auto input = _context->GetSubsystem<cInput>();
-        auto camera = _context->GetSubsystem<cCamera>();
-        auto time = _context->GetSubsystem<cTime>();
-        auto physics = _context->GetSubsystem<cPhysics>();
-
-        cWindow* window = input->GetWindow();
-
-        time->BeginFrame();
-
-        while (window->GetRunState() == K_FALSE)
-        {
-            time->Update();
-            physics->Simulate();
-            camera->Update();
-            gfx->CompositeFinal();
-            input->SwapBuffers();
-            input->PollEvents();
-        }
-
-        time->EndFrame();
-
-        Stop();
+        _context->Destroy<cWindow>(_window);
+        _context->Destroy<cEngine>(_engine);
     }
 }

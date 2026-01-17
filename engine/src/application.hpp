@@ -8,7 +8,6 @@
 #include <windows.h>
 #include <chrono>
 #include "object.hpp"
-#include "engine.hpp"
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "types.hpp"
 
@@ -28,6 +27,9 @@ namespace realware
     class mFileSystem;
     class mEvent;
     class mThread;
+    class cWindow;
+    class cEngine;
+    struct sEngineCapabilities;
 
     class iApplication : public iObject
     {
@@ -41,14 +43,14 @@ namespace realware
             MIDDLE
         };
 
-        explicit iApplication(cContext* context);
+        explicit iApplication(cContext* context, const sEngineCapabilities* capabilities);
         ~iApplication();
 
         virtual void Setup() = 0;
         virtual void Stop() = 0;
 
-        void Run();
-
+        inline cEngine* GetEngine() const { return _engine; }
+        inline cWindow* GetWindow() const { return _window; }
         inline iRenderContext* GetRenderContext() const { return _renderContext; }
         inline iSoundContext* GetSoundContext() const { return _soundContext; }
         inline mCamera* GetCameraManager() const { return _camera; }
@@ -79,6 +81,7 @@ namespace realware
         std::chrono::steady_clock::time_point _timepointLast;
         types::boolean _isFocused = types::K_FALSE;
         glm::vec2 _cursorPosition = glm::vec2(0.0f);
-        std::shared_ptr<cEngine> _engine;
+        cEngine* _engine = nullptr;
+        cWindow* _window = nullptr;
     };
 }
