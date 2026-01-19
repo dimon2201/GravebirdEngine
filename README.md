@@ -1,6 +1,6 @@
-# Ladon Engine
+# Harpy Engine
 
-![Ladon Engine Logo](LadonLogo.png)
+![Harpy Engine Logo](HarpyLogo.png)
 
 High-performance C++11 game engine.
 
