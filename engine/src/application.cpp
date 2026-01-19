@@ -85,7 +85,7 @@ namespace harpy
 
     iApplication::iApplication(cContext* context, const sApplicationCapabilities* caps) : iObject(context), _caps(caps)
     {
-        _engine = _context->Create<cEngine>(_context, caps, this);
+        _engine = _context->Create<cEngine>(_context, this);
         _window = _context->Create<cWindow>(_context, caps->windowTitle, caps->windowWidth, caps->windowHeight, caps->fullscreen);
     }
 
