@@ -105,6 +105,15 @@ namespace triton
         return glfwGetWin32Window(_window);
     }
 
+    cVector2 cWindow::GetCursorPosition() const
+    {
+        f64 x = 0;
+        f64 y = 0;
+        glfwGetCursorPos(_window, &x, &y);
+
+        return cVector2((f32)x, (f32)y);
+    }
+
     iApplication::iApplication(cContext* context, const sApplicationCapabilities* caps) : iObject(context), _caps(caps)
     {
         _engine = _context->Create<cEngine>(_context, this);

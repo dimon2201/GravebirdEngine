@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <chrono>
 #include "object.hpp"
-#include "../../thirdparty/glm/glm/glm.hpp"
+#include "math.hpp"
 #include "types.hpp"
 
 struct GLFWwindow;
@@ -30,9 +30,10 @@ namespace triton
 
         types::boolean GetRunState() const;
         HWND GetWin32Window() const;
+        cVector2 GetCursorPosition() const;
         inline GLFWwindow* GetWindow() const { return _window; }
         inline const std::string& GetTitle() const { return _title; }
-        inline glm::vec2 GetSize() const { return glm::vec2(_width, _height); }
+        inline cVector2 GetSize() const { return cVector2(_width, _height); }
         inline types::usize GetWidth() const { return _width; }
         inline types::usize GetHeight() const { return _height; }
 
