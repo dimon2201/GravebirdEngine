@@ -77,10 +77,13 @@ namespace triton
 	public:
 		explicit cQuaternion(const glm::quat& quat);
 		explicit cQuaternion(types::f32 angle, const cVector3& axis);
+		explicit cQuaternion(types::f32 w, types::f32 x, types::f32 y, types::f32 z);
 		~cQuaternion() = default;
 
 		cVector3 operator*(const cVector3& vec) const;
 		cQuaternion operator*(const cQuaternion& quat) const;
+
+		const cVector3& EulerAngles() const;
 
 	private:
 		glm::quat _quat = {};

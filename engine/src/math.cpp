@@ -109,6 +109,9 @@ namespace triton
 
 	cQuaternion::cQuaternion(f32 angle, const cVector3& axis) : _quat(glm::angleAxis(angle, glm::vec3(axis.GetX(), axis.GetY(), axis.GetZ()))) {}
 
+	cQuaternion::cQuaternion(types::f32 w, types::f32 x, types::f32 y, types::f32 z)
+		: _quat(glm::quat(w, x, y, z)) {}
+
 	cVector3 cQuaternion::operator*(const cVector3& vec) const
 	{
 		return cVector3(_quat * vec);
@@ -117,6 +120,11 @@ namespace triton
 	cQuaternion cQuaternion::operator*(const cQuaternion& quat) const
 	{
 		return cQuaternion(_quat * quat);
+	}
+
+	cVector3 cQuaternion::EulerAngles() const
+	{
+		return cVector3(glm::eulerAngles(q));
 	}
 
 	cMatrix4::cMatrix4(const glm::mat4& mat) : _mat(mat) {}
