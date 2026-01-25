@@ -31,8 +31,8 @@ namespace triton
 
 		template<typename... Args>
 		T* Insert(Args&&... args);
-		T* Find(const types::u8* key);
-		void Erase(const types::u8* key);
+		T* Find(const cTag& key);
+		void Erase(const cTag& key);
 
 		inline const T* GetElement(types::u32 index) const;
 		inline types::usize GetElementCount() const { return _elementCount; }
@@ -114,15 +114,15 @@ namespace triton
 	}
 
 	template <typename T>
-	T* cHashTable<T>::Find(const types::u8* key)
+	T* cHashTable<T>::Find(const cTag& key)
 	{
-		const types::cpuword hash = Hash(key, _hashMask);
+		const types::cpuword hash = Hash(key.GetData(), key.GetByteSize());
 		const sChunkElement& ce = _hashTable[hash];
 		const types::usize chunkObjectCount = GetChunkLocalPosition(_chunkCount - 1, _elementCount);
 		if (ce.chunk < _chunkCount && ce.position < chunkObjectCount)
 		{
 			const T* object = &_chunks[ce.chunk][ce.position];
-			if (object->GetIdentifier()->GetID() == key)
+			if (key.Compare(object->GetIdentifier()->GetID()))
 				return (const T*)object;
 		}
 
@@ -131,7 +131,7 @@ namespace triton
 			for (types::usize j = 0; j < _objectCountPerChunk; j++)
 			{
 				const T* object = &_chunks[i][j];
-				if (object->GetIdentifier()->GetID() == key)
+				if (key.Compare(object->GetIdentifier()->GetID()))
 					return (const T*)object;
 			}
 		}
@@ -140,13 +140,13 @@ namespace triton
 	}
 
 	template <typename T>
-	void cHashTable<T>::Erase(const types::u8* key)
+	void cHashTable<T>::Erase(const cTag& key)
 	{
 		for (types::usize i = 0; i < _chunkCount; i++)
 		{
 			for (types::usize j = 0; j < _objectCountPerChunk; j++)
 			{
-				if (_chunks[i][j].id == key)
+				if (key.Compare(_chunks[i][j]->GetIdentifier()->GetID()))
 				{
 					const types::u32 lastChunkIndex = GetChunkIndex(_elementCount - 1);
 					const types::usize lastChunkObjectCount = GetChunkLocalPosition(lastChunkIndex, _elementCount);
