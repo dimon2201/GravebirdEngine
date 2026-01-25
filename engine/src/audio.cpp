@@ -14,7 +14,7 @@ namespace triton
 {
 	cSound::cSound(cContext* context, eFormat format, const std::string& path) : iObject(context), _audioBackend(context->GetSubsystem<cAudio>()->GetAPI())
 	{
-		const sApplicationCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+		const sCapabilities* caps = _context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
 		cMemoryAllocator* memoryAllocator = _context->GetMemoryAllocator();
 
 		sWAVStructure wav = {};
@@ -84,7 +84,7 @@ namespace triton
 
 	cAudio::cAudio(cContext* context) : iObject(context)
 	{
-		const sApplicationCapabilities* caps = context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
+		const sCapabilities* caps = context->GetSubsystem<cEngine>()->GetApplication()->GetCapabilities();
 		_sounds = _context->Create<cIdVector<cSound>>(_context, caps->maxSoundCount);
 	}
 
