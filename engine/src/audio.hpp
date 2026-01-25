@@ -3,7 +3,7 @@
 #pragma once
 
 #include "category.hpp"
-#include "id_vec.hpp"
+#include "cache.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -97,6 +97,6 @@ namespace triton
 	private:
 		API _audioBackendAPI = API::NONE;
 		iSoundAPI* _audioBackend = nullptr;
-		cIdVector<cSound>* _sounds;
+		cCache<cSound>* _sounds;
 	};
 }

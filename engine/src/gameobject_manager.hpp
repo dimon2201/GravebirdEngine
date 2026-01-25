@@ -6,8 +6,7 @@
 #include <string>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "category.hpp"
-#include "id_vec.hpp"
-#include "object.hpp"
+#include "cache.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -84,11 +83,11 @@ namespace triton
         cGameObject* FindGameObject(const std::string& id);
         void DestroyGameObject(const std::string& id);
 
-        inline cIdVector<cGameObject>& GetObjects() const { return _gameObjects; }
+        inline cCache<cGameObject>& GetObjects() const { return _gameObjects; }
 
     private:
         types::usize _maxGameObjectCount = 0;
         types::usize _gameObjectCount = 0;
-        mutable cIdVector<cGameObject> _gameObjects;
+        mutable cCache<cGameObject> _gameObjects;
     };
 }

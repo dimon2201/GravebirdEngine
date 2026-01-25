@@ -9,8 +9,7 @@
 #include <PxPhysicsAPI.h>
 #include "../../thirdparty/glm/glm/glm.hpp"
 #include "category.hpp"
-#include "object.hpp"
-#include "id_vec.hpp"
+#include "cache.hpp"
 #include "log.hpp"
 
 namespace physx
@@ -182,9 +181,9 @@ namespace triton
         physx::PxFoundation* _foundation = nullptr;
         physx::PxPhysics* _physics = nullptr;
         std::mutex _mutex;
-        cIdVector<cPhysicsScene>* _scenes;
-        cIdVector<cPhysicsMaterial>* _materials;
-        cIdVector<cPhysicsActor>* _actors;
-        cIdVector<cPhysicsController>* _controllers;
+        cCache<cPhysicsScene>* _scenes;
+        cCache<cPhysicsMaterial>* _materials;
+        cCache<cPhysicsActor>* _actors;
+        cCache<cPhysicsController>* _controllers;
     };
 }

@@ -4,10 +4,9 @@
 
 #include <unordered_map>
 #include "../../thirdparty/glm/glm/glm.hpp"
-#include "object.hpp"
 #include "render_context.hpp"
 #include "category.hpp"
-#include "id_vec.hpp"
+#include "cache.hpp"
 #include "types.hpp"
 
 namespace triton
@@ -283,6 +282,6 @@ namespace triton
         cRenderTarget* _opaqueRenderTarget = nullptr;
         cRenderTarget* _transparentRenderTarget = nullptr;
         types::usize _materialCountCPU = 0;
-        cIdVector<cMaterial>* _materialsCPU;
+        cCache<cMaterial>* _materialsCPU;
 	};
 }
